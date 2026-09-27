@@ -84,7 +84,16 @@ jobs:
                 "robots=",((site.get("robots") or {}).get("status")),
                 "sitemap=",((site.get("sitemap") or {}).get("status")))
           for b in s.get("branches") or []:
+              p=b.get("profile") or {}
+              cats=p.get("categories") or {}
+              rh=(p.get("regularHours") or {}).get("periods") or []
+              desc=(p.get("profile") or {}).get("description") or ""
               print("branch",b.get("location_id"),
+                    "title=",b.get("title"),
+                    "primary_category=",(cats.get("primaryCategory") or {}).get("displayName"),
+                    "description=",desc[:300].replace("\n"," "),
+                    "hours=",rh,
+                    "website=",p.get("websiteUri"),
                     "profile_score=",b.get("profile_score"),
                     "checks=",b.get("profile_checks"),
                     "recommendations=",b.get("recommendations"),
