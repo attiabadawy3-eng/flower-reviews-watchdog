@@ -86,13 +86,13 @@ jobs:
           for b in s.get("branches") or []:
               print("branch",b.get("location_id"),
                     "profile_score=",b.get("profile_score"),
+                    "checks=",b.get("profile_checks"),
+                    "recommendations=",b.get("recommendations"),
                     "impressions28=",b.get("impressions_28d"),
                     "actions28=",b.get("actions_28d"),
                     "keywords=",len(b.get("search_keywords") or []),
-                    "recommendations=",len(b.get("recommendations") or []),
-                    "profile_error=",bool(b.get("profile_error")),
-                    "performance_error=",bool(b.get("performance_error")),
-                    "keywords_error=",bool(b.get("keywords_error")))
+                    "performance_error=",str(b.get("performance_error") or "")[:220],
+                    "keywords_error=",str(b.get("keywords_error") or "")[:220])
           PY
 
   keep-schedule-active:
