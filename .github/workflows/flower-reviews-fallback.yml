@@ -3,6 +3,7 @@ name: Flower Reviews Watchdog
 on:
   schedule:
     - cron: "7,37 * * * *"
+    - cron: "47 3 * * *"
     - cron: "17 4 1 * *"
   workflow_dispatch:
 
@@ -16,6 +17,7 @@ concurrency:
 
 jobs:
   check-reviews:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '7,37 * * * *')
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
@@ -24,7 +26,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          oidc_json="$(curl --fail --silent --show-error             -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=flower-reviews-watchdog")"
+          oidc_json="$(curl --fail --silent --show-error \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=flower-reviews-watchdog")"
           token="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["value"])' "$oidc_json")"
           echo "::add-mask::$token"
           echo "token=$token" >> "$GITHUB_OUTPUT"
@@ -35,9 +39,61 @@ jobs:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           set -euo pipefail
-          response="$(curl --fail --silent --show-error --max-time 180             -X POST             -H "Authorization: Bearer $OIDC_TOKEN"             "https://flower-google-reviews-auto-reply.onrender.com/fallback/reviews/oidc")"
-          echo "$response"
-          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True; print("posted=",d.get("posted",0),"held=",d.get("held",0),"errors=",d.get("errors",0))' "$response"
+          response="$(curl --fail --silent --show-error --max-time 180 \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            "https://flower-google-reviews-auto-reply.onrender.com/fallback/reviews/oidc")"
+          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True; print("reviews: seen=",d.get("seen",0),"candidates=",d.get("candidates",0),"posted=",d.get("posted",0),"held=",d.get("held",0),"errors=",d.get("errors",0))' "$response"
+
+  seo-scan:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '47 3 * * *')
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Request GitHub OIDC token
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          oidc_json="$(curl --fail --silent --show-error \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=flower-reviews-watchdog")"
+          token="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["value"])' "$oidc_json")"
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Analyze Flower visibility
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 240 \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            "https://flower-google-reviews-auto-reply.onrender.com/fallback/seo/oidc" \
+            -o /tmp/flower-seo.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open("/tmp/flower-seo.json",encoding="utf-8"))
+          assert d.get("ok") is True
+          s=d.get("snapshot") or {}
+          site=s.get("site") or {}
+          print("seo: branches=",len(s.get("branches") or []),
+                "home=",((site.get("home") or {}).get("status")),
+                "robots=",((site.get("robots") or {}).get("status")),
+                "sitemap=",((site.get("sitemap") or {}).get("status")))
+          for b in s.get("branches") or []:
+              print("branch",b.get("location_id"),
+                    "profile_score=",b.get("profile_score"),
+                    "impressions28=",b.get("impressions_28d"),
+                    "actions28=",b.get("actions_28d"),
+                    "keywords=",len(b.get("search_keywords") or []),
+                    "recommendations=",len(b.get("recommendations") or []),
+                    "profile_error=",bool(b.get("profile_error")),
+                    "performance_error=",bool(b.get("performance_error")),
+                    "keywords_error=",bool(b.get("keywords_error")))
+          PY
 
   keep-schedule-active:
     if: github.event_name == 'schedule' && github.event.schedule == '17 4 1 * *'
