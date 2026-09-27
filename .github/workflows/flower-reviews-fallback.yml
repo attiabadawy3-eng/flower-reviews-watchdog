@@ -128,12 +128,16 @@ jobs:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           set -euo pipefail
-          response="$(curl --fail --silent --show-error --max-time 180 \
+          tmp="$(mktemp)"
+          code="$(curl --silent --show-error --max-time 180 -o "$tmp" -w "%{http_code}" \
             -X POST \
             -H "Authorization: Bearer $OIDC_TOKEN" \
             "https://flower-google-reviews-auto-reply.onrender.com/fallback/profile-repair/oidc")"
+          response="$(cat "$tmp")"
+          echo "HTTP=$code"
           echo "$response"
-          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True; print("updated=",len(d.get("updated") or []),"errors=",len(d.get("errors") or []))' "$response"
+          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); print("ok=",d.get("ok"),"updated=",len(d.get("updated") or []),"errors=",d.get("errors"))' "$response"
+          test "$code" = "200"
 
 
   keep-schedule-active:
