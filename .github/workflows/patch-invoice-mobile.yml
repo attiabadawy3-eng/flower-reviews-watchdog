@@ -1,0 +1,72 @@
+name: Patch Flower invoices mobile
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/patch-invoice-mobile.yml'
+      - 'deploy-assets/flower-invoices-logo.webp'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch deployed invoice bundle
+        shell: bash
+        run: |
+          rm -rf /tmp/flower-invoices
+          mkdir -p /tmp/flower-invoices
+          unzip -q deploy-assets/flower-invoices-render.zip -d /tmp/flower-invoices
+          python - <<'PY'
+          from pathlib import Path
+          import base64, re
+
+          p = Path('/tmp/flower-invoices/index.html')
+          s = p.read_text(encoding='utf-8')
+          logo = base64.b64encode(Path('deploy-assets/flower-invoices-logo.webp').read_bytes()).decode('ascii')
+          data = 'data:image/webp;base64,' + logo
+
+          # Always use the verified Flower logo as an embedded local asset.
+          s = re.sub(r'https://raw\.githubusercontent\.com/attiabadawy3-eng/flower-reviews-watchdog/main/deploy-assets/(?:flower-logo\.svg|flower-invoices-logo\.webp)', data, s)
+          s = re.sub(r'(<img class="logo" src=")[^"]+(" alt="شعار فلور">)', lambda m: m.group(1)+data+m.group(2), s)
+
+          # Canvas logo must also be same-origin/data URI; this avoids iPhone/Android canvas security failures.
+          s = re.sub(r'var LOGO_DATA="[^"]*";', 'var LOGO_DATA="'+data+'";', s)
+
+          # Avoid Safari-specific canvas direction assignment failures.
+          s = s.replace('ctx.direction="rtl";', 'try{ctx.direction="rtl"}catch(e){};')
+          s = s.replace('ctx.direction="rtl";ctx.fillStyle', 'try{ctx.direction="rtl"}catch(e){};ctx.fillStyle')
+
+          # Older/mobile-safe scrolling.
+          s = s.replace('el.printArea.scrollIntoView({behavior:"smooth",block:"start"})', 'el.printArea.scrollIntoView()')
+          s = s.replace('window.scrollTo({top:0,behavior:"smooth"})', 'window.scrollTo(0,0)')
+
+          # If anything still fails, show the real browser error instead of an unhelpful browser instruction.
+          s = s.replace(
+              'showMessage("تعذر تجهيز الفاتورة على هذا الجهاز. أعد فتح الصفحة في Safari أو Chrome ثم حاول مرة أخرى.","err");',
+              'showMessage("تعذر تجهيز الفاتورة: "+((ex&&ex.message)?ex.message:"خطأ غير معروف")+". أعد المحاولة بصورة JPG أو بصورة ملتقطة من الكاميرا.","err");'
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          rm -f deploy-assets/flower-invoices-render.zip
+          (cd /tmp/flower-invoices && zip -q -9 "$GITHUB_WORKSPACE/deploy-assets/flower-invoices-render.zip" index.html)
+
+      - name: Commit patched bundle
+        shell: bash
+        run: |
+          git config user.name "flower-bot"
+          git config user.email "flower-bot@users.noreply.github.com"
+          git add deploy-assets/flower-invoices-render.zip
+          if git diff --cached --quiet; then
+            echo "Bundle already patched"
+          else
+            git commit -m "Fix Flower invoices mobile build"
+            git push
+          fi
