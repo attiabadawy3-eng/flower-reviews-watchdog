@@ -38,13 +38,13 @@ function ensureUI(){
   document.head.appendChild(style);
 
   const modal=document.createElement("div");modal.id="flowerScannerModal";
-  modal.innerHTML='<div class="fs-panel"><div class="fs-head"><div class="fs-title">مسح الفاتورة ضوئيًا</div><button type="button" class="fs-close" id="fsClose">إلغاء</button></div><canvas id="flowerScannerCanvas"></canvas><div class="fs-status" id="fsStatus">جاري تجهيز الماسح...</div><div class="fs-controls"><button type="button" class="fs-secondary" id="fsDetect">إعادة اكتشاف الحواف</button><select id="fsMode"><option value="color">ملون محسن</option><option value="gray">رمادي واضح</option><option value="bw">أبيض وأسود</option><option value="original">ألوان أصلية</option></select><button type="button" class="fs-primary fs-wide" id="fsAccept">اعتماد المسح</button></div></div>';
+  modal.innerHTML='<div class="fs-panel"><div class="fs-head"><div class="fs-title">مسح الفاتورة ضوئيًا</div><button type="button" class="fs-close" id="fsClose">إلغاء</button></div><canvas id="flowerScannerCanvas"></canvas><div class="fs-status" id="fsStatus">جاري تجهيز الماسح...</div><div class="fs-controls"><button type="button" class="fs-secondary" id="fsDetect">إعادة اكتشاف الحواف</button><select id="fsMode"><option value="color">ملون محسن</option><option value="gray">رمادي واضح</option><option value="bw">أبيض وأسود</option><option value="original">ألوان أصلية</option></select><button type="button" class="fs-primary" id="fsAccept">اعتماد المسح</button><button type="button" class="fs-secondary" id="fsOriginal">استخدام الأصل عند الضرورة</button></div></div>';
   document.body.appendChild(modal);
 
   S.modal=modal;S.canvas=qs("flowerScannerCanvas");S.ctx=S.canvas.getContext("2d");S.status=qs("fsStatus");S.mode=qs("fsMode");
   qs("fsClose").addEventListener("click",closeScanner);
   qs("fsDetect").addEventListener("click",function(){detectEdges(true)});
-  qs("fsAccept").addEventListener("click",acceptScan);
+  qs("fsAccept").addEventListener("click",acceptScan);qs("fsOriginal").addEventListener("click",useOriginal);
   S.canvas.addEventListener("pointerdown",onPointerDown);
   S.canvas.addEventListener("pointermove",onPointerMove);
   S.canvas.addEventListener("pointerup",onPointerUp);
@@ -152,6 +152,7 @@ async function acceptScan(){
     img.onerror=function(){setStatus("تعذر إنشاء النسخة الممسوحة. أعد المحاولة.")};img.src=canvas.toDataURL("image/jpeg",.92);
   }catch(e){setStatus("تعذر تجهيز المسح. عدّل الزوايا أو جرّب صورة أوضح ثم أعد المحاولة.")}
 }
+function useOriginal(){if(!S.originalImg)return;const cb=S.callback,src=S.originalImg.src;closeScanner();if(cb)cb(S.originalImg,src)}
 function closeScanner(){if(S.modal)S.modal.classList.remove("open");S.dragging=-1}
 window.FlowerScanner={process:function(img,dataUrl,callback){ensureUI();S.originalImg=img;S.callback=callback;S.points=null;S.dragging=-1;drawPreview();S.modal.classList.add("open");setStatus("جاري اكتشاف حواف الفاتورة...");setTimeout(function(){detectEdges(false)},80)}};
 })();
