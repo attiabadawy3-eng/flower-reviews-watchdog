@@ -1,0 +1,107 @@
+name: Build Flower document scanner
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'deploy-assets/scanner/**'
+      - '.github/workflows/build-invoice-scanner.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare scanner bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/flower-scan
+          mkdir -p /tmp/flower-scan
+          unzip -q deploy-assets/flower-invoices-render.zip -d /tmp/flower-scan
+          cp deploy-assets/scanner/scanner-addon.js /tmp/flower-scan/scanner-addon.js
+          curl -fsSL https://docs.opencv.org/4.8.0/opencv.js -o /tmp/flower-scan/opencv.js
+          node --check /tmp/flower-scan/scanner-addon.js
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('/tmp/flower-scan/index.html')
+          s=p.read_text(encoding='utf-8')
+
+          s=s.replace('<h2 class="title">صورة الفاتورة</h2>','<h2 class="title">مسح الفاتورة ضوئيًا</h2>')
+          s=s.replace('>تصوير الفاتورة</label>','>مسح الفاتورة بالكاميرا</label>')
+          s=s.replace('>اختيار صورة موجودة</label>','>اختيار فاتورة من الصور</label>')
+          s=s.replace(
+            '<div class="meta" id="fileMeta">لم يتم اختيار صورة.</div><div class="meta">على iPhone افتح الصفحة في Safari، وعلى Android افتحها في Chrome. لا تستخدم معاينة الملف داخل تطبيق الملفات أو داخل معاينة المحادثة.</div>',
+            '<div class="meta" id="fileMeta">لم يتم اختيار فاتورة.</div><div class="meta">بعد التصوير أو الاختيار سيتم اكتشاف حواف الفاتورة تلقائيًا وتصحيح الميل والمنظور. ويمكن تعديل الزوايا الأربع يدويًا قبل الاعتماد.</div>'
+          )
+
+          old='''   img.onload=function(){
+     sourceImage=img;sourceFileName=file.name||"صورة الفاتورة";
+     el.photoPreview.src=ev.target.result;el.photoPreview.style.display="block";
+     var mb=(file.size/1024/1024).toFixed(1);
+     el.fileMeta.innerHTML="<b>تم اختيار الصورة:</b> "+escapeHtml(sourceFileName)+"<br>"+img.naturalWidth+" × "+img.naturalHeight+" - "+mb+" MB";
+     if(Math.min(img.naturalWidth,img.naturalHeight)<700)showQuality("الصورة منخفضة الدقة نسبيًا، لكن يمكن تجهيزها لأن بيانات المورد والمبلغ ستظهر منفصلة بوضوح.","warn");
+     else showQuality("تم تحميل الصورة بنجاح. الصور الطويلة سيتم تصغيرها تلقائيًا داخل صفحة واحدة.","ok");
+     showMessage("الصورة جاهزة. أكمل البيانات ثم اضغط «تجهيز الفاتورة».","ok");
+   };'''
+          new='''   img.onload=function(){
+     sourceFileName=file.name||"فاتورة";
+     var mb=(file.size/1024/1024).toFixed(1);
+     el.photoPreview.src=ev.target.result;el.photoPreview.style.display="block";
+     el.fileMeta.innerHTML="<b>تم استلام الفاتورة:</b> "+escapeHtml(sourceFileName)+"<br>"+img.naturalWidth+" × "+img.naturalHeight+" - "+mb+" MB";
+     showMessage("جاري تشغيل ماسح المستندات واكتشاف حواف الفاتورة...","ok");
+     if(window.FlowerScanner&&typeof window.FlowerScanner.process==="function"){
+       window.FlowerScanner.process(img,ev.target.result,function(scannedImg,scannedDataUrl){
+         sourceImage=scannedImg;
+         el.photoPreview.src=scannedDataUrl;el.photoPreview.style.display="block";
+         el.fileMeta.innerHTML="<b>تم اعتماد المسح الضوئي:</b> "+escapeHtml(sourceFileName)+"<br>"+scannedImg.naturalWidth+" × "+scannedImg.naturalHeight;
+         showQuality("تم قص حواف الفاتورة وتصحيح الميل والمنظور. هذه النسخة الممسوحة هي التي ستدخل في JPG وPDF.","ok");
+         showMessage("المسح الضوئي جاهز. أكمل البيانات ثم اضغط «تجهيز الفاتورة».","ok");
+       });
+     }else{
+       sourceImage=img;
+       showQuality("تعذر تحميل ماسح المستندات؛ تم الاحتفاظ بالصورة الأصلية.","warn");
+       showMessage("تم الاحتفاظ بالصورة الأصلية. يمكنك تجهيز الفاتورة أو إعادة المحاولة لاحقًا.","warn");
+     }
+   };'''
+          if old not in s:
+            raise SystemExit('target img.onload block not found')
+          s=s.replace(old,new)
+
+          # Add scanner engine before the existing application script closes.
+          marker='</body>'
+          addon='''<script>var Module={onRuntimeInitialized:function(){window.__flowerCVReady=true;}};</script>
+<script async src="./opencv.js"></script>
+<script src="./scanner-addon.js"></script>
+'''
+          if 'scanner-addon.js' not in s:
+            s=s.replace(marker,addon+marker)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+
+          test -s /tmp/flower-scan/index.html
+          test -s /tmp/flower-scan/scanner-addon.js
+          test -s /tmp/flower-scan/opencv.js
+
+          rm -f deploy-assets/flower-invoices-render.zip
+          (cd /tmp/flower-scan && zip -q -9 "$GITHUB_WORKSPACE/deploy-assets/flower-invoices-render.zip" index.html scanner-addon.js opencv.js)
+
+      - name: Commit scanner bundle
+        shell: bash
+        run: |
+          git config user.name "flower-bot"
+          git config user.email "flower-bot@users.noreply.github.com"
+          git add deploy-assets/flower-invoices-render.zip
+          if git diff --cached --quiet; then
+            echo "Scanner bundle already current"
+          else
+            git commit -m "Add document scanning to Flower invoices"
+            git push
+          fi
