@@ -1,0 +1,38 @@
+name: Build Flower invoice logo
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'deploy-assets/logo-b64/**'
+      - '.github/workflows/build-invoice-logo.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-logo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rebuild official Flower logo
+        shell: bash
+        run: |
+          cat deploy-assets/logo-b64/part*.txt | tr -d '\n\r ' | base64 -d > deploy-assets/flower-invoices-logo.webp
+          test "$(stat -c%s deploy-assets/flower-invoices-logo.webp)" -eq 7410
+          file deploy-assets/flower-invoices-logo.webp
+
+      - name: Commit rebuilt logo
+        shell: bash
+        run: |
+          git config user.name "flower-bot"
+          git config user.email "flower-bot@users.noreply.github.com"
+          git add deploy-assets/flower-invoices-logo.webp
+          if git diff --cached --quiet; then
+            echo "Logo already up to date"
+          else
+            git commit -m "Rebuild official Flower invoice logo"
+            git push
+          fi
