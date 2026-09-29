@@ -19,7 +19,7 @@ function orderPoints(pts){
 function ensureUI(){
   if(S.modal)return;
   const style=document.createElement("style");
-  style.textContent=\`
+  style.textContent=`
   #flowerScannerModal{position:fixed;inset:0;z-index:99999;background:rgba(20,10,15,.94);display:none;align-items:center;justify-content:center;padding:10px;direction:rtl}
   #flowerScannerModal.open{display:flex}
   .fs-panel{width:min(760px,100%);max-height:96vh;overflow:auto;background:#fff;border-radius:18px;padding:12px;box-shadow:0 18px 60px rgba(0,0,0,.35)}
@@ -34,7 +34,7 @@ function ensureUI(){
   .fs-secondary{border:1px solid #d8c1ca;background:#f5edf0;color:#5b2038}
   .fs-wide{grid-column:1/-1}
   @media(max-width:560px){.fs-controls{grid-template-columns:1fr}.fs-wide{grid-column:auto}}
-  \`;
+  `;
   document.head.appendChild(style);
 
   const modal=document.createElement("div");modal.id="flowerScannerModal";
