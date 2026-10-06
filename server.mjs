@@ -24,6 +24,15 @@ if (!RP_ID || !ORIGIN || !PAIR_CODE || !BRIDGE_KEY || !PROOF_SECRET || !PROOF_ED
   throw new Error("Missing required environment variables.");
 }
 
+const proofPublicKey = crypto.createPublicKey(PROOF_ED25519_PRIVATE_PEM);
+const proofPublicDer = proofPublicKey.export({ type: "spki", format: "der" });
+const proofKeyFingerprint = crypto.createHash("sha256").update(proofPublicDer).digest("hex").toUpperCase();
+const selfTestPayload = Buffer.from("sara-mobile-approval-ed25519-selftest-v1");
+const selfTestSignature = crypto.sign(null, selfTestPayload, PROOF_ED25519_PRIVATE_PEM);
+if (!crypto.verify(null, selfTestPayload, proofPublicKey, selfTestSignature)) {
+  throw new Error("Ed25519 proof key self-test failed.");
+}
+
 const state = {
   owner: null,
   registerChallenge: null,
@@ -100,6 +109,8 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "sara-mobile-approval-gateway",
     staging: true,
+    proofAlg: "Ed25519",
+    proofKeyFingerprint,
     pairingModel: "browser-held-signed-binding",
     pending: [...state.requests.values()].filter((x) => x.status === "pending").length,
   });
@@ -273,5 +284,6 @@ app.get("/api/bridge/result/:requestId", authBridge, (req, res) => {
 });
 
 app.listen(PORT, "0.0.0.0", () => {
+  console.log("ED25519_SELFTEST_OK", proofKeyFingerprint);
   console.log("Sara Mobile Approval gateway listening on port", PORT);
 });
