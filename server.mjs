@@ -18,8 +18,9 @@ const ORIGIN = String(process.env.ORIGIN || "").trim().replace(/\/$/, "");
 const PAIR_CODE = String(process.env.PAIR_CODE || "").trim();
 const BRIDGE_KEY = String(process.env.BRIDGE_KEY || "").trim();
 const PROOF_SECRET = String(process.env.PROOF_SECRET || "").trim();
+const PROOF_ED25519_PRIVATE_PEM = String(process.env.PROOF_ED25519_PRIVATE_PEM || "").trim();
 
-if (!RP_ID || !ORIGIN || !PAIR_CODE || !BRIDGE_KEY || !PROOF_SECRET) {
+if (!RP_ID || !ORIGIN || !PAIR_CODE || !BRIDGE_KEY || !PROOF_SECRET || !PROOF_ED25519_PRIVATE_PEM) {
   throw new Error("Missing required environment variables.");
 }
 
@@ -60,7 +61,8 @@ const authBridge = (req, res, next) => {
 };
 const hmac = (payload) =>
   crypto.createHmac("sha256", PROOF_SECRET).update(JSON.stringify(payload)).digest("base64url");
-const signProof = (payload) => hmac(payload);
+const signProof = (payload) =>
+  crypto.sign(null, Buffer.from(JSON.stringify(payload)), PROOF_ED25519_PRIVATE_PEM).toString("base64url");
 const issueBindingToken = (credential) => {
   const payload = {
     version: "SARA_MOBILE_BINDING_V1",
@@ -238,7 +240,8 @@ app.post("/api/approval/verify", async (req, res) => {
   if (!verification.verified) return res.status(400).json({ error: "authentication_not_verified" });
   const updatedCredential = { ...owner, counter: verification.authenticationInfo.newCounter };
   const proofPayload = {
-    version: "SARA_MOBILE_PROOF_V1",
+    version: "SARA_MOBILE_PROOF_V2",
+    alg: "Ed25519",
     requestId: row.requestId,
     effectHash: row.effectHash,
     nonce: row.nonce,
