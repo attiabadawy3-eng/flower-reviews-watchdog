@@ -38,6 +38,20 @@ const timingSafeEqualText = (a, b) => {
   const bb = Buffer.from(String(b));
   return aa.length === bb.length && crypto.timingSafeEqual(aa, bb);
 };
+const parseCookies = (req) => Object.fromEntries(
+  String(req.headers.cookie || "").split(";").map(x => x.trim()).filter(Boolean).map(x => {
+    const i = x.indexOf("=");
+    return i < 0 ? [x, ""] : [x.slice(0, i), decodeURIComponent(x.slice(i + 1))];
+  })
+);
+const bindingFromRequest = (req) => {
+  const cookieToken = parseCookies(req).sara_mobile_binding;
+  const bodyToken = req.body?.bindingToken;
+  return cookieToken || bodyToken || "";
+};
+const setBindingCookie = (res, token) => {
+  res.setHeader("Set-Cookie", "sara_mobile_binding=" + encodeURIComponent(token) + "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000");
+};
 const authBridge = (req, res, next) => {
   const h = req.headers.authorization || "";
   if (!h.startsWith("Bearer ")) return res.status(401).json({ error: "unauthorized" });
@@ -138,7 +152,8 @@ app.post("/api/register/verify", async (req, res) => {
   const credential = verification.registrationInfo.credential;
   const bindingToken = issueBindingToken(credential);
   state.registerChallenge = null;
-  res.json({ ok: true, paired: true, credentialId: credential.id, bindingToken });
+  setBindingCookie(res, bindingToken);
+  res.json({ ok: true, paired: true, credentialId: credential.id });
 });
 
 app.post("/api/bridge/request", authBridge, (req, res) => {
@@ -202,13 +217,13 @@ app.get("/a/:token", (_req, res) => {
     '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>موافقة سارة</title><style>' +
     'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#171717}.wrap{max-width:560px;margin:auto;padding:24px 18px}.card{background:#fff;border:1px solid #e5e5e5;border-radius:18px;padding:24px}.summary{font-size:19px;line-height:1.7;margin:18px 0;padding:16px;background:#f7f7f7;border-radius:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{font:inherit;padding:14px;border-radius:12px;border:0;font-weight:700}.ok{background:#111;color:#fff}.no{background:#eee}.msg{margin-top:14px;color:#555;white-space:pre-wrap}</style></head><body>' +
     '<div class="wrap"><div class="card"><h2>طلب موافقة</h2><div class="summary" id="summary">جاري تحميل الطلب...</div><div class="row"><button class="ok" id="approve">موافقة بـFace ID</button><button class="no" id="reject">رفض بـFace ID</button></div><div class="msg" id="msg"></div></div></div>' +
-    '<script type="module">import{startAuthentication}from"https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@13/+esm";const token=location.pathname.split("/").pop(),msg=document.getElementById("msg"),summary=document.getElementById("summary");let view=null;async function load(){const r=await fetch("/api/approval/view/"+encodeURIComponent(token));view=await r.json();if(!r.ok){summary.textContent="الطلب غير موجود";return}summary.textContent=view.summary||"طلب موافقة من سارة";if(Date.parse(view.expiresAt)<=Date.now())msg.textContent="انتهت صلاحية الطلب."}await load();async function act(decision){if(!view||Date.parse(view.expiresAt)<=Date.now())return;try{const bindingToken=localStorage.getItem("saraMobileBinding");if(!bindingToken)throw new Error("الآيفون غير مربوط. افتح صفحة الربط أولًا.");const o=await fetch("/api/approval/options",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision,bindingToken})});const j=await o.json();if(!o.ok)throw new Error(j.error||"options failed");const response=await startAuthentication({optionsJSON:j.options});const v=await fetch("/api/approval/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision,response,bindingToken})});const x=await v.json();if(!v.ok)throw new Error(x.error||"verification failed");if(x.bindingToken)localStorage.setItem("saraMobileBinding",x.bindingToken);msg.textContent=decision==="approve"?"تمت الموافقة بنجاح.":"تم الرفض بنجاح."}catch(e){msg.textContent="تعذر إكمال الطلب: "+e.message}}document.getElementById("approve").onclick=()=>act("approve");document.getElementById("reject").onclick=()=>act("reject");</script></body></html>'
+    '<script type="module">import{startAuthentication}from"https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@13/+esm";const token=location.pathname.split("/").pop(),msg=document.getElementById("msg"),summary=document.getElementById("summary");let view=null;async function load(){const r=await fetch("/api/approval/view/"+encodeURIComponent(token));view=await r.json();if(!r.ok){summary.textContent="الطلب غير موجود";return}summary.textContent=view.summary||"طلب موافقة من سارة";if(Date.parse(view.expiresAt)<=Date.now())msg.textContent="انتهت صلاحية الطلب."}await load();async function act(decision){if(!view||Date.parse(view.expiresAt)<=Date.now())return;try{const o=await fetch("/api/approval/options",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision})});const j=await o.json();if(!o.ok)throw new Error(j.error||"options failed");const response=await startAuthentication({optionsJSON:j.options});const v=await fetch("/api/approval/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision,response})});const x=await v.json();if(!v.ok)throw new Error(x.error||"verification failed");msg.textContent=decision==="approve"?"تمت الموافقة بنجاح.":"تم الرفض بنجاح."}catch(e){msg.textContent="تعذر إكمال الطلب: "+e.message}}document.getElementById("approve").onclick=()=>act("approve");document.getElementById("reject").onclick=()=>act("reject");</script></body></html>'
   );
 });
 
 app.post("/api/approval/options", async (req, res) => {
   let binding;
-  try { binding = readBindingToken(req.body?.bindingToken); }
+  try { binding = readBindingToken(bindingFromRequest(req)); }
   catch { return res.status(409).json({ error: "not_paired" }); }
   const requestId = state.tokenToRequest.get(String(req.body?.token || ""));
   const row = requestId ? state.requests.get(requestId) : null;
@@ -227,7 +242,7 @@ app.post("/api/approval/options", async (req, res) => {
 
 app.post("/api/approval/verify", async (req, res) => {
   let binding;
-  try { binding = readBindingToken(req.body?.bindingToken); }
+  try { binding = readBindingToken(bindingFromRequest(req)); }
   catch { return res.status(409).json({ error: "not_paired" }); }
   const token = String(req.body?.token || "");
   const requestId = state.tokenToRequest.get(token);
@@ -260,7 +275,8 @@ app.post("/api/approval/verify", async (req, res) => {
   row.proof = { ...proofPayload, signature: signProof(proofPayload) };
   row.authChallenge = null;
   console.log("MOBILE_APPROVAL_DECIDED", JSON.stringify({ requestId: row.requestId, status: row.status, verifiedAt: proofPayload.verifiedAt, staging: row.requestId.startsWith("staging-") }));
-  res.json({ ok: true, status: row.status, bindingToken: issueBindingToken(updatedCredential) });
+  setBindingCookie(res, issueBindingToken(updatedCredential));
+  res.json({ ok: true, status: row.status });
 });
 
 app.get("/api/bridge/result/:requestId", authBridge, (req, res) => {
