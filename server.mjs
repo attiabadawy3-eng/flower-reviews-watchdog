@@ -44,8 +44,28 @@ const authBridge = (req, res, next) => {
   if (!timingSafeEqualText(h.slice(7), BRIDGE_KEY)) return res.status(401).json({ error: "unauthorized" });
   next();
 };
-const signProof = (payload) =>
+const hmac = (payload) =>
   crypto.createHmac("sha256", PROOF_SECRET).update(JSON.stringify(payload)).digest("base64url");
+const signProof = (payload) => hmac(payload);
+const issueBindingToken = (credential) => {
+  const payload = {
+    version: "SARA_MOBILE_BINDING_V1",
+    credential: serializeCredential(credential),
+    issuedAt: new Date().toISOString(),
+  };
+  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const sig = hmac(payload);
+  return body + "." + sig;
+};
+const readBindingToken = (token) => {
+  const [body, sig] = String(token || "").split(".");
+  if (!body || !sig) throw new Error("bad_binding_token");
+  const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
+  if (!payload || payload.version !== "SARA_MOBILE_BINDING_V1" || !payload.credential) throw new Error("bad_binding_payload");
+  const expected = hmac(payload);
+  if (!timingSafeEqualText(sig, expected)) throw new Error("bad_binding_signature");
+  return payload;
+};
 const serializeCredential = (c) => ({
   id: c.id,
   publicKey: b64(c.publicKey),
@@ -64,7 +84,7 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "sara-mobile-approval-gateway",
     staging: true,
-    paired: !!state.owner,
+    pairingModel: "browser-held-signed-binding",
     pending: [...state.requests.values()].filter((x) => x.status === "pending").length,
   });
 });
@@ -115,9 +135,10 @@ app.post("/api/register/verify", async (req, res) => {
   if (!verification.verified || !verification.registrationInfo) {
     return res.status(400).json({ error: "registration_not_verified" });
   }
-  state.owner = serializeCredential(verification.registrationInfo.credential);
+  const credential = verification.registrationInfo.credential;
+  const bindingToken = issueBindingToken(credential);
   state.registerChallenge = null;
-  res.json({ ok: true, paired: true, credentialId: state.owner.id });
+  res.json({ ok: true, paired: true, credentialId: credential.id, bindingToken });
 });
 
 app.post("/api/bridge/request", authBridge, (req, res) => {
@@ -154,18 +175,20 @@ app.get("/a/:token", (_req, res) => {
     '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>موافقة سارة</title><style>' +
     'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#171717}.wrap{max-width:560px;margin:auto;padding:24px 18px}.card{background:#fff;border:1px solid #e5e5e5;border-radius:18px;padding:24px}.summary{font-size:19px;line-height:1.7;margin:18px 0;padding:16px;background:#f7f7f7;border-radius:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{font:inherit;padding:14px;border-radius:12px;border:0;font-weight:700}.ok{background:#111;color:#fff}.no{background:#eee}.msg{margin-top:14px;color:#555;white-space:pre-wrap}</style></head><body>' +
     '<div class="wrap"><div class="card"><h2>طلب موافقة</h2><div class="summary" id="summary">جاري تحميل الطلب...</div><div class="row"><button class="ok" id="approve">موافقة بـFace ID</button><button class="no" id="reject">رفض بـFace ID</button></div><div class="msg" id="msg"></div></div></div>' +
-    '<script type="module">import{startAuthentication}from"https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@13/+esm";const token=location.pathname.split("/").pop(),msg=document.getElementById("msg"),summary=document.getElementById("summary");let view=null;async function load(){const r=await fetch("/api/approval/view/"+encodeURIComponent(token));view=await r.json();if(!r.ok){summary.textContent="الطلب غير موجود";return}summary.textContent=view.summary||"طلب موافقة من سارة";if(Date.parse(view.expiresAt)<=Date.now())msg.textContent="انتهت صلاحية الطلب."}await load();async function act(decision){if(!view||Date.parse(view.expiresAt)<=Date.now())return;try{const o=await fetch("/api/approval/options",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision})});const j=await o.json();if(!o.ok)throw new Error(j.error||"options failed");const response=await startAuthentication({optionsJSON:j.options});const v=await fetch("/api/approval/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision,response})});const x=await v.json();if(!v.ok)throw new Error(x.error||"verification failed");msg.textContent=decision==="approve"?"تمت الموافقة بنجاح.":"تم الرفض بنجاح."}catch(e){msg.textContent="تعذر إكمال الطلب: "+e.message}}document.getElementById("approve").onclick=()=>act("approve");document.getElementById("reject").onclick=()=>act("reject");</script></body></html>'
+    '<script type="module">import{startAuthentication}from"https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@13/+esm";const token=location.pathname.split("/").pop(),msg=document.getElementById("msg"),summary=document.getElementById("summary");let view=null;async function load(){const r=await fetch("/api/approval/view/"+encodeURIComponent(token));view=await r.json();if(!r.ok){summary.textContent="الطلب غير موجود";return}summary.textContent=view.summary||"طلب موافقة من سارة";if(Date.parse(view.expiresAt)<=Date.now())msg.textContent="انتهت صلاحية الطلب."}await load();async function act(decision){if(!view||Date.parse(view.expiresAt)<=Date.now())return;try{const bindingToken=localStorage.getItem("saraMobileBinding");if(!bindingToken)throw new Error("الآيفون غير مربوط. افتح صفحة الربط أولًا.");const o=await fetch("/api/approval/options",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision,bindingToken})});const j=await o.json();if(!o.ok)throw new Error(j.error||"options failed");const response=await startAuthentication({optionsJSON:j.options});const v=await fetch("/api/approval/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,decision,response,bindingToken})});const x=await v.json();if(!v.ok)throw new Error(x.error||"verification failed");if(x.bindingToken)localStorage.setItem("saraMobileBinding",x.bindingToken);msg.textContent=decision==="approve"?"تمت الموافقة بنجاح.":"تم الرفض بنجاح."}catch(e){msg.textContent="تعذر إكمال الطلب: "+e.message}}document.getElementById("approve").onclick=()=>act("approve");document.getElementById("reject").onclick=()=>act("reject");</script></body></html>'
   );
 });
 
 app.post("/api/approval/options", async (req, res) => {
-  if (!state.owner) return res.status(409).json({ error: "not_paired" });
+  let binding;
+  try { binding = readBindingToken(req.body?.bindingToken); }
+  catch { return res.status(409).json({ error: "not_paired" }); }
   const requestId = state.tokenToRequest.get(String(req.body?.token || ""));
   const row = requestId ? state.requests.get(requestId) : null;
   if (!row) return res.status(404).json({ error: "request_not_found" });
   if (row.status !== "pending") return res.status(409).json({ error: "request_already_decided" });
   if (Date.parse(row.expiresAt) <= Date.now()) return res.status(410).json({ error: "request_expired" });
-  const owner = hydrateCredential(state.owner);
+  const owner = hydrateCredential(binding.credential);
   const options = await generateAuthenticationOptions({
     rpID: RP_ID,
     userVerification: "required",
@@ -176,7 +199,9 @@ app.post("/api/approval/options", async (req, res) => {
 });
 
 app.post("/api/approval/verify", async (req, res) => {
-  if (!state.owner) return res.status(409).json({ error: "not_paired" });
+  let binding;
+  try { binding = readBindingToken(req.body?.bindingToken); }
+  catch { return res.status(409).json({ error: "not_paired" }); }
   const token = String(req.body?.token || "");
   const requestId = state.tokenToRequest.get(token);
   const row = requestId ? state.requests.get(requestId) : null;
@@ -184,7 +209,7 @@ app.post("/api/approval/verify", async (req, res) => {
   if (row.status !== "pending") return res.status(409).json({ error: "request_already_decided" });
   if (Date.parse(row.expiresAt) <= Date.now()) return res.status(410).json({ error: "request_expired" });
   const decision = req.body?.decision === "reject" ? "rejected" : "approved";
-  const owner = hydrateCredential(state.owner);
+  const owner = hydrateCredential(binding.credential);
   const verification = await verifyAuthenticationResponse({
     response: req.body?.response,
     expectedChallenge: row.authChallenge,
@@ -194,20 +219,20 @@ app.post("/api/approval/verify", async (req, res) => {
     requireUserVerification: true,
   });
   if (!verification.verified) return res.status(400).json({ error: "authentication_not_verified" });
-  state.owner.counter = verification.authenticationInfo.newCounter;
+  const updatedCredential = { ...owner, counter: verification.authenticationInfo.newCounter };
   const proofPayload = {
     version: "SARA_MOBILE_PROOF_V1",
     requestId: row.requestId,
     effectHash: row.effectHash,
     nonce: row.nonce,
     decision,
-    credentialId: state.owner.id,
+    credentialId: owner.id,
     verifiedAt: new Date().toISOString(),
   };
   row.status = decision;
   row.proof = { ...proofPayload, signature: signProof(proofPayload) };
   row.authChallenge = null;
-  res.json({ ok: true, status: row.status });
+  res.json({ ok: true, status: row.status, bindingToken: issueBindingToken(updatedCredential) });
 });
 
 app.get("/api/bridge/result/:requestId", authBridge, (req, res) => {
