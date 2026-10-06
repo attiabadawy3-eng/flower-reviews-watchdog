@@ -186,32 +186,6 @@ app.get("/api/approval/view/:token", (req, res) => {
 });
 
 
-app.get("/staging/test", (_req, res) => {
-  const requestId = "staging-" + crypto.randomUUID();
-  const nonce = crypto.randomBytes(32).toString("base64url");
-  const effectHash = crypto.createHash("sha256")
-    .update(JSON.stringify({ type: "staging.mobile.approval.test", amount: 0 }))
-    .digest("hex")
-    .toUpperCase();
-  const token = crypto.randomBytes(24).toString("base64url");
-  const row = {
-    requestId,
-    effectHash,
-    nonce,
-    summary: "اختبار موافقة سارة من الموبايل — بدون أي تنفيذ مالي",
-    expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-    token,
-    status: "pending",
-    authChallenge: null,
-    proof: null,
-    createdAt: new Date().toISOString(),
-  };
-  state.requests.set(requestId, row);
-  state.tokenToRequest.set(token, requestId);
-  console.log("MOBILE_APPROVAL_STAGING_CREATED", JSON.stringify({ requestId, expiresAt: row.expiresAt }));
-  res.redirect(302, "/a/" + token);
-});
-
 app.get("/a/:token", (_req, res) => {
   res.type("html").send(
     '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>موافقة سارة</title><style>' +
