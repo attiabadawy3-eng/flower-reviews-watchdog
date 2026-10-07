@@ -17,6 +17,7 @@ const PORT = Number(process.env.PORT || 10000);
 const RP_ID = String(process.env.RP_ID || "").trim();
 const ORIGIN = String(process.env.ORIGIN || "").trim().replace(/\/$/, "");
 const PAIR_CODE = String(process.env.PAIR_CODE || "").trim();
+const PAIRING_ENABLED = /^(1|true|yes)$/i.test(String(process.env.PAIRING_ENABLED || "").trim());
 const BRIDGE_KEY = String(process.env.BRIDGE_KEY || "").trim();
 const BINDING_SECRET = String(process.env.BINDING_SECRET || "").trim();
 const PROOF_PRIVATE_KEY = loadProofPrivateKey({
@@ -113,6 +114,7 @@ app.get("/health", (_req, res) => {
     proofAlg: "Ed25519",
     proofKeyFingerprint,
     pairingModel: "browser-held-signed-binding",
+    pairingEnabled: PAIRING_ENABLED,
     pending: [...state.requests.values()].filter((x) => x.status === "pending").length,
   });
 });
@@ -135,6 +137,7 @@ app.get("/pair", (_req, res) => {
 });
 
 app.post("/api/register/options", async (req, res) => {
+  if (!PAIRING_ENABLED) return res.status(403).json({ error: "pairing_disabled" });
   if (state.owner) return res.status(409).json({ error: "already_paired" });
   if (!timingSafeEqualText(req.body?.code || "", PAIR_CODE)) return res.status(403).json({ error: "bad_pair_code" });
   const options = await generateRegistrationOptions({
@@ -150,6 +153,7 @@ app.post("/api/register/options", async (req, res) => {
 });
 
 app.post("/api/register/verify", async (req, res) => {
+  if (!PAIRING_ENABLED) return res.status(403).json({ error: "pairing_disabled" });
   if (state.owner) return res.status(409).json({ error: "already_paired" });
   if (!timingSafeEqualText(req.body?.code || "", PAIR_CODE)) return res.status(403).json({ error: "bad_pair_code" });
   if (!state.registerChallenge) return res.status(409).json({ error: "no_registration_challenge" });
