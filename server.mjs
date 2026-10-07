@@ -19,15 +19,19 @@ const ORIGIN = String(process.env.ORIGIN || "").trim().replace(/\/$/, "");
 const PAIR_CODE = String(process.env.PAIR_CODE || "").trim();
 const PAIRING_ENABLED = /^(1|true|yes)$/i.test(String(process.env.PAIRING_ENABLED || "").trim());
 const BRIDGE_KEY = String(process.env.BRIDGE_KEY || "").trim();
+const BRIDGE_PUBLIC_KEY_PEM = String(process.env.BRIDGE_PUBLIC_KEY_PEM || "").trim();
 const BINDING_SECRET = String(process.env.BINDING_SECRET || "").trim();
 const PROOF_PRIVATE_KEY = loadProofPrivateKey({
   pem: process.env.PROOF_PRIVATE_KEY || process.env.PROOF_ED25519_PRIVATE_PEM,
 });
 
-if (!RP_ID || !ORIGIN || !PAIR_CODE || !BRIDGE_KEY || !BINDING_SECRET) {
+if (!RP_ID || !ORIGIN || !PAIR_CODE || (!BRIDGE_KEY && !BRIDGE_PUBLIC_KEY_PEM) || !BINDING_SECRET) {
   throw new Error("Missing required environment variables.");
 }
 
+const bridgePublicKey = BRIDGE_PUBLIC_KEY_PEM ? crypto.createPublicKey(BRIDGE_PUBLIC_KEY_PEM) : null;
+const bridgeReplay = new Map();
+const BRIDGE_CLOCK_SKEW_MS = 2 * 60 * 1000;
 const proofPublicKey = crypto.createPublicKey(PROOF_PRIVATE_KEY);
 const proofPublicDer = proofPublicKey.export({ type: "spki", format: "der" });
 const proofKeyFingerprint = crypto.createHash("sha256").update(proofPublicDer).digest("hex").toUpperCase();
@@ -66,11 +70,36 @@ const bindingFromRequest = (req) => {
 const setBindingCookie = (res, token) => {
   res.setHeader("Set-Cookie", "sara_mobile_binding=" + encodeURIComponent(token) + "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000");
 };
+const bridgeBodyHash = (req) => {
+  const bodyText = req.method === "GET" || req.method === "HEAD" ? "" : JSON.stringify(req.body ?? {});
+  return crypto.createHash("sha256").update(bodyText).digest("hex");
+};
+const bridgeCanonical = (req, ts, nonce) =>
+  ["SARA_BRIDGE_AUTH_V1", req.method.toUpperCase(), req.path, String(ts), String(nonce), bridgeBodyHash(req)].join("\n");
+const purgeBridgeReplay = (now) => {
+  for (const [nonce, expiresAt] of bridgeReplay) if (expiresAt <= now) bridgeReplay.delete(nonce);
+};
 const authBridge = (req, res, next) => {
-  const h = req.headers.authorization || "";
-  if (!h.startsWith("Bearer ")) return res.status(401).json({ error: "unauthorized" });
-  if (!timingSafeEqualText(h.slice(7), BRIDGE_KEY)) return res.status(401).json({ error: "unauthorized" });
-  next();
+  const ts = Number(req.headers["x-sara-bridge-ts"]);
+  const nonce = String(req.headers["x-sara-bridge-nonce"] || "");
+  const sig = String(req.headers["x-sara-bridge-signature"] || "");
+  if (bridgePublicKey && Number.isFinite(ts) && nonce && sig) {
+    const now = Date.now();
+    purgeBridgeReplay(now);
+    if (Math.abs(now - ts) > BRIDGE_CLOCK_SKEW_MS) return res.status(401).json({ error: "bridge_timestamp_invalid" });
+    if (!/^[A-Za-z0-9_-]{16,128}$/.test(nonce) || bridgeReplay.has(nonce)) return res.status(401).json({ error: "bridge_nonce_invalid" });
+    let signature;
+    try { signature = Buffer.from(sig, "base64url"); } catch { return res.status(401).json({ error: "unauthorized" }); }
+    const ok = crypto.verify(null, Buffer.from(bridgeCanonical(req, ts, nonce)), bridgePublicKey, signature);
+    if (!ok) return res.status(401).json({ error: "unauthorized" });
+    bridgeReplay.set(nonce, now + BRIDGE_CLOCK_SKEW_MS * 2);
+    return next();
+  }
+
+  // Temporary compatibility path for rollout only. Remove once every bridge uses signatures.
+  const h = String(req.headers.authorization || "");
+  if (BRIDGE_KEY && h.startsWith("Bearer ") && timingSafeEqualText(h.slice(7), BRIDGE_KEY)) return next();
+  return res.status(401).json({ error: "unauthorized" });
 };
 const hmac = (payload) =>
   crypto.createHmac("sha256", BINDING_SECRET).update(JSON.stringify(payload)).digest("base64url");
@@ -115,6 +144,7 @@ app.get("/health", (_req, res) => {
     proofKeyFingerprint,
     pairingModel: "browser-held-signed-binding",
     pairingEnabled: PAIRING_ENABLED,
+    bridgeAuth: bridgePublicKey ? (BRIDGE_KEY ? "ed25519+legacy" : "ed25519") : "legacy",
     pending: [...state.requests.values()].filter((x) => x.status === "pending").length,
   });
 });
