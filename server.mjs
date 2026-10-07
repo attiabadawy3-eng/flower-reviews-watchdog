@@ -1,6 +1,7 @@
 
 import express from "express";
 import crypto from "node:crypto";
+import { issueMobileProof, loadProofPrivateKey } from "./proof-issuer.mjs";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -17,18 +18,20 @@ const RP_ID = String(process.env.RP_ID || "").trim();
 const ORIGIN = String(process.env.ORIGIN || "").trim().replace(/\/$/, "");
 const PAIR_CODE = String(process.env.PAIR_CODE || "").trim();
 const BRIDGE_KEY = String(process.env.BRIDGE_KEY || "").trim();
-const PROOF_SECRET = String(process.env.PROOF_SECRET || "").trim();
-const PROOF_ED25519_PRIVATE_PEM = String(process.env.PROOF_ED25519_PRIVATE_PEM || "").trim();
+const BINDING_SECRET = String(process.env.BINDING_SECRET || "").trim();
+const PROOF_PRIVATE_KEY = loadProofPrivateKey({
+  pem: process.env.PROOF_PRIVATE_KEY || process.env.PROOF_ED25519_PRIVATE_PEM,
+});
 
-if (!RP_ID || !ORIGIN || !PAIR_CODE || !BRIDGE_KEY || !PROOF_SECRET || !PROOF_ED25519_PRIVATE_PEM) {
+if (!RP_ID || !ORIGIN || !PAIR_CODE || !BRIDGE_KEY || !BINDING_SECRET) {
   throw new Error("Missing required environment variables.");
 }
 
-const proofPublicKey = crypto.createPublicKey(PROOF_ED25519_PRIVATE_PEM);
+const proofPublicKey = crypto.createPublicKey(PROOF_PRIVATE_KEY);
 const proofPublicDer = proofPublicKey.export({ type: "spki", format: "der" });
 const proofKeyFingerprint = crypto.createHash("sha256").update(proofPublicDer).digest("hex").toUpperCase();
-const selfTestPayload = Buffer.from("sara-mobile-approval-ed25519-selftest-v1");
-const selfTestSignature = crypto.sign(null, selfTestPayload, PROOF_ED25519_PRIVATE_PEM);
+const selfTestPayload = Buffer.from("sara-mobile-approval-ed25519-selftest-v2");
+const selfTestSignature = crypto.sign(null, selfTestPayload, PROOF_PRIVATE_KEY);
 if (!crypto.verify(null, selfTestPayload, proofPublicKey, selfTestSignature)) {
   throw new Error("Ed25519 proof key self-test failed.");
 }
@@ -69,9 +72,7 @@ const authBridge = (req, res, next) => {
   next();
 };
 const hmac = (payload) =>
-  crypto.createHmac("sha256", PROOF_SECRET).update(JSON.stringify(payload)).digest("base64url");
-const signProof = (payload) =>
-  crypto.sign(null, Buffer.from(JSON.stringify(payload)), PROOF_ED25519_PRIVATE_PEM).toString("base64url");
+  crypto.createHmac("sha256", BINDING_SECRET).update(JSON.stringify(payload)).digest("base64url");
 const issueBindingToken = (credential) => {
   const payload = {
     version: "SARA_MOBILE_BINDING_V1",
@@ -248,25 +249,26 @@ app.post("/api/approval/verify", async (req, res) => {
     credential: owner,
     requireUserVerification: true,
   });
-  if (!verification.verified) return res.status(400).json({ error: "authentication_not_verified" });
+  let issued;
+  try {
+    issued = issueMobileProof({
+      verification,
+      row,
+      credentialId: owner.id,
+      decision,
+      privateKey: PROOF_PRIVATE_KEY,
+    });
+  } catch (e) {
+    return res.status(400).json({ error: String(e?.message || "proof_not_issued") });
+  }
   const updatedCredential = { ...owner, counter: verification.authenticationInfo.newCounter };
-  const proofPayload = {
-    version: "SARA_MOBILE_PROOF_V2",
-    alg: "Ed25519",
-    requestId: row.requestId,
-    effectHash: row.effectHash,
-    nonce: row.nonce,
-    decision,
-    credentialId: owner.id,
-    verifiedAt: new Date().toISOString(),
-  };
   row.status = decision;
-  row.proof = { ...proofPayload, signature: signProof(proofPayload) };
+  row.proof = { ...issued.proof, signature: issued.signature };
   row.authChallenge = null;
   if (row.controlPlaneStaging) {
     console.log("CP_DRYRUN_PROOF", JSON.stringify(row.proof));
   }
-  console.log("MOBILE_APPROVAL_DECIDED", JSON.stringify({ requestId: row.requestId, status: row.status, verifiedAt: proofPayload.verifiedAt, staging: row.requestId.startsWith("staging-") || row.requestId.startsWith("cpdry-") }));
+  console.log("MOBILE_APPROVAL_DECIDED", JSON.stringify({ requestId: row.requestId, status: row.status, verifiedAt: issued.proof.verifiedAt, userVerified: issued.proof.userVerified, staging: row.requestId.startsWith("staging-") || row.requestId.startsWith("cpdry-") }));
   setBindingCookie(res, issueBindingToken(updatedCredential));
   res.json({ ok: true, status: row.status });
 });
