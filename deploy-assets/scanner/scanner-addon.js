@@ -124,6 +124,64 @@ function cleanGray(gray){
     return sharp.clone();
   }finally{den.delete();bg.delete();norm.delete();contrast.delete();soft.delete();sharp.delete()}
 }
+function trimPrintedContent(srcMat){
+  let gray=null,bw=null,opened=null,contours=null,hierarchy=null;
+  try{
+    gray=new cv.Mat();
+    if(srcMat.channels()===1) srcMat.copyTo(gray);
+    else cv.cvtColor(srcMat,gray,cv.COLOR_RGBA2GRAY,0);
+
+    bw=new cv.Mat();
+    cv.threshold(gray,bw,0,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU);
+
+    const cols=bw.cols,rows=bw.rows;
+    const bx=Math.max(8,Math.round(cols*.022)),by=Math.max(8,Math.round(rows*.012));
+    function clearRect(x,y,w,h){
+      if(w<=0||h<=0)return;
+      const roi=bw.roi(new cv.Rect(x,y,w,h));roi.setTo(new cv.Scalar(0));roi.delete();
+    }
+    clearRect(0,0,cols,by);
+    clearRect(0,rows-by,cols,by);
+    clearRect(0,0,bx,rows);
+    clearRect(cols-bx,0,bx,rows);
+
+    opened=new cv.Mat();
+    const k=cv.getStructuringElement(cv.MORPH_RECT,new cv.Size(2,2));
+    cv.morphologyEx(bw,opened,cv.MORPH_OPEN,k,new cv.Point(-1,-1),1,cv.BORDER_CONSTANT,cv.morphologyDefaultBorderValue());
+    k.delete();
+
+    contours=new cv.MatVector();hierarchy=new cv.Mat();
+    cv.findContours(opened,contours,hierarchy,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
+
+    let x1=cols,y1=rows,x2=0,y2=0,found=0;
+    const minArea=Math.max(10,cols*rows*.000002);
+    for(let i=0;i<contours.size();i++){
+      const c=contours.get(i),area=cv.contourArea(c,false),r=cv.boundingRect(c);
+      if(area>=minArea && r.width>=3 && r.height>=3){
+        x1=Math.min(x1,r.x);y1=Math.min(y1,r.y);x2=Math.max(x2,r.x+r.width);y2=Math.max(y2,r.y+r.height);found++;
+      }
+      c.delete();
+    }
+    if(!found)return srcMat.clone();
+
+    const mx=Math.max(24,Math.round(cols*.025)),my=Math.max(28,Math.round(rows*.018));
+    x1=Math.max(0,x1-mx);y1=Math.max(0,y1-my);x2=Math.min(cols,x2+mx);y2=Math.min(rows,y2+my);
+
+    const cropW=x2-x1,cropH=y2-y1;
+    if(cropW<cols*.42 || cropH<rows*.30)return srcMat.clone();
+
+    const topBlank=y1/rows,bottomBlank=(rows-y2)/rows,leftBlank=x1/cols,rightBlank=(cols-x2)/cols;
+    const worthTrimming=topBlank>.055 || bottomBlank>.045 || leftBlank>.045 || rightBlank>.045;
+    if(!worthTrimming)return srcMat.clone();
+
+    const roi=srcMat.roi(new cv.Rect(x1,y1,cropW,cropH));
+    const out=roi.clone();roi.delete();return out;
+  }catch(e){
+    return srcMat.clone();
+  }finally{
+    if(gray)gray.delete();if(bw)bw.delete();if(opened)opened.delete();if(contours)contours.delete();if(hierarchy)hierarchy.delete();
+  }
+}
 function warpFromPoints(){
   const work=makeWorkCanvas(),pts=orderPoints(S.points),sx=work.width/S.previewW,sy=work.height/S.previewH,p=pts.map(q=>({x:q.x*sx,y:q.y*sy}));
   let outW=Math.round(Math.max(dist(p[0],p[1]),dist(p[3],p[2]))),outH=Math.round(Math.max(dist(p[0],p[3]),dist(p[1],p[2])));
@@ -158,12 +216,13 @@ function warpFromPoints(){
       }
       cleaned.delete();
     }
-    const out=document.createElement("canvas");cv.imshow(out,finalMat);return out;
+    const trimmed=trimPrintedContent(finalMat);
+    const out=document.createElement("canvas");cv.imshow(out,trimmed);trimmed.delete();return out;
   }finally{if(finalMat)finalMat.delete();dst.delete();src.delete();srcTri.delete();dstTri.delete();M.delete()}
 }
 async function acceptScan(){
   try{
-    setStatus("جاري تصحيح المنظور وتنظيف الخلفية والظلال وتحسين الكتابة بدون تكسير النص...");await waitForCV(15000);const canvas=warpFromPoints(),img=new Image();
+    setStatus("جاري قص الفراغات البيضاء وتصحيح المنظور وتنظيف الخلفية وتحسين الكتابة...");await waitForCV(15000);const canvas=warpFromPoints(),img=new Image();
     img.onload=function(){const cb=S.callback;closeScanner();if(cb)cb(img,canvas.toDataURL("image/jpeg",.96))};
     img.onerror=function(){setStatus("تعذر إنشاء النسخة الممسوحة. أعد المحاولة.")};img.src=canvas.toDataURL("image/jpeg",.98);
   }catch(e){setStatus("تعذر تجهيز المسح. راجع الزوايا أو جرّب وضع «رمادي واضح» ثم أعد المحاولة.")}
