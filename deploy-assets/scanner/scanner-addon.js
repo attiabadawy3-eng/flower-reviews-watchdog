@@ -31,7 +31,7 @@ function ensureUI(){
   `;
   document.head.appendChild(style);
   const modal=document.createElement("div");modal.id="flowerScannerModal";
-  modal.innerHTML='<div class="fs-panel"><div class="fs-head"><div class="fs-title">مسح الفاتورة ضوئيًا</div><button type="button" class="fs-close" id="fsClose">إلغاء</button></div><canvas id="flowerScannerCanvas"></canvas><div class="fs-status" id="fsStatus">جاري تجهيز الماسح...</div><div class="fs-controls"><button type="button" class="fs-secondary" id="fsDetect">إعادة اكتشاف الحواف</button><select id="fsMode"><option value="gray" selected>رمادي واضح - مفضل</option><option value="bw">أبيض وأسود سكانر</option><option value="color">ملون محسّن</option><option value="original">ألوان أصلية</option></select><button type="button" class="fs-primary" id="fsAccept">اعتماد المسح</button><button type="button" class="fs-secondary" id="fsOriginal">استخدام الأصل عند الضرورة</button></div></div>';
+  modal.innerHTML='<div class="fs-panel"><div class="fs-head"><div class="fs-title">مسح الفاتورة ضوئيًا</div><button type="button" class="fs-close" id="fsClose">إلغاء</button></div><canvas id="flowerScannerCanvas"></canvas><div class="fs-status" id="fsStatus">جاري تجهيز الماسح...</div><div class="fs-controls"><button type="button" class="fs-secondary" id="fsDetect">إعادة اكتشاف الحواف</button><select id="fsMode"><option value="bw" selected>أبيض وأسود سكانر احترافي - مفضل</option><option value="gray">رمادي واضح</option><option value="color">ملون محسّن</option><option value="original">ألوان أصلية</option></select><button type="button" class="fs-primary" id="fsAccept">اعتماد المسح</button><button type="button" class="fs-secondary" id="fsOriginal">استخدام الأصل عند الضرورة</button></div></div>';
   document.body.appendChild(modal);
   S.modal=modal;S.canvas=qs("flowerScannerCanvas");S.ctx=S.canvas.getContext("2d");S.status=qs("fsStatus");S.mode=qs("fsMode");
   qs("fsClose").addEventListener("click",closeScanner);qs("fsDetect").addEventListener("click",()=>detectEdges(true));qs("fsAccept").addEventListener("click",acceptScan);qs("fsOriginal").addEventListener("click",useOriginal);
@@ -105,35 +105,62 @@ function onPointerDown(e){if(!S.points)return;const p=eventPoint(e),pts=orderPoi
 function onPointerMove(e){if(S.dragging<0||!S.points)return;const p=eventPoint(e);S.points[S.dragging]={x:clamp(p.x,0,S.previewW),y:clamp(p.y,0,S.previewH)};drawPreview();e.preventDefault()}
 function onPointerUp(){S.dragging=-1}
 function makeWorkCanvas(){
-  const maxDim=2600,ratio=Math.min(1,maxDim/Math.max(S.originalImg.naturalWidth,S.originalImg.naturalHeight)),c=document.createElement("canvas");
-  c.width=Math.max(1,Math.round(S.originalImg.naturalWidth*ratio));c.height=Math.max(1,Math.round(S.originalImg.naturalHeight*ratio));c.getContext("2d").drawImage(S.originalImg,0,0,c.width,c.height);return c;
+  const maxDim=3400,srcW=S.originalImg.naturalWidth,srcH=S.originalImg.naturalHeight;
+  const ratio=Math.min(1,maxDim/Math.max(srcW,srcH)),c=document.createElement("canvas");
+  c.width=Math.max(1,Math.round(srcW*ratio));c.height=Math.max(1,Math.round(srcH*ratio));
+  const cx=c.getContext("2d");cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality="high";
+  cx.drawImage(S.originalImg,0,0,c.width,c.height);return c;
 }
 function cleanGray(gray){
-  const bg=new cv.Mat(),norm=new cv.Mat(),eq=new cv.Mat(),small=new cv.Mat(),sharp=new cv.Mat();
+  const den=new cv.Mat(),bg=new cv.Mat(),norm=new cv.Mat(),eq=new cv.Mat(),soft=new cv.Mat(),sharp=new cv.Mat();
   try{
-    cv.GaussianBlur(gray,bg,new cv.Size(0,0),25,25,cv.BORDER_DEFAULT);
-    cv.divide(gray,bg,norm,255,-1);
+    cv.bilateralFilter(gray,den,5,35,35,cv.BORDER_DEFAULT);
+    cv.GaussianBlur(den,bg,new cv.Size(0,0),31,31,cv.BORDER_DEFAULT);
+    cv.divide(den,bg,norm,255,-1);
+    cv.normalize(norm,norm,0,255,cv.NORM_MINMAX);
     cv.equalizeHist(norm,eq);
-    cv.GaussianBlur(eq,small,new cv.Size(0,0),1.2,1.2,cv.BORDER_DEFAULT);
-    cv.addWeighted(eq,1.45,small,-.45,4,sharp);
+    cv.GaussianBlur(eq,soft,new cv.Size(0,0),1.0,1.0,cv.BORDER_DEFAULT);
+    cv.addWeighted(eq,1.65,soft,-.65,6,sharp);
     return sharp.clone();
-  }finally{bg.delete();norm.delete();eq.delete();small.delete();sharp.delete()}
+  }finally{den.delete();bg.delete();norm.delete();eq.delete();soft.delete();sharp.delete()}
 }
 function warpFromPoints(){
   const work=makeWorkCanvas(),pts=orderPoints(S.points),sx=work.width/S.previewW,sy=work.height/S.previewH,p=pts.map(q=>({x:q.x*sx,y:q.y*sy}));
   let outW=Math.round(Math.max(dist(p[0],p[1]),dist(p[3],p[2]))),outH=Math.round(Math.max(dist(p[0],p[3]),dist(p[1],p[2])));
-  const ratio=Math.min(1,2400/Math.max(1,outW),5200/Math.max(1,outH));outW=Math.max(420,Math.round(outW*ratio));outH=Math.max(620,Math.round(outH*ratio));
+  const aspect=outH/Math.max(1,outW);
+  const targetMinW=aspect>1.7?1500:1800;
+  const up=Math.max(1,targetMinW/Math.max(1,outW));
+  const cap=Math.min(1,2800/Math.max(1,outW*up),7000/Math.max(1,outH*up));
+  const scale=up*cap;
+  outW=Math.max(targetMinW,Math.round(outW*scale));outH=Math.max(900,Math.round(outH*scale));
   const src=cv.imread(work),dst=new cv.Mat(),srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[p[0].x,p[0].y,p[1].x,p[1].y,p[2].x,p[2].y,p[3].x,p[3].y]),dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,outW-1,0,outW-1,outH-1,0,outH-1]),M=cv.getPerspectiveTransform(srcTri,dstTri);
   cv.warpPerspective(src,dst,M,new cv.Size(outW,outH),cv.INTER_CUBIC,cv.BORDER_REPLICATE,new cv.Scalar());
   const mode=S.mode.value;let finalMat=null;
   try{
     if(mode==="original"){finalMat=dst.clone()}
     else if(mode==="color"){
-      const blur=new cv.Mat(),enh=new cv.Mat();cv.GaussianBlur(dst,blur,new cv.Size(0,0),2.2,2.2,cv.BORDER_DEFAULT);cv.addWeighted(dst,1.18,blur,-.18,7,enh);finalMat=enh.clone();blur.delete();enh.delete();
+      const rgb=new cv.Mat(),lab=new cv.Mat(),planes=new cv.MatVector(),blur=new cv.Mat(),enh=new cv.Mat();
+      cv.cvtColor(dst,rgb,cv.COLOR_RGBA2RGB,0);
+      cv.cvtColor(rgb,lab,cv.COLOR_RGB2Lab,0);
+      cv.split(lab,planes);
+      const l=planes.get(0),l2=cleanGray(l);planes.set(0,l2);
+      cv.merge(planes,lab);cv.cvtColor(lab,rgb,cv.COLOR_Lab2RGB,0);
+      cv.GaussianBlur(rgb,blur,new cv.Size(0,0),1.2,1.2,cv.BORDER_DEFAULT);cv.addWeighted(rgb,1.28,blur,-.28,5,enh);
+      finalMat=enh.clone();
+      l.delete();l2.delete();planes.delete();rgb.delete();lab.delete();blur.delete();enh.delete();
     }else{
-      const gray=new cv.Mat();cv.cvtColor(dst,gray,cv.COLOR_RGBA2GRAY,0);const cleaned=cleanGray(gray);gray.delete();
-      if(mode==="bw"){const bw=new cv.Mat();const block=cleaned.cols>1400?41:31;cv.adaptiveThreshold(cleaned,bw,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,block,10);finalMat=bw.clone();bw.delete()}
-      else finalMat=cleaned.clone();
+      const gray=new cv.Mat();cv.cvtColor(dst,gray,cv.COLOR_RGBA2GRAY,0);
+      const cleaned=cleanGray(gray);gray.delete();
+      if(mode==="bw"){
+        const bw=new cv.Mat(),opened=new cv.Mat(),kernel=cv.getStructuringElement(cv.MORPH_RECT,new cv.Size(2,2));
+        const block=cleaned.cols>1800?51:(cleaned.cols>1200?41:31);
+        cv.adaptiveThreshold(cleaned,bw,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,block,9);
+        cv.morphologyEx(bw,opened,cv.MORPH_OPEN,kernel,new cv.Point(-1,-1),1,cv.BORDER_CONSTANT,cv.morphologyDefaultBorderValue());
+        cv.bitwise_and(bw,opened,bw);
+        finalMat=bw.clone();kernel.delete();bw.delete();opened.delete();
+      } else {
+        finalMat=cleaned.clone();
+      }
       cleaned.delete();
     }
     const out=document.createElement("canvas");cv.imshow(out,finalMat);return out;
@@ -143,10 +170,10 @@ async function acceptScan(){
   try{
     setStatus("جاري تنظيف الخلفية والظلال وتحسين الكتابة وتصحيح المنظور...");await waitForCV(15000);const canvas=warpFromPoints(),img=new Image();
     img.onload=function(){const cb=S.callback;closeScanner();if(cb)cb(img,canvas.toDataURL("image/jpeg",.96))};
-    img.onerror=function(){setStatus("تعذر إنشاء النسخة الممسوحة. أعد المحاولة.")};img.src=canvas.toDataURL("image/jpeg",.96);
+    img.onerror=function(){setStatus("تعذر إنشاء النسخة الممسوحة. أعد المحاولة.")};img.src=canvas.toDataURL("image/jpeg",.98);
   }catch(e){setStatus("تعذر تجهيز المسح. راجع الزوايا أو جرّب وضع «رمادي واضح» ثم أعد المحاولة.")}
 }
 function useOriginal(){if(!S.originalImg)return;const cb=S.callback,src=S.originalImg.src;closeScanner();if(cb)cb(S.originalImg,src)}
 function closeScanner(){if(S.modal)S.modal.classList.remove("open");S.dragging=-1}
-window.FlowerScanner={process:function(img,dataUrl,callback){ensureUI();S.originalImg=img;S.callback=callback;S.points=null;S.dragging=-1;S.mode.value="gray";drawPreview();S.modal.classList.add("open");setStatus("جاري اكتشاف حواف الفاتورة...");setTimeout(()=>detectEdges(false),80)}};
+window.FlowerScanner={process:function(img,dataUrl,callback){ensureUI();S.originalImg=img;S.callback=callback;S.points=null;S.dragging=-1;S.mode.value="bw";drawPreview();S.modal.classList.add("open");setStatus("جاري اكتشاف حواف الفاتورة...");setTimeout(()=>detectEdges(false),80)}};
 })();
