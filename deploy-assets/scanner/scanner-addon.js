@@ -114,13 +114,13 @@ function makeWorkCanvas(){
 function cleanGray(gray){
   const den=new cv.Mat(),bg=new cv.Mat(),norm=new cv.Mat(),contrast=new cv.Mat(),soft=new cv.Mat(),sharp=new cv.Mat();
   try{
-    cv.medianBlur(gray,den,3);
-    cv.GaussianBlur(den,bg,new cv.Size(0,0),25,25,cv.BORDER_DEFAULT);
+    cv.bilateralFilter(gray,den,5,24,24,cv.BORDER_DEFAULT);
+    cv.GaussianBlur(den,bg,new cv.Size(0,0),23,23,cv.BORDER_DEFAULT);
     cv.divide(den,bg,norm,255,-1);
-    cv.normalize(norm,norm,18,250,cv.NORM_MINMAX);
-    norm.convertTo(contrast,-1,1.08,-4);
-    cv.GaussianBlur(contrast,soft,new cv.Size(0,0),0.9,0.9,cv.BORDER_DEFAULT);
-    cv.addWeighted(contrast,1.28,soft,-.28,0,sharp);
+    cv.normalize(norm,norm,10,250,cv.NORM_MINMAX);
+    norm.convertTo(contrast,-1,1.55,-135);
+    cv.GaussianBlur(contrast,soft,new cv.Size(0,0),0.85,0.85,cv.BORDER_DEFAULT);
+    cv.addWeighted(contrast,1.36,soft,-.36,0,sharp);
     return sharp.clone();
   }finally{den.delete();bg.delete();norm.delete();contrast.delete();soft.delete();sharp.delete()}
 }
@@ -222,7 +222,7 @@ function warpFromPoints(){
 }
 async function acceptScan(){
   try{
-    setStatus("جاري قص الفراغات البيضاء وتصحيح المنظور وتنظيف الخلفية وتحسين الكتابة...");await waitForCV(15000);const canvas=warpFromPoints(),img=new Image();
+    setStatus("جاري قص الفراغات البيضاء وتصحيح المنظور وتقوية النص بدون تكسير التفاصيل...");await waitForCV(15000);const canvas=warpFromPoints(),img=new Image();
     img.onload=function(){const cb=S.callback;closeScanner();if(cb)cb(img,canvas.toDataURL("image/jpeg",.96))};
     img.onerror=function(){setStatus("تعذر إنشاء النسخة الممسوحة. أعد المحاولة.")};img.src=canvas.toDataURL("image/jpeg",.98);
   }catch(e){setStatus("تعذر تجهيز المسح. راجع الزوايا أو جرّب وضع «رمادي واضح» ثم أعد المحاولة.")}
