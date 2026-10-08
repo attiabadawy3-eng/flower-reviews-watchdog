@@ -89,7 +89,7 @@ if "scanner-addon.js" not in s:
     s = s.replace("</body>", addon + "</body>")
 
 # Force browsers to fetch the newest scanner build instead of a cached script.
-s = s.replace('<script src="./scanner-addon.js"></script>', '<script src="./scanner-addon.js?v=trim-20261008-1529"></script>')
+s = s.replace('<script src="./scanner-addon.js"></script>', '<script src="./scanner-addon.js?v=profix-20261008-1536"></script>')
 
 # Upgrade scan/explanation text on already-integrated copies too.
 s = s.replace(
@@ -117,6 +117,25 @@ if needle in s and 'var pdfH=Math.max(842,Math.round(595*(imgH/imgW)));' not in 
     s = s.replace(needle, needle + 'var pdfH=Math.max(842,Math.round(595*(imgH/imgW)));', 1)
 s = s.replace('/MediaBox [0 0 595 842]', '/MediaBox [0 0 595 "+pdfH+"]')
 s = s.replace('var content="q\n595 0 0 842 0 0 cm\n/Im0 Do\nQ\n"', 'var content="q\n595 0 0 "+pdfH+" 0 0 cm\n/Im0 Do\nQ\n"')
+
+
+# Critical PDF layout fix: the MediaBox may be dynamic, but the image transform
+# must use the same dynamic height. Otherwise the image occupies only the lower
+# 842 points and the remaining page appears blank above it.
+s = s.replace(
+    'var content="q\\n595 0 0 842 0 0 cm\\n/Im0 Do\\nQ\\n",contentBytes=ascii(content);',
+    'var content="q\\n595 0 0 "+pdfH+" 0 0 cm\\n/Im0 Do\\nQ\\n",contentBytes=ascii(content);'
+)
+s = s.replace(
+    'var content="q\\n595 0 0 842 0 0 cm\\n/Im0 Do\\nQ\\n", contentBytes=ascii(content);',
+    'var content="q\\n595 0 0 "+pdfH+" 0 0 cm\\n/Im0 Do\\nQ\\n", contentBytes=ascii(content);'
+)
+# Also handle an already partially-patched bundle idempotently.
+s = re.sub(
+    r'var content="q\\\\n595 0 0 842 0 0 cm\\\\n/Im0 Do\\\\nQ\\\\n"',
+    'var content="q\\\\n595 0 0 "+pdfH+" 0 0 cm\\\\n/Im0 Do\\\\nQ\\\\n"',
+    s
+)
 
 # Print the generated image at natural aspect ratio, not forced to 210x297 mm.
 s = s.replace('html,body{width:210mm;height:297mm;background:#fff}', 'html,body{background:#fff}')
