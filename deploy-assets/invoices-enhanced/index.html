@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7a314d">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>فلور | فواتير الموظفين</title>
+<style>
+:root{--m:#7a314d;--d:#5b2038;--g:#b79862;--bg:#f6f0f2;--t:#261920;--mut:#76666e;--ln:#e5d8de;--ok:#1f6b46;--wr:#93620e;--er:#9b2d30}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--t);font-family:Tahoma,"Segoe UI",Arial,sans-serif}body{min-height:100vh}button,input,select,textarea{font:inherit}.app{max-width:760px;margin:auto;padding:12px 10px 42px}
+.hero{background:linear-gradient(135deg,var(--d),var(--m));color:#fff;border-radius:22px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 28px rgba(91,32,56,.14)}.logo{width:72px;height:72px;border-radius:50%;background:#fff;border:2px solid var(--g);padding:4px;object-fit:contain;flex:0 0 auto}.hero h1{font-size:21px;margin:0 0 5px}.hero p{font-size:12px;margin:0;opacity:.82}
+.card{background:#fff;border:1px solid rgba(122,49,77,.09);border-radius:18px;padding:15px;margin-top:12px;box-shadow:0 8px 24px rgba(91,32,56,.07)}.title{font-size:15px;font-weight:800;color:var(--d);margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.full{grid-column:1/-1}label{display:block;font-size:12px;font-weight:800;margin:0 0 6px;color:#4d3943}.req:after{content:" *";color:var(--er)}input,select,textarea{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;background:#fff;color:var(--t);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(183,152,98,.14)}textarea{min-height:78px;resize:vertical}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.seg input{display:none}.seg label{margin:0;border:1px solid var(--ln);border-radius:11px;padding:11px 6px;text-align:center;background:#fff}.seg input:checked+label{background:#f8eef2;color:var(--d);border-color:var(--m)}
+.pick-grid,.result-actions,.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.native-file{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important}.pick,.btn{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:13px;padding:11px;text-align:center;font-weight:800;cursor:pointer}.pick-camera,.primary{background:linear-gradient(135deg,var(--d),var(--m));color:#fff;border:0}.pick-gallery,.secondary{background:#f2e8ec;color:var(--d);border:1px solid #d8c1ca}.outline{background:#fff;color:var(--m);border:1px solid #d5bdc7}.gold{background:#f7f0e3;color:#6e552e;border:1px solid #dfc99f}
+.meta{font-size:12px;color:var(--mut);margin-top:9px;line-height:1.7;overflow-wrap:anywhere;word-break:break-word}.preview{display:none;width:100%;max-height:620px;object-fit:contain;margin-top:10px;border:1px solid var(--ln);border-radius:13px;background:#f8f8f8}.notice{display:none;margin-top:10px;border-radius:11px;padding:10px 11px;font-size:12px;font-weight:700;line-height:1.65}.notice.show{display:block}.notice.ok{background:#eef7f2;color:var(--ok);border:1px solid #cae5d6}.notice.warn{background:#fff8e9;color:var(--wr);border:1px solid #efdcb5}.notice.err{background:#fff0f0;color:var(--er);border:1px solid #efcccc}
+.scan-tools{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.badge{display:inline-block;padding:6px 9px;border-radius:999px;background:#f7f0e3;color:#6e552e;border:1px solid #dfc99f;font-size:11px;font-weight:800;margin-top:8px}.result{display:none}.result.show{display:block}.result-img{width:100%;display:block;border:1px solid var(--ln);border-radius:14px;background:#fff}.filename-box{margin-top:10px;padding:10px 12px;border:1px solid var(--ln);border-radius:11px;background:#fbf8f9;font-size:12px;font-weight:800;color:var(--d);overflow-wrap:anywhere;word-break:break-word;white-space:normal;line-height:1.75}.footer{text-align:center;color:#8b7982;font-size:11px;margin-top:16px;line-height:1.8}
+@media(max-width:560px){.app{padding:9px 9px 28px}.grid,.pick-grid,.result-actions,.actions,.scan-tools{grid-template-columns:1fr}.full{grid-column:auto}}
+@media print{@page{margin:0}body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}#printArea{position:absolute!important;inset:0!important;width:100%!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:#fff!important}#resultImage{width:100%!important;height:auto!important;border:0!important;border-radius:0!important;display:block!important}#printArea .title,#printArea .filename-box,#printArea .result-actions,#printArea .actions{display:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="hero"><img class="logo" src="./flower-logo.webp" alt="شعار فلور"><div><h1>تسجيل فواتير فلور</h1><p>مسح مستند احترافي للفواتير - iPhone وAndroid والكمبيوتر</p></div></header>
+<section class="card"><h2 class="title">بيانات الفاتورة</h2><div class="grid">
+<div><label class="req" for="branch">الفرع</label><select id="branch"><option value="">اختر الفرع</option><option value="F1|فلور 1 - العنود">فلور 1 - العنود</option><option value="F2|فلور 2 - السلام">فلور 2 - السلام</option><option value="F3|فلور 3 - القيصومة">فلور 3 - القيصومة</option><option value="F4|فلور 4 - المجمعة">فلور 4 - المجمعة</option></select></div>
+<div><label class="req" for="employee">اسم الموظف / المسؤول</label><input id="employee" maxlength="60" placeholder="اسم الموظف / المسؤول"></div>
+<div class="full"><label class="req" for="supplier">اسم المورد</label><input id="supplier" maxlength="100" placeholder="اسم المورد"></div>
+<div class="full"><label for="customName">اسم الفاتورة / اسم الملف</label><input id="customName" maxlength="100" placeholder="اختياري - اكتب الاسم كما تريد"></div>
+<div class="full"><div class="meta" id="namePreview"></div></div>
+<div><label class="req" for="amount">إجمالي الفاتورة (ريال)</label><input id="amount" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0.00"></div>
+<div><label class="req" for="invoiceDate">تاريخ الفاتورة</label><input id="invoiceDate" type="date"></div>
+<div class="full"><label class="req">حالة السداد</label><div class="seg"><div><input id="paid" name="status" type="radio" value="مسددة"><label for="paid">مسددة</label></div><div><input id="unpaid" name="status" type="radio" value="غير مسددة" checked><label for="unpaid">غير مسددة</label></div><div><input id="credit" name="status" type="radio" value="آجل"><label for="credit">آجل</label></div></div></div>
+<div><label class="req" for="payment">طريقة السداد</label><select id="payment"><option value="">اختر</option><option>نقدي</option><option>شبكة</option><option>تحويل</option><option>عهدة</option><option>لم تسدد</option><option>أخرى</option></select></div>
+<div><label class="req" for="category">نوع المصروف</label><select id="category"><option value="">اختر</option><option>مستلزمات شقق</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>ضيافة</option><option>أدوات مكتبية</option><option>كهرباء</option><option>مشتريات تشغيلية</option><option>أخرى</option></select></div>
+<div class="full"><label for="notes">ملاحظة</label><textarea id="notes" maxlength="220" placeholder="اختياري"></textarea></div>
+</div></section>
+
+<section class="card"><h2 class="title">مسح الفاتورة ضوئيًا</h2>
+<div class="pick-grid"><label class="pick pick-camera" for="cameraInput">مسح الفاتورة بالكاميرا</label><input class="native-file" id="cameraInput" type="file" accept="image/*" capture="environment"><label class="pick pick-gallery" for="galleryInput">اختيار فاتورة من الصور</label><input class="native-file" id="galleryInput" type="file" accept="image/*"></div>
+<div class="meta" id="fileMeta">لم يتم اختيار فاتورة.</div>
+<img class="preview" id="photoPreview" alt="معاينة الفاتورة">
+<div class="notice" id="qualityNotice"></div>
+<div class="scan-tools"><div><label for="scanMode">نمط المعالجة</label><select id="scanMode"><option value="gray">رمادي واضح - مفضل</option><option value="bw">أبيض وأسود سكانر</option><option value="color">ملون محسّن</option><option value="original">ألوان أصلية محسّنة</option></select></div><div><span class="badge" id="scanBadge">المعالجة الذكية مفعّلة</span></div></div>
+<div class="actions" style="margin-top:10px"><button class="btn outline" id="reprocessBtn" type="button">إعادة معالجة الصورة</button><button class="btn secondary" id="useOriginalBtn" type="button">استخدام الأصل عند الضرورة</button></div>
+<div class="actions" style="margin-top:10px"><button class="btn primary" id="buildBtn" type="button">تجهيز الفاتورة</button><button class="btn secondary" id="resetBtn" type="button">فاتورة جديدة</button></div>
+<div class="notice" id="message"></div>
+</section>
+
+<section class="card result" id="printArea"><h2 class="title">النسخة الجاهزة</h2><img class="result-img" id="resultImage" alt="الفاتورة المجهزة"><div class="filename-box" id="generatedName"></div><div class="result-actions"><button class="btn primary" id="shareJpgBtn" type="button">مشاركة JPG إلى واتساب</button><button class="btn primary" id="sharePdfBtn" type="button">مشاركة PDF إلى واتساب</button><button class="btn gold" id="saveJpgBtn" type="button">حفظ JPG</button><button class="btn gold" id="savePdfBtn" type="button">حفظ PDF</button><button class="btn outline" id="printBtn" type="button">طباعة</button><button class="btn outline" id="copyBtn" type="button">نسخ البيانات</button></div></section>
+<div class="footer">FLOWER HOTEL<br>تتم معالجة صورة الفاتورة داخل جهاز الموظف ولا يتم رفعها إلى الخادم.</div>
+</main>
+<script>var Module={onRuntimeInitialized:function(){window.__flowerCVReady=true;}};</script>
+<script async src="./opencv.js"></script>
+<script src="./app.js"></script>
+</body></html>
