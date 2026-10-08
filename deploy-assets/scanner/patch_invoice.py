@@ -88,6 +88,9 @@ if "scanner-addon.js" not in s:
     addon = '<script>var Module={onRuntimeInitialized:function(){window.__flowerCVReady=true;}};</script>\n<script async src="./opencv.js"></script>\n<script src="./scanner-addon.js"></script>\n'
     s = s.replace("</body>", addon + "</body>")
 
+# Force browsers to fetch the newest scanner build instead of a cached script.
+s = s.replace('<script src="./scanner-addon.js"></script>', '<script src="./scanner-addon.js?v=pro-20261008-1544"></script>')
+
 # Upgrade scan/explanation text on already-integrated copies too.
 s = s.replace(
     'بعد التصوير أو الاختيار سيتم اكتشاف حواف الفاتورة تلقائيًا وتصحيح الميل والمنظور. ويمكن تعديل الزوايا الأربع يدويًا قبل الاعتماد.',
