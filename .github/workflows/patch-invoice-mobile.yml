@@ -28,6 +28,14 @@ jobs:
           curl -fsSL https://docs.opencv.org/4.8.0/opencv.js -o /tmp/flower-invoices/opencv.js
           node --check /tmp/flower-invoices/scanner-addon.js
           python deploy-assets/scanner/patch_invoice.py /tmp/flower-invoices/index.html deploy-assets/flower-invoices-logo.webp
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/flower-invoices/index.html').read_text(encoding='utf-8')
+          assert '/MediaBox [0 0 595 "+pdfH+"]' in s, 'dynamic PDF MediaBox missing'
+          assert '595 0 0 "+pdfH+" 0 0 cm' in s, 'dynamic PDF image transform missing'
+          assert '595 0 0 842 0 0 cm' not in s, 'stale 842 PDF transform still present'
+          print('PDF dynamic transform verified')
+          PY
           test -s /tmp/flower-invoices/index.html
           test -s /tmp/flower-invoices/scanner-addon.js
           test -s /tmp/flower-invoices/opencv.js
