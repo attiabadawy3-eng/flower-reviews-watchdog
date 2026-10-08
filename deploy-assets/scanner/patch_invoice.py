@@ -89,7 +89,7 @@ if "scanner-addon.js" not in s:
     s = s.replace("</body>", addon + "</body>")
 
 # Force browsers to fetch the newest scanner build instead of a cached script.
-s = s.replace('<script src="./scanner-addon.js"></script>', '<script src="./scanner-addon.js?v=pro-20261008-1544"></script>')
+s = s.replace('<script src="./scanner-addon.js"></script>', '<script src="./scanner-addon.js?v=trim-20261008-1529"></script>')
 
 # Upgrade scan/explanation text on already-integrated copies too.
 s = s.replace(
