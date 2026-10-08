@@ -42,12 +42,13 @@
 <img class="preview" id="photoPreview" alt="معاينة الفاتورة">
 <div class="notice" id="qualityNotice"></div>
 <div class="scan-tools"><div><label for="scanMode">نمط المعالجة</label><select id="scanMode"><option value="gray">رمادي واضح - مفضل</option><option value="bw">أبيض وأسود سكانر</option><option value="color">ملون محسّن</option><option value="original">ألوان أصلية محسّنة</option></select></div><div><span class="badge" id="scanBadge">المعالجة الذكية مفعّلة</span></div></div>
-<div class="actions" style="margin-top:10px"><button class="btn outline" id="reprocessBtn" type="button">إعادة معالجة الصورة</button><button class="btn secondary" id="useOriginalBtn" type="button">استخدام الأصل عند الضرورة</button></div>
+
 <div class="actions" style="margin-top:10px"><button class="btn primary" id="buildBtn" type="button">تجهيز الفاتورة</button><button class="btn secondary" id="resetBtn" type="button">فاتورة جديدة</button></div>
 <div class="notice" id="message"></div>
 </section>
 
-<section class="card result" id="printArea"><h2 class="title">النسخة الجاهزة</h2><img class="result-img" id="resultImage" alt="الفاتورة المجهزة"><div class="filename-box" id="generatedName"></div><div class="result-actions"><button class="btn primary" id="shareJpgBtn" type="button">مشاركة JPG إلى واتساب</button><button class="btn primary" id="sharePdfBtn" type="button">مشاركة PDF إلى واتساب</button><button class="btn gold" id="saveJpgBtn" type="button">حفظ JPG</button><button class="btn gold" id="savePdfBtn" type="button">حفظ PDF</button><button class="btn outline" id="printBtn" type="button">طباعة</button><button class="btn outline" id="copyBtn" type="button">نسخ البيانات</button></div></section>
+<section class="card result" id="printArea"><h2 class="title">النسخة الجاهزة</h2><img class="result-img" id="resultImage" alt="الفاتورة المجهزة"><div class="filename-box" id="generatedName"></div><div class="result-actions"><button class="btn primary" id="shareJpgBtn" type="button">مشاركة JPG إلى واتساب</button><button class="btn primary" id="sharePdfBtn" type="button">مشاركة PDF إلى واتساب</button><button class="btn gold" id="saveJpgBtn" type="button">حفظ JPG</button><button class="btn gold" id="savePdfBtn" type="button">حفظ PDF</button><button class="btn outline" id="printBtn" type="button">طباعة</button><button class="btn outline" id="copyBtn" type="button">نسخ البيانات</button></div><div class="actions" style="margin-top:10px"><button class="btn secondary" id="newBtn" type="button">تسجيل فاتورة أخرى</button><button class="btn outline" id="scrollTopBtn" type="button">العودة للبيانات</button></div></section>
+<section class="card"><h2 class="title">آخر الفواتير على هذا الجهاز</h2><div id="historyList"></div></section>
 <div class="footer">FLOWER HOTEL<br>تتم معالجة صورة الفاتورة داخل جهاز الموظف ولا يتم رفعها إلى الخادم.</div>
 </main>
 <script>var Module={onRuntimeInitialized:function(){window.__flowerCVReady=true;}};</script>
