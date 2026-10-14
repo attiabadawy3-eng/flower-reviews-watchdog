@@ -2,7 +2,9 @@
 
 **Status:** Staged code and tests, NOT connected to the live Render service.
 
-The existing production service "flower-google-reviews-auto-reply" is deployed from code in the Render environment variable APP_CODE_GZ_B64, rather than this GitHub repository. The deployed app source and its review-generation/publishing flow must be recovered and versioned before this quality gate can be integrated. Never blindly replace the production environment variable.
+The live Render service builds app.py from APP_CODE_GZ_B64, not this repo. An older **offline DEV snapshot** of the entire app was found on the authorized Sara PC under C:\\Users\\admin\\AppData\\Local\\SaraBridge\\work\\core2-rc-live\\snapshots\\flower_reviews_app_v52.py (153,156 bytes, 2,415 lines), with composer and regression test artifacts in sibling tools/ and results/. It implements 5.2 Reply Intelligence and also contains Google publishing calls: do NOT deploy as is. Live Render logs confirm /public/review-analytics/... HTTP 200, but this route is absent from the older snapshot's 29-route inventory. The snapshot is therefore **not verified identical to live 5.1**. Replacing APP_CODE_GZ_B64 blindly could remove live features. A permitted read-only export of the CURRENT Render app version is required for an exact diff before production integration.
+
+**Real Windows DEV smoke test (2026-10-14):** 9/9 unittest methods passed on Sara PC; 16 simulated Saudi reply examples plus anti-duplication and unsupported-claim cases. No production mutation or Google write.
 
 ## Integration when production source is available
 
