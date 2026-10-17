@@ -447,18 +447,18 @@ def install_editorial_layer(soup: BeautifulSoup, url_path: str) -> None:
             classes.append("v15-editorial")
         soup.body["class"] = classes
     if soup.head:
-        bootstrap = soup.new_tag("script")
-        bootstrap.string = '(function(){if(new URLSearchParams(location.search).get("design")==="classic"){document.documentElement.dataset.flowerDesign="classic"}})();'
-        soup.head.insert(0, bootstrap)
-        tag = soup.new_tag("link", rel="stylesheet", href="/assets/css/flower-editorial-v15.css")
-        soup.head.append(tag)
-        tag = soup.new_tag("link", rel="stylesheet", href="/assets/css/flower-editorial-v16.css")
-        soup.head.append(tag)
+        bootstrap_source = '(function(){if(new URLSearchParams(location.search).get("design")==="classic"){document.documentElement.dataset.flowerDesign="classic"}})();'
+        if not any(bootstrap_source == (x.string or "") for x in soup.head.find_all("script")):
+            bootstrap = soup.new_tag("script")
+            bootstrap.string = bootstrap_source
+            soup.head.insert(0, bootstrap)
+        for href in ("/assets/css/flower-editorial-v15.css", "/assets/css/flower-editorial-v16.css"):
+            if not soup.head.find("link", href=href):
+                soup.head.append(soup.new_tag("link", rel="stylesheet", href=href))
     if soup.body:
-        tag = soup.new_tag("script", src="/assets/js/flower-editorial-v15.js", defer=True)
-        soup.body.append(tag)
+        if not soup.body.find("script", src="/assets/js/flower-editorial-v15.js"):
+            soup.body.append(soup.new_tag("script", src="/assets/js/flower-editorial-v15.js", defer=True))
         install_hero(soup, url_path, "en" if url_path.startswith("/en/") else "ar")
-
 
 def patch_page(path: pathlib.Path, url_path: str) -> None:
     html = path.read_text(encoding="utf-8")
