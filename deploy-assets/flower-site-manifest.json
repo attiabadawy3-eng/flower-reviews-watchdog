@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
-  "builtAt": "2026-10-17T13:13:16.994774+00:00",
-  "fileCount": 51,
-  "zipBytes": 2617701,
+  "builtAt": "2026-10-17T13:19:50.389241+00:00",
+  "fileCount": 54,
+  "zipBytes": 2629503,
   "changes": [
     "automatic Google review metrics feed",
     "verified fallback Google counts for all four branches",
