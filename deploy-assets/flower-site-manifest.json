@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "source": "https://flower-serviced-apartments-sa.onrender.com",
+  "builtAt": "2026-10-17T12:09:40.700893+00:00",
+  "fileCount": 51,
+  "zipBytes": 2652299,
+  "changes": [
+    "automatic Google review metrics feed",
+    "verified fallback Google counts for all four branches",
+    "Flower 4 unit amenity de-generalization",
+    "ThreeUI-inspired native CSS micro-interactions without React/WebGL",
+    "sitemap lastmod refresh for home and Flower 4"
+  ],
+  "tests": {
+    "f4_review_fallback_142": true,
+    "home_review_fallbacks": true,
+    "dynamic_feed_hook": true,
+    "f4_no_room_appliance_generalization": true,
+    "canonical_kept": true,
+    "booking_link_kept": true,
+    "whatsapp_kept": true,
+    "motion_reduced_supported": true
+  }
+}
