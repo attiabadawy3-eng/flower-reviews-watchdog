@@ -185,6 +185,23 @@ def format_rating(value: float) -> str:
     return f"{value:.1f}"
 
 
+def patch_branch_cards(soup: BeautifulSoup, lang: str) -> None:
+    for card in soup.select(".v7-branch-card"):
+        media = card.select_one(".v7-branch-media[href]")
+        if not media:
+            continue
+        href = urllib.parse.urlsplit(media.get("href") or "").path
+        normalized = href[3:] if href.startswith("/en/") else href
+        branch_id = PATH_TO_BRANCH.get(normalized)
+        if not branch_id:
+            continue
+        span = media.find("span")
+        if span:
+            info = BRANCHES[branch_id]
+            span["data-google-card"] = branch_id
+            span.string = f"★ {format_rating(info['rating'])} · {info['count']} Google"
+
+
 def patch_branch_page(soup: BeautifulSoup, branch_id: str, lang: str) -> None:
     info = BRANCHES[branch_id]
     rating = format_rating(info["rating"])
@@ -303,21 +320,30 @@ def chip(soup: BeautifulSoup, text: str):
 
 
 def patch_flower4_units(soup: BeautifulSoup, lang: str) -> None:
-    if lang == "en":
-        return
     stay = soup.find(id="stay")
     if not stay:
         return
+
+    if lang == "en":
+        head_text = "Choose the right unit type. Extra in-unit amenities vary by unit type and the specific available unit; the branch confirms them when you enquire."
+        expected = [
+            ("Room + Private Bathroom", ["Private bathroom"], "A private room with its own bathroom, suited to a practical and comfortable stay."),
+            ("One Bedroom + Living Room", ["One bedroom", "Separate living room"], "One bedroom with a separate living room for extra space. Additional amenities are confirmed for the available unit."),
+            ("Two Bedrooms + Living Room", ["Two bedrooms", "Separate living room"], "Two bedrooms with a separate living room for a more spacious stay. Additional amenities are confirmed for the available unit."),
+        ]
+    else:
+        head_text = "اختر نوع الوحدة المناسب. التجهيزات الإضافية داخل الوحدة تختلف حسب النوع والوحدة المتاحة ويؤكدها الفرع عند الاستفسار."
+        expected = [
+            ("غرفة وحمام", ["حمام خاص"], "غرفة مستقلة مع حمام خاص، خيار عملي لإقامة مريحة."),
+            ("غرفة وصالة", ["غرفة نوم", "صالة مستقلة"], "غرفة نوم مع صالة مستقلة لمساحة معيشة إضافية. التجهيزات الإضافية تُؤكد حسب الوحدة المتاحة."),
+            ("غرفتان وصالة", ["غرفتا نوم", "صالة مستقلة"], "غرفتا نوم مع صالة مستقلة لإقامة أوسع. التجهيزات الإضافية تُؤكد حسب الوحدة المتاحة."),
+        ]
+
     head_p = stay.select_one(".v7-section-head p")
     if head_p:
-        head_p.string = "اختر نوع الوحدة المناسب. التجهيزات الإضافية داخل الوحدة تختلف حسب النوع والوحدة المتاحة ويؤكدها الفرع عند الاستفسار."
+        head_p.string = head_text
 
     cards = stay.select("article.v7-unit")
-    expected = [
-        ("غرفة وحمام", ["حمام خاص"], "غرفة مستقلة مع حمام خاص، خيار عملي لإقامة مريحة."),
-        ("غرفة وصالة", ["غرفة نوم", "صالة مستقلة"], "غرفة نوم مع صالة مستقلة لمساحة معيشة إضافية. التجهيزات الإضافية تُؤكد حسب الوحدة المتاحة."),
-        ("غرفتان وصالة", ["غرفتا نوم", "صالة مستقلة"], "غرفتا نوم مع صالة مستقلة لإقامة أوسع. التجهيزات الإضافية تُؤكد حسب الوحدة المتاحة."),
-    ]
     for card, (name, features, desc) in zip(cards, expected):
         h3 = card.find("h3")
         if h3:
@@ -333,20 +359,19 @@ def patch_flower4_units(soup: BeautifulSoup, lang: str) -> None:
             if direct_ps:
                 direct_ps[-1].string = desc
         enquiry = card.select_one(".v7-unit-enquire")
-        if enquiry and name == "غرفة وحمام":
-            enquiry["data-unit-value"] = "غرفة وحمام"
+        if enquiry:
+            enquiry["data-unit-value"] = name
 
-    # Booking selector: accurate visible label and WhatsApp value.
     select = soup.find(id="book-unit")
     if select:
         first = select.find("option")
         if first:
-            first["value"] = "غرفة وحمام"
-            first.string = "غرفة وحمام"
+            first["value"] = expected[0][0]
+            first.string = expected[0][0]
 
-    # Dialogs: remove appliance assumptions.
     dialogs = soup.select("dialog")
-    unit_dialogs = [d for d in dialogs if d.find(["h2", "h3"]) and "فلور" in d.get_text(" ", strip=True)]
+    marker = "FLOWER" if lang == "en" else "فلور"
+    unit_dialogs = [d for d in dialogs if d.find(["h2", "h3"]) and marker in d.get_text(" ", strip=True)]
     for idx, dialog in enumerate(unit_dialogs[:3]):
         name, features, desc = expected[idx]
         title = dialog.find("h2")
@@ -357,17 +382,38 @@ def patch_flower4_units(soup: BeautifulSoup, lang: str) -> None:
             chips.clear()
             for feature in features:
                 chips.append(chip(soup, feature))
-        h4 = next((x for x in dialog.find_all("h4") if "مزايا" in x.get_text(strip=True)), None)
+        h4 = next((x for x in dialog.find_all("h4") if ("Unit amenities" in x.get_text(strip=True) if lang == "en" else "مزايا" in x.get_text(strip=True))), None)
         if h4:
-            p = h4.find_next("p")
+            amenity_p = h4.find_next("p")
+            if amenity_p:
+                amenity_p.string = ", ".join(features) if lang == "en" else "، ".join(features)
+            desc_p = h4.find_previous("p")
+            if desc_p:
+                desc_p.string = desc
+
+    for details in soup.find_all("details"):
+        summary = details.find("summary")
+        if not summary:
+            continue
+        q = summary.get_text(" ", strip=True).lower()
+        if (lang == "en" and "unit types" in q) or (lang != "en" and "أنواع الوحدات" in q):
+            p = details.find("p")
             if p:
-                p.string = "، ".join(features)
-        ps = [p for p in dialog.find_all("p")]
-        for p in ps:
-            txt = p.get_text(" ", strip=True)
-            if "خيار عملي" in txt or "غرفة نوم مع صالة" in txt or "غرفتا نوم مع صالة" in txt:
-                p.string = desc
-                break
+                p.string = ", ".join(x[0] for x in expected) if lang == "en" else "، ".join(x[0] for x in expected)
+            break
+
+    # Update meta copy so the first unit type is not described ambiguously.
+    if soup.head:
+        if lang == "en":
+            meta_text = "FLOWER 4 offers serviced apartments in Harmah, Al Majmaah, with a room + private bathroom, one-bedroom + living room and two-bedroom + living room options, 24-hour reception, free Wi-Fi and parking."
+        else:
+            meta_text = "فلور 4 في حرمة بالمجمعة. شقق مخدومة ومفروشة بخيارات غرفة وحمام، غرفة وصالة، وغرفتين وصالة، مع استقبال 24 ساعة وواي فاي مجاني ومواقف سيارات."
+        meta = soup.head.find("meta", attrs={"name": "description"})
+        if meta:
+            meta["content"] = meta_text
+        og = soup.head.find("meta", attrs={"property": "og:description"})
+        if og:
+            og["content"] = meta_text
 
     # LodgingBusiness schema: keep property/service amenities only; do not imply unit appliances.
     for node in soup.find_all("script", attrs={"type": "application/ld+json"}):
@@ -377,6 +423,10 @@ def patch_flower4_units(soup: BeautifulSoup, lang: str) -> None:
             continue
         if data.get("@type") != "LodgingBusiness":
             continue
+        if lang == "en":
+            data["description"] = "FLOWER 4 serviced apartments in Harmah, Al Majmaah, with room + private bathroom, one-bedroom + living room and two-bedroom + living room options."
+        else:
+            data["description"] = "فلور 4 في حرمة بالمجمعة بخيارات غرفة وحمام، غرفة وصالة، وغرفتين وصالة."
         blocked = {"مطبخ", "غسالة", "ثلاجة", "ميكروويف", "Kitchen", "Washing machine", "Refrigerator", "Microwave"}
         feats = data.get("amenityFeature")
         if isinstance(feats, list):
@@ -389,6 +439,7 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
     soup = BeautifulSoup(html, "html.parser")
     lang = "en" if (soup.html and str(soup.html.get("lang", "")).lower().startswith("en")) else "ar"
     ensure_asset_tags(soup)
+    patch_branch_cards(soup, lang)
 
     branch_id = PATH_TO_BRANCH.get(url_path)
     if branch_id:
@@ -528,13 +579,17 @@ def update_sitemap() -> None:
 def tests() -> dict:
     result = {}
     f4 = (ROOT / "al-majmaah-harmah/index.html").read_text(encoding="utf-8")
+    f4_en = (ROOT / "en/al-majmaah-harmah/index.html").read_text(encoding="utf-8")
     home = (ROOT / "index.html").read_text(encoding="utf-8")
     js = (ROOT / "assets/js/google-reviews-live.js").read_text(encoding="utf-8")
 
     result["f4_review_fallback_142"] = "142" in f4 and 'data-google-review-summary="flower-4"' in f4
     result["home_review_fallbacks"] = all(str(BRANCHES[f"flower-{i}"]["count"]) in home for i in range(1,5))
+    result["all_branch_cards_current"] = all(f"· {BRANCHES[f'flower-{i}']['count']} Google" in home for i in range(1,5)) and all(f"· {BRANCHES[f'flower-{i}']['count']} Google" in f4 for i in range(1,4))
     result["dynamic_feed_hook"] = FEED_URL in js and "data-google-rating" in js
     result["f4_no_room_appliance_generalization"] = all(x not in BeautifulSoup(f4, "html.parser").select_one("#stay").get_text(" ", strip=True) for x in ["غسالة", "ميكروويف"])
+    result["f4_en_no_room_appliance_generalization"] = all(x not in BeautifulSoup(f4_en, "html.parser").select_one("#stay").get_text(" ", strip=True) for x in ["Washing machine", "Microwave"])
+    result["f4_unit_label_consistent"] = "غرفة وحمام" in f4 and "Room + Private Bathroom" in f4_en
     result["canonical_kept"] = 'rel="canonical"' in f4 and "/al-majmaah-harmah/" in f4
     result["booking_link_kept"] = "booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html" in f4
     result["whatsapp_kept"] = "+966566374274" in f4 or "966566374274" in f4
