@@ -1,0 +1,73 @@
+name: Build Flower Editorial Staging
+
+on:
+  push:
+    paths:
+      - "site-build/**"
+      - ".github/workflows/build-flower-editorial-staging.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flower-editorial-staging
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FLOWER_BUILD_VARIANT: editorial
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install build dependency
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Mirror verified live website and assemble isolated editorial preview
+        run: python site-build/build_flower_site.py
+      - name: Assert all pages and assets before staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-site-editorial-staging.zip >/dev/null
+          python3 - <<'PY'
+          import json, pathlib, zipfile
+          m=json.loads(pathlib.Path("deploy-assets/flower-editorial-staging-manifest.json").read_text(encoding="utf-8"))
+          assert all(m["tests"].values()), m["tests"]
+          with zipfile.ZipFile("deploy-assets/flower-site-editorial-staging.zip") as z:
+              names=set(z.namelist())
+              required={
+                  "index.html","en/index.html",
+                  "al-majmaah-harmah/index.html","en/al-majmaah-harmah/index.html",
+                  "assets/css/flower-editorial-v15.css",
+                  "assets/js/flower-editorial-v15.js",
+                  "assets/js/google-reviews-live.js",
+                  "sitemap.xml","robots.txt",
+              }
+              assert not(required-names), required-names
+          print("STAGING PASS:", m["tests"])
+          PY
+      - name: Commit isolated staging bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "flower-editorial-builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add deploy-assets/flower-site-editorial-staging.zip deploy-assets/flower-editorial-staging-manifest.json
+          if git diff --cached --quiet; then
+            echo "No staging changes."
+            exit 0
+          fi
+          git commit -m "build: FLOWER editorial staging candidate"
+          for i in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+            sleep 2
+          done
+          exit 1
