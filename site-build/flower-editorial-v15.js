@@ -19,7 +19,9 @@
       if (value === mode) a.setAttribute("aria-current", "page");
       ui.append(a);
     }
-    document.body.append(ui);
+    const header = document.querySelector(".v7-header");
+    if (header) header.insertAdjacentElement("afterend", ui);
+    else document.body.insertAdjacentElement("afterbegin", ui);
   };
   document.readyState === "loading"
     ? document.addEventListener("DOMContentLoaded", ready, {once:true})
