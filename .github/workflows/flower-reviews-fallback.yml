@@ -54,6 +54,7 @@ jobs:
 
 
       - name: Publish website review metrics cache
+        if: always()
         shell: bash
         run: |
           set -u
