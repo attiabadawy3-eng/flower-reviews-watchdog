@@ -57,12 +57,12 @@ jobs:
                       await page.wait_for_timeout(1800)
                       data=await page.evaluate("""() => {
                           const r=s=>{const el=document.querySelector(s);if(!el)return null;const x=el.getBoundingClientRect();const st=getComputedStyle(el);return {x:Math.round(x.x),y:Math.round(x.y),w:Math.round(x.width),h:Math.round(x.height),position:st.position,display:st.display,visibility:st.visibility,opacity:st.opacity,gridColumns:st.gridTemplateColumns}};
-                          const img=document.querySelector('.v10-photo-main img');
+                          const img=document.querySelector('.flower-v16-property-hero .flower-v16-hero-bg');
                           return {viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,
-                           hero:r('.v10-hero-card'),photo:r('.v10-photo-panel'),image:r('.v10-photo-main img'),
+                           hero:r('.flower-v16-property-hero'),photo:r('.flower-v16-property-hero .flower-v16-hero-bg'),image:r('.flower-v16-property-hero .flower-v16-hero-bg'),
                            imageLoaded:img?img.complete&&img.naturalWidth>0:null,
                            naturalWidth:img?img.naturalWidth:null,
-                           propertyInfo:r('.v10-property-info'),formWrap:r('.v7-booking .wrap'),
+                           propertyInfo:r('.flower-v16-property-hero .v16-content'),formWrap:r('.v7-booking .wrap'),
                            form:r('.v7-booking-form'),branch:r('#book-branch'),date:r('.v12-date-group'),
                            guests:r('.v12-guests-group'),actions:r('.v7-booking-actions'),
                            switcher:r('.flower-design-compare'),tabbar:r('.v8-tabbar'),
@@ -76,11 +76,14 @@ jobs:
                           if not data["imageLoaded"]:problems.append("hero photo unavailable")
                           if width<=430:
                               if not data["image"] or data["image"]["w"] < width*.86:problems.append("hero photo narrow")
-                              if not data["photo"] or not 220<=data["photo"]["h"]<=360:problems.append("hero photo wrong height")
+                              if not data["hero"] or not 410<=data["hero"]["h"]<=760:problems.append("hero photo composition wrong height")
                               if not data["propertyInfo"] or data["propertyInfo"]["position"]=="absolute":problems.append("property info overlays image")
                               if not data["form"] or not data["formWrap"] or data["form"]["w"]<data["formWrap"]["w"]*.84:problems.append("form squeezed into half screen")
                               if not data["branch"] or data["branch"]["w"]<width*.68:problems.append("branch field too narrow")
                           if data["switcher"] and data["switcher"]["position"]=="fixed":problems.append("fixed comparator overlay")
+                      if label.startswith("home-") and width<=430:
+                          if not data["form"] or not data["formWrap"] or data["form"]["w"]<data["formWrap"]["w"]*.84:problems.append("homepage booking squeezed")
+                          if not data["branch"] or data["branch"]["w"]<width*.68:problems.append("homepage branch select too narrow")
                       if errors:problems.append("js errors: "+str(errors[:2]))
                       if label.startswith("f4-ar"):
                           await page.screenshot(path=f"qa-artifacts/{label}-hero.png",full_page=False,animations="disabled")
