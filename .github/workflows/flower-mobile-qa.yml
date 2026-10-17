@@ -43,6 +43,7 @@ jobs:
               ("/al-majmaah-harmah/?design=editorial&qa=tablet768","f4-ar-768",768,1024),
               ("/al-majmaah-harmah/?design=editorial&qa=desktop1440","f4-ar-1440",1440,900),
               ("/?design=editorial&qa=home390","home-ar-390",390,844),
+              ("/en/?design=editorial&qa=home390","home-en-390",390,844),
           ]
           checks=[]
           async def main():
