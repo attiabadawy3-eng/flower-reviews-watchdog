@@ -1,0 +1,108 @@
+name: Flower Editorial Mobile Visual Regression
+
+on:
+  push:
+    paths:
+      - ".github/workflows/flower-mobile-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  viewport-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install browser test tools
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0 pillow
+          google-chrome --version || true
+      - name: Browser measurements and screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-artifacts
+          cat > /tmp/flower_mobile_qa.py <<'PY'
+          import asyncio
+          import json
+          import pathlib
+          import shutil
+          from playwright.async_api import async_playwright
+
+          origin="https://flower-unified-staging.onrender.com"
+          cases=[
+              ("/al-majmaah-harmah/?design=editorial&qa=mobile390","f4-ar-390",390,844),
+              ("/en/al-majmaah-harmah/?design=editorial&qa=mobile390","f4-en-390",390,844),
+              ("/al-majmaah-harmah/?design=editorial&qa=iphone375","f4-ar-375",375,812),
+              ("/al-majmaah-harmah/?design=editorial&qa=mobile430","f4-ar-430",430,932),
+              ("/al-majmaah-harmah/?design=editorial&qa=tablet768","f4-ar-768",768,1024),
+              ("/al-majmaah-harmah/?design=editorial&qa=desktop1440","f4-ar-1440",1440,900),
+              ("/?design=editorial&qa=home390","home-ar-390",390,844),
+          ]
+          checks=[]
+          async def main():
+              async with async_playwright() as p:
+                  executable=shutil.which("google-chrome") or shutil.which("chromium") or shutil.which("chromium-browser")
+                  browser=await p.chromium.launch(headless=True,executable_path=executable,args=["--no-sandbox"]) if executable else await p.chromium.launch(headless=True,args=["--no-sandbox"])
+                  for url,label,width,height in cases:
+                      page=await browser.new_page(viewport={"width":width,"height":height},device_scale_factor=1,is_mobile=width<700,has_touch=width<700)
+                      errors=[]
+                      page.on("pageerror",lambda e: errors.append(str(e)))
+                      await page.goto(origin+url,wait_until="domcontentloaded",timeout=60000)
+                      await page.wait_for_timeout(1800)
+                      data=await page.evaluate("""() => {
+                          const r=s=>{const el=document.querySelector(s);if(!el)return null;const x=el.getBoundingClientRect();const st=getComputedStyle(el);return {x:Math.round(x.x),y:Math.round(x.y),w:Math.round(x.width),h:Math.round(x.height),position:st.position,display:st.display,visibility:st.visibility,opacity:st.opacity,gridColumns:st.gridTemplateColumns}};
+                          const img=document.querySelector('.v10-photo-main img');
+                          return {viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+                           hero:r('.v10-hero-card'),photo:r('.v10-photo-panel'),image:r('.v10-photo-main img'),
+                           imageLoaded:img?img.complete&&img.naturalWidth>0:null,
+                           naturalWidth:img?img.naturalWidth:null,
+                           propertyInfo:r('.v10-property-info'),formWrap:r('.v7-booking .wrap'),
+                           form:r('.v7-booking-form'),branch:r('#book-branch'),date:r('.v12-date-group'),
+                           guests:r('.v12-guests-group'),actions:r('.v7-booking-actions'),
+                           switcher:r('.flower-design-compare'),tabbar:r('.v8-tabbar'),
+                           googleF4:(document.querySelector('[data-google-rating="flower-4"]')||{}).textContent||'',
+                           design:document.documentElement.dataset.flowerDesign||''
+                          };
+                      }""")
+                      problems=[]
+                      if data["scrollWidth"]>data["viewport"]+2:problems.append("horizontal overflow")
+                      if label.startswith("f4-"):
+                          if not data["imageLoaded"]:problems.append("hero photo unavailable")
+                          if width<=430:
+                              if not data["image"] or data["image"]["w"] < width*.86:problems.append("hero photo narrow")
+                              if not data["photo"] or not 220<=data["photo"]["h"]<=360:problems.append("hero photo wrong height")
+                              if not data["propertyInfo"] or data["propertyInfo"]["position"]=="absolute":problems.append("property info overlays image")
+                              if not data["form"] or not data["formWrap"] or data["form"]["w"]<data["formWrap"]["w"]*.84:problems.append("form squeezed into half screen")
+                              if not data["branch"] or data["branch"]["w"]<width*.68:problems.append("branch field too narrow")
+                          if data["switcher"] and data["switcher"]["position"]=="fixed":problems.append("fixed comparator overlay")
+                      if errors:problems.append("js errors: "+str(errors[:2]))
+                      if label.startswith("f4-ar"):
+                          await page.screenshot(path=f"qa-artifacts/{label}-hero.png",full_page=False,animations="disabled")
+                          if width<=430:
+                              await page.locator(".v7-booking").scroll_into_view_if_needed()
+                              await page.wait_for_timeout(300)
+                              await page.screenshot(path=f"qa-artifacts/{label}-booking.png",full_page=False,animations="disabled")
+                      row={"case":label,"width":width,"data":data,"problems":problems,"result":"PASS" if not problems else "FAIL"}
+                      checks.append(row)
+                      print(json.dumps(row,ensure_ascii=False),flush=True)
+                      await page.close()
+                  await browser.close()
+          asyncio.run(main())
+          pathlib.Path("qa-artifacts/results.json").write_text(json.dumps(checks,ensure_ascii=False,indent=2),encoding="utf-8")
+          if any(x["problems"] for x in checks):
+              raise SystemExit("FLOWER MOBILE REGRESSION FAIL")
+          print("FLOWER MOBILE REGRESSION PASS",len(checks))
+          PY
+          python /tmp/flower_mobile_qa.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flower-v15-mobile-qa
+          path: qa-artifacts/
+          retention-days: 7
