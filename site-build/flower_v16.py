@@ -3,6 +3,9 @@ from bs4 import BeautifulSoup
 
 
 def install_hero(soup, url_path, lang):
+    # Future website rebuilds mirror the live site; never add a second V16 hero.
+    if soup.select_one("section.flower-v16-home-hero, section.flower-v16-property-hero"):
+        return
     en = lang == "en"
     prefix = "/en" if en else ""
     if url_path in ("/", "/en/"):
