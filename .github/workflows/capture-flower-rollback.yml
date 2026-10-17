@@ -1,0 +1,46 @@
+name: Capture Flower Pre-Deploy Rollback
+
+on:
+  push:
+    paths:
+      - ".github/workflows/capture-flower-rollback.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Mirror current production without patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import importlib.util
+          import pathlib
+          spec=importlib.util.spec_from_file_location("flower_builder","site-build/build_flower_site.py")
+          m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          m.OUT_ZIP=pathlib.Path("deploy-assets/flower-site-rollback-pre-2026-10-17.zip")
+          m.mirror_live_site()
+          m.build_zip()
+          print(m.OUT_ZIP, m.OUT_ZIP.stat().st_size)
+          PY
+          unzip -t deploy-assets/flower-site-rollback-pre-2026-10-17.zip
+      - name: Publish rollback archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "flower-site-builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add deploy-assets/flower-site-rollback-pre-2026-10-17.zip
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "backup: Flower production before 2026-10-17 update"
+          git push
