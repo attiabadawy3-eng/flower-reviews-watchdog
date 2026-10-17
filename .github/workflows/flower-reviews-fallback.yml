@@ -6,6 +6,9 @@ on:
     - cron: "47 3 * * *"
     - cron: "17 4 1 * *"
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/flower-reviews-fallback.yml"
 
 permissions:
   id-token: write
@@ -17,7 +20,7 @@ concurrency:
 
 jobs:
   check-reviews:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '7,17,27,37,47,57 * * * *')
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '7,17,27,37,47,57 * * * *')
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
