@@ -2,7 +2,7 @@ name: Flower Reviews Watchdog
 
 on:
   schedule:
-    - cron: "7,37 * * * *"
+    - cron: "7,17,27,37,47,57 * * * *"
     - cron: "47 3 * * *"
     - cron: "17 4 1 * *"
   workflow_dispatch:
@@ -17,10 +17,14 @@ concurrency:
 
 jobs:
   check-reviews:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '7,37 * * * *')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '7,17,27,37,47,57 * * * *')
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Request GitHub OIDC token
         id: oidc
         shell: bash
@@ -44,6 +48,109 @@ jobs:
             -H "Authorization: Bearer $OIDC_TOKEN" \
             "https://flower-google-reviews-auto-reply.onrender.com/fallback/reviews/oidc")"
           python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True; print("reviews: seen=",d.get("seen",0),"candidates=",d.get("candidates",0),"posted=",d.get("posted",0),"held=",d.get("held",0),"errors=",d.get("errors",0))' "$response"
+
+
+      - name: Publish website review metrics cache
+        shell: bash
+        run: |
+          set -u
+          url="https://flower-google-reviews-auto-reply.onrender.com/public/review-analytics/9f4d8b2a71c64347b88a5dc96a3d21ef"
+          tmp="$(mktemp)"
+          if ! curl --retry 3 --retry-delay 6 --retry-all-errors --fail --silent --show-error --max-time 150 "$url" -o "$tmp"; then
+            echo "::warning::Review analytics cache fetch failed; keeping the last published metrics."
+            exit 0
+          fi
+          if ! python3 - "$tmp" <<'PY'
+          import datetime as dt
+          import json
+          import pathlib
+          import sys
+
+          src = pathlib.Path(sys.argv[1])
+          payload = json.loads(src.read_text(encoding="utf-8"))
+          if payload.get("ok") is not True:
+              raise SystemExit("analytics response is not ok")
+          data = payload.get("data") or {}
+          rows = data.get("branches") or []
+          by_id = {str(row.get("location_id")): row for row in rows}
+          mapping = {
+              "flower-1": "15590271709505521163",
+              "flower-2": "9619996328379786259",
+              "flower-3": "12277969251636822325",
+              "flower-4": "9211539228230761491",
+          }
+          branches = {}
+          for key, location_id in mapping.items():
+              row = by_id.get(location_id)
+              if not row:
+                  raise SystemExit(f"missing location {location_id}")
+              rating = float(row["average_all"])
+              count = int(row["total"])
+              if not (0 <= rating <= 5) or count < 1:
+                  raise SystemExit(f"invalid metrics for {key}")
+              branches[key] = {
+                  "locationId": location_id,
+                  "rating": round(rating, 2),
+                  "reviewCount": count,
+              }
+
+          verified_at = data.get("generated_at")
+          if not verified_at:
+              raise SystemExit("missing generated_at")
+          new_doc = {
+              "schemaVersion": 1,
+              "source": "Google Business Profile via FLOWER Reviews",
+              "verifiedAt": verified_at,
+              "timezone": "Asia/Riyadh",
+              "branches": branches,
+          }
+
+          out = pathlib.Path("public/reviews-summary.json")
+          old = None
+          if out.exists():
+              try:
+                  old = json.loads(out.read_text(encoding="utf-8"))
+              except Exception:
+                  old = None
+
+          metrics_changed = not old or old.get("branches") != branches
+          stale = True
+          if old and old.get("verifiedAt"):
+              try:
+                  previous = dt.datetime.fromisoformat(old["verifiedAt"].replace("Z", "+00:00"))
+                  now = dt.datetime.now(dt.timezone.utc)
+                  stale = (now - previous.astimezone(dt.timezone.utc)).total_seconds() >= 86400
+              except Exception:
+                  stale = True
+
+          if metrics_changed or stale:
+              out.write_text(json.dumps(new_doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+              print("publish=1 metrics_changed=", metrics_changed, "daily_freshness=", stale)
+          else:
+              print("publish=0 metrics unchanged and verified within 24h")
+          PY
+          then
+            echo "::warning::Review metrics validation failed; keeping the last published metrics."
+            exit 0
+          fi
+
+          if git diff --quiet -- public/reviews-summary.json; then
+            echo "No public metrics change to publish."
+            exit 0
+          fi
+
+          git config user.name "flower-reviews-watchdog"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/reviews-summary.json
+          git commit -m "chore: refresh public Google review metrics"
+          for attempt in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "Push race on attempt $attempt; rebasing and retrying."
+            git pull --rebase
+            sleep 2
+          done
+          echo "::warning::Could not publish review metrics after retries; next scheduled run will retry."
+          exit 0
 
   seo-scan:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '47 3 * * *')
