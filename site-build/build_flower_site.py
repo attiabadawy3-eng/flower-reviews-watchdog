@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from bs4 import BeautifulSoup
+from flower_v16 import install_hero
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
@@ -451,9 +452,12 @@ def install_editorial_layer(soup: BeautifulSoup, url_path: str) -> None:
         soup.head.insert(0, bootstrap)
         tag = soup.new_tag("link", rel="stylesheet", href="/assets/css/flower-editorial-v15.css")
         soup.head.append(tag)
+        tag = soup.new_tag("link", rel="stylesheet", href="/assets/css/flower-editorial-v16.css")
+        soup.head.append(tag)
     if soup.body:
         tag = soup.new_tag("script", src="/assets/js/flower-editorial-v15.js", defer=True)
         soup.body.append(tag)
+        install_hero(soup, url_path, "en" if url_path.startswith("/en/") else "ar")
 
 
 def patch_page(path: pathlib.Path, url_path: str) -> None:
@@ -585,6 +589,7 @@ def write_live_assets() -> None:
         files = [
             (base / "flower-editorial-v15.css", ROOT / "assets/css/flower-editorial-v15.css"),
             (base / "flower-editorial-v15.js", ROOT / "assets/js/flower-editorial-v15.js"),
+            (base / "flower-editorial-v16.css", ROOT / "assets/css/flower-editorial-v16.css"),
         ]
         for src, target in files:
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -643,6 +648,14 @@ def tests() -> dict:
         result["no_threejs_dependency"] = "WebGL" not in new_js and "THREE" not in new_js
         result["editorial_reduced_motion"] = "prefers-reduced-motion" in new_css
         result["editorial_focus_visible"] = "focus-visible" in new_css
+        v16_css = (ROOT / "assets/css/flower-editorial-v16.css").read_text(encoding="utf-8")
+        result["v16_new_immersive_hero"] = 'class="flower-v16-home-hero"' in home and 'class="flower-v16-property-hero"' in f4
+        result["v16_ar_en_both_pages"] = all("flower-editorial-v16.css" in p and "v16-hero-actions" in p for p in [home, home_en, f4, f4_en])
+        result["v16_switcher_preserves_classic"] = all("v13-group-hero" in p for p in [home, home_en]) and all("v10-property-hero" in p for p in [f4, f4_en])
+        result["v16_original_photos_only"] = all("/assets/images/" in p for p in [home, home_en, f4, f4_en]) and "threeui.com" not in v16_css
+        result["v16_mobile_breakpoint"] = "@media(max-width:700px)" in v16_css and "scroll-snap-type:x mandatory" in v16_css
+        result["v16_unchanged_booking_forms"] = all('id="book-whatsapp"' in p and 'id="book-arrival"' in p and 'id="book-departure"' in p for p in [home, home_en, f4, f4_en])
+        result["v16_review_live_hook"] = all('data-google-review-count="flower-4"' in p for p in [f4, f4_en])
 
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
