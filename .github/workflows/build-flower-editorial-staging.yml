@@ -11,8 +11,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: flower-editorial-staging
-  cancel-in-progress: true
+  group: flower-website-artifact-writers
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -65,9 +65,13 @@ jobs:
             exit 0
           fi
           git commit -m "build: FLOWER editorial staging candidate"
-          for i in 1 2 3; do
+          for attempt in 1 2 3 4; do
             if git push origin HEAD:main; then exit 0; fi
-            git pull --rebase origin main
+            git fetch origin main
+            git reset --mixed origin/main
+            git add deploy-assets/flower-site-editorial-staging.zip deploy-assets/flower-editorial-staging-manifest.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "build: FLOWER editorial staging candidate"
             sleep 2
           done
           exit 1
