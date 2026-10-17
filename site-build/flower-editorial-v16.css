@@ -136,3 +136,74 @@ html[data-flower-design="editorial"] body.v15-editorial{padding-bottom:59px}
 .v16-branch-tile{flex-basis:58%}
 }
 @media(prefers-reduced-motion:reduce){.flower-v16-home-hero *, .flower-v16-property-hero *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+/* V16.1 — The same one-column mobile enquiry layout must work on the homepage.
+   Historical v13.1 overrides were forcing five tiny desktop columns at 390px. */
+@media(max-width:700px){
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking .wrap{
+   display:block!important;width:calc(100% - 24px)!important;max-width:680px!important;
+   padding:15px!important;margin-inline:auto!important;box-sizing:border-box!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-head{
+   display:block!important;width:100%!important;min-width:0!important;margin-bottom:13px!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-head h2{
+   font-size:24px!important;white-space:normal!important;color:#281721!important;line-height:1.4!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-head p{
+   color:#62515b!important;font-size:12px!important;line-height:1.8!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-form{
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+   gap:10px!important;align-items:stretch!important;min-width:0!important;width:100%!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-form > *{
+   grid-column:1/-1!important;grid-row:auto!important;min-width:0!important;
+   max-width:100%!important;width:100%!important;box-sizing:border-box!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-form > .v12-book-field{
+   display:flex!important;flex-direction:column!important;justify-content:center!important;
+   min-height:72px!important;background:#fff!important;border:1px solid #e2d8d6!important;
+   padding:9px 12px!important;border-radius:12px!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-form select,
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-form input{
+   display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+   min-height:36px!important;font-size:16px!important;box-sizing:border-box!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-date-group,
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-guests-group{
+   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   gap:9px!important;border:1px solid #e2d8d6!important;border-radius:12px!important;
+   padding:11px!important;background:#faf7f5!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-date-group > label,
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-guests-group > label{
+   grid-column:auto!important;grid-row:auto!important;min-width:0!important;width:100%!important;
+   box-sizing:border-box!important;background:#fff!important;border:1px solid #e2d8d6!important;
+   border-radius:10px!important;padding:9px!important;margin:0!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-actions{
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:9px!important;
+   padding:0!important;margin:0!important;align-self:auto!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v7-booking-actions > a{
+   display:flex!important;align-items:center!important;justify-content:center!important;
+   width:100%!important;max-width:100%!important;height:auto!important;min-height:52px!important;
+   box-sizing:border-box!important;text-align:center!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-booking-external{
+   display:flex!important;color:#7A314D!important;font-size:13px!important;min-height:38px!important;
+ }
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-booking-context{
+   display:flex!important;gap:7px!important;color:#61525c!important;
+   font-size:11px!important;line-height:1.6!important;
+ }
+}
+@media(max-width:370px){
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-date-group,
+ html[data-flower-design="editorial"] body.v15-editorial.v7-home .v12-guests-group{
+   grid-template-columns:minmax(0,1fr)!important;
+ }
+}
