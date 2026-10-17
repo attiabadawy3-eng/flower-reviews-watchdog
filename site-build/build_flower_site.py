@@ -446,7 +446,7 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
         patch_branch_page(soup, branch_id, lang)
     if url_path in ("/", "/en/"):
         patch_home(soup, lang)
-    if url_path == "/al-majmaah-harmah/":
+    if url_path in ("/al-majmaah-harmah/", "/en/al-majmaah-harmah/"):
         patch_flower4_units(soup, lang)
 
     path.write_text(str(soup), encoding="utf-8")
