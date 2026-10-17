@@ -18,6 +18,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url="https://flower-google-reviews-auto-reply.onrender.com/public/review-analytics/9f4d8b2a71c64347b88a5dc96a3d21ef?refresh=1"
+          url="https://flower-google-reviews-auto-reply.onrender.com/public/review-analytics/9f4d8b2a71c64347b88a5dc96a3d21ef"
           body="$(curl --retry 4 --retry-delay 8 --retry-all-errors --fail --silent --show-error --max-time 150 "$url")"
           printf '%s\n' "$body"
