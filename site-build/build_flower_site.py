@@ -17,8 +17,9 @@ from bs4 import BeautifulSoup
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
-OUT_ZIP = pathlib.Path("deploy-assets/flower-site-production.zip")
-MANIFEST = pathlib.Path("deploy-assets/flower-site-manifest.json")
+EDITORIAL = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower() == "editorial"
+OUT_ZIP = pathlib.Path("deploy-assets/flower-site-editorial-staging.zip" if EDITORIAL else "deploy-assets/flower-site-production.zip")
+MANIFEST = pathlib.Path("deploy-assets/flower-editorial-staging-manifest.json" if EDITORIAL else "deploy-assets/flower-site-manifest.json")
 BUILD_DATE = dt.datetime.now(dt.timezone.utc)
 BUILD_DAY = BUILD_DATE.date().isoformat()
 FEED_URL = "https://raw.githubusercontent.com/attiabadawy3-eng/flower-reviews-watchdog/main/public/reviews-summary.json"
@@ -434,6 +435,27 @@ def patch_flower4_units(soup: BeautifulSoup, lang: str) -> None:
         node.string = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 
 
+def install_editorial_layer(soup: BeautifulSoup, url_path: str) -> None:
+    if not EDITORIAL or url_path not in ("/", "/en/", "/al-majmaah-harmah/", "/en/al-majmaah-harmah/"):
+        return
+    if soup.html:
+        soup.html["data-flower-design"] = "editorial"
+    if soup.body:
+        classes = list(soup.body.get("class") or [])
+        if "v15-editorial" not in classes:
+            classes.append("v15-editorial")
+        soup.body["class"] = classes
+    if soup.head:
+        bootstrap = soup.new_tag("script")
+        bootstrap.string = '(function(){if(new URLSearchParams(location.search).get("design")==="classic"){document.documentElement.dataset.flowerDesign="classic"}})();'
+        soup.head.insert(0, bootstrap)
+        tag = soup.new_tag("link", rel="stylesheet", href="/assets/css/flower-editorial-v15.css")
+        soup.head.append(tag)
+    if soup.body:
+        tag = soup.new_tag("script", src="/assets/js/flower-editorial-v15.js", defer=True)
+        soup.body.append(tag)
+
+
 def patch_page(path: pathlib.Path, url_path: str) -> None:
     html = path.read_text(encoding="utf-8")
     soup = BeautifulSoup(html, "html.parser")
@@ -448,6 +470,7 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
         patch_home(soup, lang)
     if url_path in ("/al-majmaah-harmah/", "/en/al-majmaah-harmah/"):
         patch_flower4_units(soup, lang)
+    install_editorial_layer(soup, url_path)
 
     path.write_text(str(soup), encoding="utf-8")
 
@@ -557,6 +580,15 @@ def write_live_assets() -> None:
     css.parent.mkdir(parents=True, exist_ok=True)
     js.write_text(LIVE_JS, encoding="utf-8")
     css.write_text(LIVE_CSS, encoding="utf-8")
+    if EDITORIAL:
+        base = pathlib.Path(__file__).resolve().parent
+        files = [
+            (base / "flower-editorial-v15.css", ROOT / "assets/css/flower-editorial-v15.css"),
+            (base / "flower-editorial-v15.js", ROOT / "assets/js/flower-editorial-v15.js"),
+        ]
+        for src, target in files:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, target)
 
 
 def update_sitemap() -> None:
@@ -594,6 +626,23 @@ def tests() -> dict:
     result["booking_link_kept"] = "booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html" in f4
     result["whatsapp_kept"] = "+966566374274" in f4 or "966566374274" in f4
     result["motion_reduced_supported"] = "prefers-reduced-motion" in LIVE_CSS
+    if EDITORIAL:
+        new_css = (ROOT / "assets/css/flower-editorial-v15.css").read_text(encoding="utf-8")
+        new_js = (ROOT / "assets/js/flower-editorial-v15.js").read_text(encoding="utf-8")
+        home_en = (ROOT / "en/index.html").read_text(encoding="utf-8")
+        result["editorial_home_ar_en"] = all(
+            'data-flower-design="editorial"' in page and "flower-editorial-v15.css" in page
+            for page in (home, home_en))
+        result["editorial_f4_ar_en"] = all(
+            'data-flower-design="editorial"' in page and "flower-editorial-v15.css" in page
+            for page in (f4, f4_en))
+        result["design_switcher_staging_only"] = 'flower-unified-staging.onrender.com' in new_js
+        result["original_images_only"] = ("/assets/images/dammam-al-anoud/" in home
+            and "/assets/images/al-majmaah-harmah/" in f4
+            and "threeui.com" not in new_css and "https://" not in new_css)
+        result["no_threejs_dependency"] = "WebGL" not in new_js and "THREE" not in new_js
+        result["editorial_reduced_motion"] = "prefers-reduced-motion" in new_css
+        result["editorial_focus_visible"] = "focus-visible" in new_css
 
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
@@ -631,7 +680,8 @@ def main() -> None:
             "verified fallback Google counts for all four branches",
             "Flower 4 unit amenity de-generalization",
             "ThreeUI-inspired native CSS micro-interactions without React/WebGL",
-            "sitemap lastmod refresh for home and Flower 4"
+            "sitemap lastmod refresh for home and Flower 4",
+            *(['ThreeUI-inspired editorial hero, gallery, real booking CTA and staging A/B switcher'] if EDITORIAL else [])
         ],
         "tests": test_result,
     }
