@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
-  "builtAt": "2026-10-17T13:00:33.345506+00:00",
-  "fileCount": 53,
-  "zipBytes": 2622150,
+  "builtAt": "2026-10-17T13:01:16.863014+00:00",
+  "fileCount": 54,
+  "zipBytes": 2626829,
   "changes": [
     "automatic Google review metrics feed",
     "verified fallback Google counts for all four branches",
@@ -30,6 +30,13 @@
     "original_images_only": true,
     "no_threejs_dependency": true,
     "editorial_reduced_motion": true,
-    "editorial_focus_visible": true
+    "editorial_focus_visible": true,
+    "v16_new_immersive_hero": true,
+    "v16_ar_en_both_pages": true,
+    "v16_switcher_preserves_classic": true,
+    "v16_original_photos_only": true,
+    "v16_mobile_breakpoint": true,
+    "v16_unchanged_booking_forms": true,
+    "v16_review_live_hook": true
   }
 }
