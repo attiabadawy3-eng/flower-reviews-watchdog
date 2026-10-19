@@ -18,32 +18,37 @@ from flower_v16 import install_hero
 from flower_apple_v17 import apply_apple_v17, PAGE_PATHS as APPLE_PAGES
 from flower_apple_motion import install_motion
 from flower_apple_cinema import install_cinema, SCENES
+from flower_apple_premium import apply_premium
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
 VARIANT = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower()
 # V17 is the accepted production baseline. Keep staging artifacts separate.
 # Explicit "editorial" retains the historical V16 A/B candidate for reference only.
-if VARIANT not in ("", "production", "apple", "editorial", "apple-motion", "apple-cinematic"):
+if VARIANT not in ("", "production", "apple", "editorial", "apple-motion", "apple-cinematic", "apple-premium"):
     raise SystemExit(f"unsupported FLOWER_BUILD_VARIANT: {VARIANT!r}")
 IS_APPLE_STAGING = VARIANT == "apple"
 IS_MOTION_STAGING = VARIANT == "apple-motion"
 IS_CINEMATIC_STAGING = VARIANT == "apple-cinematic"
+IS_PREMIUM_STAGING = VARIANT == "apple-premium"
 # The accepted default production baseline is Apple V17.2 with cinematic FLOWER 4.
-CINEMATIC = VARIANT in ("", "production", "apple-cinematic")
+CINEMATIC = VARIANT in ("", "production", "apple-cinematic", "apple-premium")
+PREMIUM = IS_PREMIUM_STAGING
 APPLE = VARIANT != "editorial"
 MOTION = IS_MOTION_STAGING or CINEMATIC
 EDITORIAL = True
 OUT_ZIP = pathlib.Path(
+    "deploy-assets/flower-site-apple-premium-staging.zip" if PREMIUM else
     "deploy-assets/flower-site-apple-cinematic-staging.zip" if IS_CINEMATIC_STAGING else
-    "deploy-assets/flower-site-apple-motion-staging.zip" if MOTION else
+    "deploy-assets/flower-site-apple-motion-staging.zip" if IS_MOTION_STAGING else
     "deploy-assets/flower-site-apple-staging.zip" if IS_APPLE_STAGING else
     "deploy-assets/flower-site-editorial-staging.zip" if VARIANT == "editorial" else
     "deploy-assets/flower-site-production.zip"
 )
 MANIFEST = pathlib.Path(
+    "deploy-assets/flower-apple-premium-staging-manifest.json" if PREMIUM else
     "deploy-assets/flower-apple-cinematic-staging-manifest.json" if IS_CINEMATIC_STAGING else
-    "deploy-assets/flower-apple-motion-staging-manifest.json" if MOTION else
+    "deploy-assets/flower-apple-motion-staging-manifest.json" if IS_MOTION_STAGING else
     "deploy-assets/flower-apple-staging-manifest.json" if IS_APPLE_STAGING else
     "deploy-assets/flower-editorial-staging-manifest.json" if VARIANT == "editorial" else
     "deploy-assets/flower-site-manifest.json"
@@ -508,6 +513,8 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
         install_motion(soup, url_path)
     if CINEMATIC:
         install_cinema(soup, url_path)
+    if PREMIUM:
+        apply_premium(soup, url_path)
 
     path.write_text(str(soup), encoding="utf-8")
 
@@ -648,6 +655,11 @@ def write_live_assets() -> None:
         ):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(base / filename, destination)
+    if PREMIUM:
+        src = pathlib.Path(__file__).resolve().parent / "flower-apple-premium-v17-3.css"
+        dst = ROOT / "assets/css/flower-apple-premium-v17-3.css"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dst)
 
 
 def update_sitemap() -> None:
@@ -801,6 +813,38 @@ def tests() -> dict:
             token in motion_js + motion_css
             for token in ("prefers-reduced-motion", "requestAnimationFrame", "IntersectionObserver", "aria-hidden", "data-flower-cinema")
         ) and all(no not in motion_js for no in ("fetch(", "XMLHttpRequest", "https://"))
+    if PREMIUM:
+        ar = BeautifulSoup(f4, "html.parser")
+        en = BeautifulSoup(f4_en, "html.parser")
+        result["premium_ar_en_cinema"] = all(
+            len(q.select('#flower-cinema[data-flower-story="premium"] [data-cinema-scene]')) == 3
+            for q in (ar,en)
+        )
+        result["premium_css_last"] = all(
+            bool(q.head.find("link",href="/assets/css/flower-apple-premium-v17-3.css"))
+            and q.head.find_all("link",href="/assets/css/flower-apple-premium-v17-3.css")[-1] ==
+            q.head.find_all("link",rel="stylesheet")[-1]
+            for q in (ar,en)
+        )
+        result["premium_first_image_preloaded"] = all(
+            (q.select_one(".flower-v16-hero-bg") or {}).get("fetchpriority") == "high"
+            and (q.select_one(".flower-v16-hero-bg") or {}).get("loading") == "eager"
+            for q in (ar,en)
+        )
+        result["premium_legacy_content_preserved"] = all(
+            q.select_one('#book-branch') and q.select_one('#book-unit')
+            and q.select_one('#book-whatsapp') and q.select_one('a[href*="booking.com"]')
+            and len(q.select('h1')) == 1
+            for q in (ar,en)
+        )
+        result["premium_no_unverified_images"] = all(
+            image.get('src','').startswith('/assets/images/al-majmaah-harmah/')
+            for q in (ar,en) for image in q.select('#flower-cinema img')
+        )
+        result["premium_mobile_and_reduced_motion"] = all(
+            word in (ROOT / "assets/css/flower-apple-premium-v17-3.css").read_text(encoding="utf-8")
+            for word in ('@media(max-width:700px)', 'prefers-reduced-motion', 'flower-cinema-stage')
+        )
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
     return result
@@ -829,7 +873,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
-        "variant": "apple-v17.2-cinematic-staging" if IS_CINEMATIC_STAGING else "apple-v17.2-cinematic-production" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
+        "variant": "apple-v17.3-premium-staging" if PREMIUM else "apple-v17.2-cinematic-staging" if IS_CINEMATIC_STAGING else "apple-v17.2-cinematic-production" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
