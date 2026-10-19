@@ -31,14 +31,14 @@ IS_APPLE_STAGING = VARIANT == "apple"
 IS_MOTION_STAGING = VARIANT == "apple-motion"
 IS_CINEMATIC_STAGING = VARIANT == "apple-cinematic"
 IS_PREMIUM_STAGING = VARIANT == "apple-premium"
-# The accepted default production baseline is Apple V17.2 with cinematic FLOWER 4.
+# Accepted production baseline: premium V17.3, with image-first Flower 4 hero.
 CINEMATIC = VARIANT in ("", "production", "apple-cinematic", "apple-premium")
-PREMIUM = IS_PREMIUM_STAGING
+PREMIUM = VARIANT in ("", "production", "apple-premium")
 APPLE = VARIANT != "editorial"
 MOTION = IS_MOTION_STAGING or CINEMATIC
 EDITORIAL = True
 OUT_ZIP = pathlib.Path(
-    "deploy-assets/flower-site-apple-premium-staging.zip" if PREMIUM else
+    "deploy-assets/flower-site-apple-premium-staging.zip" if IS_PREMIUM_STAGING else
     "deploy-assets/flower-site-apple-cinematic-staging.zip" if IS_CINEMATIC_STAGING else
     "deploy-assets/flower-site-apple-motion-staging.zip" if IS_MOTION_STAGING else
     "deploy-assets/flower-site-apple-staging.zip" if IS_APPLE_STAGING else
@@ -46,7 +46,7 @@ OUT_ZIP = pathlib.Path(
     "deploy-assets/flower-site-production.zip"
 )
 MANIFEST = pathlib.Path(
-    "deploy-assets/flower-apple-premium-staging-manifest.json" if PREMIUM else
+    "deploy-assets/flower-apple-premium-staging-manifest.json" if IS_PREMIUM_STAGING else
     "deploy-assets/flower-apple-cinematic-staging-manifest.json" if IS_CINEMATIC_STAGING else
     "deploy-assets/flower-apple-motion-staging-manifest.json" if IS_MOTION_STAGING else
     "deploy-assets/flower-apple-staging-manifest.json" if IS_APPLE_STAGING else
@@ -873,7 +873,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
-        "variant": "apple-v17.3-premium-staging" if PREMIUM else "apple-v17.2-cinematic-staging" if IS_CINEMATIC_STAGING else "apple-v17.2-cinematic-production" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
+        "variant": "apple-v17.3-premium-staging" if IS_PREMIUM_STAGING else "apple-v17.3-premium-production" if PREMIUM else "apple-v17.2-cinematic-staging" if IS_CINEMATIC_STAGING else "apple-v17.2-cinematic-production" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
