@@ -1,4 +1,5 @@
 name: FLOWER Premium V17.3 Production Acceptance
+# Cache-busted production verification after static-site release
 
 on:
   push:
