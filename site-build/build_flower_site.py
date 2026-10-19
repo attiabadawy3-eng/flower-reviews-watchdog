@@ -20,16 +20,21 @@ from flower_apple_v17 import apply_apple_v17, PAGE_PATHS as APPLE_PAGES
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
 VARIANT = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower()
-APPLE = VARIANT == "apple"
-EDITORIAL = VARIANT in ("apple", "editorial")
+# V17 is the accepted production baseline. Keep staging artifacts separate.
+# Explicit "editorial" retains the historical V16 A/B candidate for reference only.
+if VARIANT not in ("", "production", "apple", "editorial"):
+    raise SystemExit(f"unsupported FLOWER_BUILD_VARIANT: {VARIANT!r}")
+IS_APPLE_STAGING = VARIANT == "apple"
+APPLE = VARIANT != "editorial"
+EDITORIAL = True
 OUT_ZIP = pathlib.Path(
-    "deploy-assets/flower-site-apple-staging.zip" if APPLE else
-    "deploy-assets/flower-site-editorial-staging.zip" if EDITORIAL else
+    "deploy-assets/flower-site-apple-staging.zip" if IS_APPLE_STAGING else
+    "deploy-assets/flower-site-editorial-staging.zip" if VARIANT == "editorial" else
     "deploy-assets/flower-site-production.zip"
 )
 MANIFEST = pathlib.Path(
-    "deploy-assets/flower-apple-staging-manifest.json" if APPLE else
-    "deploy-assets/flower-editorial-staging-manifest.json" if EDITORIAL else
+    "deploy-assets/flower-apple-staging-manifest.json" if IS_APPLE_STAGING else
+    "deploy-assets/flower-editorial-staging-manifest.json" if VARIANT == "editorial" else
     "deploy-assets/flower-site-manifest.json"
 )
 BUILD_DATE = dt.datetime.now(dt.timezone.utc)
@@ -735,7 +740,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
-        "variant": "apple-v17" if APPLE else "editorial" if EDITORIAL else "production",
+        "variant": "apple-v17" if APPLE else "editorial-v16-legacy",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
@@ -745,7 +750,8 @@ def main() -> None:
             "Flower 4 unit amenity de-generalization",
             "ThreeUI-inspired native CSS micro-interactions without React/WebGL",
             "sitemap lastmod refresh for home and Flower 4",
-            *(['ThreeUI-inspired editorial hero, gallery, real booking CTA and staging A/B switcher'] if EDITORIAL else [])
+            *(['Apple-inspired FLOWER V17: 10 bilingual pages, photo-first heroes, booking UX, no preview toolbar, and single H1'] if APPLE else
+              ['Legacy ThreeUI-inspired editorial preview for comparison only'])
         ],
         "tests": test_result,
     }
