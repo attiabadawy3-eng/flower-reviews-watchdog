@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
-  "variant": "apple-v17",
-  "builtAt": "2026-10-19T11:40:48.942822+00:00",
-  "fileCount": 55,
-  "zipBytes": 2632597,
+  "variant": "apple-v17.2-cinematic-production",
+  "builtAt": "2026-10-19T12:11:26.078698+00:00",
+  "fileCount": 59,
+  "zipBytes": 2642328,
   "changes": [
     "automatic Google review metrics feed",
     "verified fallback Google counts for all four branches",
@@ -43,6 +43,16 @@
     "apple_h1_single": true,
     "apple_no_preview_switcher": true,
     "apple_brand_and_reduced_motion": true,
-    "apple_no_external_media": true
+    "apple_no_external_media": true,
+    "motion_isolation_ten_pages": true,
+    "motion_accessibility": true,
+    "motion_no_network_or_external_packages": true,
+    "motion_no_new_images": true,
+    "cinema_three_verified_images": true,
+    "cinema_bookings_unchanged": true,
+    "cinema_en_ar": true,
+    "cinema_css_js_loaded": true,
+    "cinema_only_flower4": true,
+    "cinema_accessible_and_throttled": true
   }
 }
