@@ -22,6 +22,7 @@ async def measure(page):
        const img=area?.querySelector('img');
        return {
          mode:root.dataset.flowerCinema, motion:root.dataset.flowerMotion, width:innerWidth,
+         scrollY:Math.round(scrollY),trackTop:Math.round(track?.getBoundingClientRect().top||0),
          scrollWidth:root.scrollWidth, h1:document.querySelectorAll('h1').length,
          area:!!area, stageHeight:stage?.getBoundingClientRect().height,
          trackHeight:track?.getBoundingClientRect().height,
@@ -45,9 +46,11 @@ async def move(page,fraction):
       const rect=track.getBoundingClientRect();
       const top=window.scrollY+rect.top;
       const distance=Math.max(0,rect.height-document.querySelector('#flower-cinema [data-cinema-stage]').clientHeight);
-      window.scrollTo({top:top+distance*fraction,behavior:'instant'});
+      document.documentElement.style.setProperty('scroll-behavior','auto','important');
+      document.body.style.setProperty('scroll-behavior','auto','important');
+      window.scrollTo(0,top+distance*fraction);
     }""", fraction)
-    await page.wait_for_timeout(370)
+    await page.wait_for_timeout(700)
     return await measure(page)
 
 async def main():
@@ -84,7 +87,7 @@ async def main():
                     result={"browser":browser_name,"case":label,"status":"PASS" if not problems else "FAIL","problems":problems,
                              "chapters":[start["chapter"],mid["chapter"],end["chapter"]],
                              "opacity":[start["opacity"],mid["opacity"],end["opacity"]],
-                             "width":width,"imageLoaded":start["photoReady"]}
+                             "width":width,"scrollY":[start["scrollY"],mid["scrollY"],end["scrollY"]],"imageLoaded":start["photoReady"]}
                 except Exception as e:
                     result={"browser":browser_name,"case":label,"status":"FAIL","problems":[repr(e)[:250]]}
                 results.append(result)
