@@ -1,9 +1,10 @@
 from __future__ import annotations
-import asyncio, json, os
+import asyncio, json, os, time
 from pathlib import Path
 from playwright.async_api import async_playwright
 
 BASE = os.environ.get("FLOWER_PREMIUM_QA_BASE","https://flower-unified-staging.onrender.com").rstrip("/")
+NONCE = str(int(time.time() * 1000)) + "-" + os.environ.get("GITHUB_RUN_ID","local")
 OUT = Path(os.environ.get("FLOWER_PREMIUM_QA_OUTPUT","premium-qa"))
 OUT.mkdir(exist_ok=True)
 
@@ -20,7 +21,7 @@ async def main():
                     page.on("pageerror",lambda e:errors.append(str(e)))
                     issues=[]
                     try:
-                        response=await page.goto(BASE+path+"?premium_v17_3=1",wait_until="load",timeout=45000)
+                        response=await page.goto(BASE+path+"?premium_v17_3="+NONCE,wait_until="load",timeout=45000)
                         await page.wait_for_timeout(750)
                         details=await page.evaluate("""() => {
                             const rect=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {
@@ -76,7 +77,7 @@ async def main():
             # Check the three photo chapters remain scroll-linked in both languages.
             context=await browser.new_context(viewport={"width":390,"height":860})
             page=await context.new_page()
-            await page.goto(BASE+"/al-majmaah-harmah/?chapter_premium=1",wait_until="load")
+            await page.goto(BASE+"/al-majmaah-harmah/?chapter_premium="+NONCE,wait_until="load")
             chapters=[]
             for fraction in (.08,.51,.92):
                 await page.evaluate("""fraction=>{
@@ -103,7 +104,7 @@ async def main():
                     reduced_motion="reduce" if mode=="reduce" else "no-preference",
                     java_script_enabled=mode!="nojs")
                 page=await context.new_page()
-                await page.goto(BASE+"/al-majmaah-harmah/?accessibility="+mode,wait_until="load",timeout=45000)
+                await page.goto(BASE+"/al-majmaah-harmah/?accessibility="+mode+"&qa="+NONCE,wait_until="load",timeout=45000)
                 await page.wait_for_timeout(250)
                 vals=await page.evaluate("""() => ({
                    cinema:document.documentElement.dataset.flowerCinema,
