@@ -1,0 +1,125 @@
+/* FLOWER Apple Motion V17.1 — staging candidate only.
+   Original website remains fully usable with JS disabled or reduced motion. */
+html[data-flower-motion="enabled"][data-flower-apple="v17"]{
+ --fm-ease:cubic-bezier(.22,1,.36,1);
+ --fm-wine:#7A314D;
+ --fm-gold:#B79862;
+}
+@keyframes flower-motion-rise{
+ from{opacity:.01;transform:translate3d(0,24px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes flower-motion-photo{
+ from{opacity:.87;filter:saturate(.86)}
+ to{opacity:1;filter:saturate(1)}
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"]
+:is(.flower-v16-home-hero,.flower-v16-property-hero) .v16-overline{
+ animation:flower-motion-rise .65s var(--fm-ease) both!important;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"]
+:is(.flower-v16-home-hero,.flower-v16-property-hero) .v16-content h1{
+ animation:flower-motion-rise .85s var(--fm-ease) .08s both!important;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"]
+:is(.flower-v16-home-hero,.flower-v16-property-hero) :is(.v16-hero-intro,.v16-branch-intro){
+ animation:flower-motion-rise .8s var(--fm-ease) .19s both!important;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"]
+:is(.flower-v16-home-hero,.flower-v16-property-hero) .v16-hero-actions{
+ animation:flower-motion-rise .8s var(--fm-ease) .28s both!important;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"]
+:is(.flower-v16-home-hero,.flower-v16-property-hero) .flower-v16-hero-bg{
+ animation:flower-motion-photo 1.15s ease-out .13s both!important;
+ will-change:auto;
+}
+/* Expensive scroll-linked transforms only on larger screens while the hero is in view. */
+@media(min-width:901px) and (hover:hover){
+ html[data-flower-motion="enabled"][data-flower-apple="v17"]
+ :is(.flower-v16-home-hero,.flower-v16-property-hero) .flower-v16-hero-bg{
+  transform:translate3d(0,var(--fm-hero-shift,0px),0) scale(var(--fm-hero-scale,1))!important;
+  clip-path:inset(0 round 25px);
+  transition:transform .11s linear!important;
+ }
+}
+/* Reveal is opt-in at runtime only when below viewport.
+   No JS/reduced motion: no hidden content. */
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-scroll-prepare{
+ opacity:0!important;transform:translate3d(0,25px,0) scale(.985)!important;
+ transition:opacity .75s var(--fm-ease),transform .8s var(--fm-ease)!important;
+ transition-delay:var(--fm-item-delay,0ms)!important;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-scroll-prepare.flower-in-view{
+ opacity:1!important;transform:translate3d(0,0,0) scale(1)!important;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"]
+:is(.v7-unit,.v7-branch-card,.v7-review-card,.v7-gallery-item,.v7-home-gallery-item):is(:hover,:focus-within){
+ transition:transform .3s var(--fm-ease),box-shadow .3s ease!important;
+}
+/* An interactive swipeable image gallery rather than dense thumbnails on mobile.
+   Desktop retains the existing native photo grid. */
+@media(max-width:700px){
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] #gallery .v7-gallery-grid{
+   display:flex!important;flex-wrap:nowrap!important;gap:12px!important;
+   grid-template-columns:none!important;overflow-x:auto!important;overflow-y:hidden!important;
+   scroll-snap-type:x mandatory!important;scroll-padding-inline:14px!important;
+   overscroll-behavior-x:contain!important;
+   -webkit-overflow-scrolling:touch!important;
+   padding-block:7px 12px!important;
+   scrollbar-width:none!important;
+   align-items:stretch!important;
+ }
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] #gallery .v7-gallery-grid::-webkit-scrollbar{
+   display:none!important;
+ }
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] #gallery .v7-gallery-grid > *{
+   display:block;flex:0 0 min(82vw,340px)!important;min-width:0!important;
+   width:min(82vw,340px)!important;max-width:340px!important;
+   scroll-snap-align:center!important;grid-column:auto!important;grid-row:auto!important;
+   border-radius:15px!important;
+ }
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] #gallery .v7-gallery-grid img{
+   width:100%!important;min-height:230px!important;height:clamp(235px,65vw,290px)!important;
+   object-fit:cover!important;
+ }
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] #gallery .v7-gallery-grid [hidden]{
+  display:none!important;
+ }
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-gallery-nav{
+ display:none;align-items:center;justify-content:space-between;
+ max-width:100%;margin:11px auto 0;direction:inherit;gap:10px;
+}
+@media(max-width:700px){
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-gallery-nav{display:flex!important;}
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-gallery-nav button{
+ display:inline-flex;align-items:center;justify-content:center;
+ font-family:inherit;font-weight:670;font-size:13px;line-height:1.2;
+ background:#fff;color:var(--fm-wine);border:1px solid #dbcbd3;
+ border-radius:999px;min-width:91px;min-height:44px;padding:8px 16px;
+ cursor:pointer;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-gallery-nav button:disabled{
+ opacity:.46;cursor:default;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-gallery-nav .flower-gallery-status{
+ font-variant-numeric:tabular-nums;font-size:13px;color:#60515a;
+ font-weight:640;min-width:58px;text-align:center;
+}
+html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-gallery-nav button:focus-visible{
+ outline:3px solid var(--fm-gold);outline-offset:3px;
+}
+/* User preferences and battery saver always override motion. */
+@media(prefers-reduced-motion:reduce){
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] *,
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] *::before,
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] *::after{
+  animation:none!important;transition:none!important;transform:none!important;
+  scroll-behavior:auto!important;
+ }
+ html[data-flower-motion="enabled"][data-flower-apple="v17"] .flower-scroll-prepare{
+  opacity:1!important;
+ }
+}
