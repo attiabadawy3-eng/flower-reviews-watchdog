@@ -238,3 +238,26 @@ html[data-flower-apple="v17"] .flower-design-compare{display:none!important}
  html[data-flower-apple="v17"]{scroll-behavior:auto}
  html[data-flower-apple="v17"] *,html[data-flower-apple="v17"] *::before,html[data-flower-apple="v17"] *::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
+
+
+/* V17.1 desktop enquiry row: allocate room for legible branch/unit selectors.
+   Retain existing form semantics and WhatsApp serialization. */
+@media(min-width:1101px){
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form{
+  display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  gap:12px!important;align-items:stretch!important;width:100%!important;min-width:0!important}
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>label:has(#book-branch),
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>label:has(#book-unit){
+  grid-column:span 3!important;grid-row:auto!important;min-width:0!important}
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>.v12-date-group,
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>.v12-guests-group{
+  grid-column:span 3!important;grid-row:auto!important;min-width:0!important;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>.v7-booking-actions,
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>.v11-booking-summary{
+  grid-column:1/-1!important;grid-row:auto!important;width:100%!important;min-width:0!important}
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>#book-branch,
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>#book-unit{width:100%!important}
+ html[data-flower-apple="v17"] .v7-booking .v7-booking-form>label select{
+  box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important}
+}
