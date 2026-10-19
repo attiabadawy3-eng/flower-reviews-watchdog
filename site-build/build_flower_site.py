@@ -17,26 +17,30 @@ from bs4 import BeautifulSoup
 from flower_v16 import install_hero
 from flower_apple_v17 import apply_apple_v17, PAGE_PATHS as APPLE_PAGES
 from flower_apple_motion import install_motion
+from flower_apple_cinema import install_cinema, SCENES
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
 VARIANT = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower()
 # V17 is the accepted production baseline. Keep staging artifacts separate.
 # Explicit "editorial" retains the historical V16 A/B candidate for reference only.
-if VARIANT not in ("", "production", "apple", "editorial", "apple-motion"):
+if VARIANT not in ("", "production", "apple", "editorial", "apple-motion", "apple-cinematic"):
     raise SystemExit(f"unsupported FLOWER_BUILD_VARIANT: {VARIANT!r}")
 IS_APPLE_STAGING = VARIANT == "apple"
 IS_MOTION_STAGING = VARIANT == "apple-motion"
+CINEMATIC = VARIANT == "apple-cinematic"
 APPLE = VARIANT != "editorial"
-MOTION = IS_MOTION_STAGING
+MOTION = IS_MOTION_STAGING or CINEMATIC
 EDITORIAL = True
 OUT_ZIP = pathlib.Path(
+    "deploy-assets/flower-site-apple-cinematic-staging.zip" if CINEMATIC else
     "deploy-assets/flower-site-apple-motion-staging.zip" if MOTION else
     "deploy-assets/flower-site-apple-staging.zip" if IS_APPLE_STAGING else
     "deploy-assets/flower-site-editorial-staging.zip" if VARIANT == "editorial" else
     "deploy-assets/flower-site-production.zip"
 )
 MANIFEST = pathlib.Path(
+    "deploy-assets/flower-apple-cinematic-staging-manifest.json" if CINEMATIC else
     "deploy-assets/flower-apple-motion-staging-manifest.json" if MOTION else
     "deploy-assets/flower-apple-staging-manifest.json" if IS_APPLE_STAGING else
     "deploy-assets/flower-editorial-staging-manifest.json" if VARIANT == "editorial" else
@@ -500,6 +504,8 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
         apply_apple_v17(soup, url_path)
     if MOTION:
         install_motion(soup, url_path)
+    if CINEMATIC:
+        install_cinema(soup, url_path)
 
     path.write_text(str(soup), encoding="utf-8")
 
@@ -632,6 +638,14 @@ def write_live_assets() -> None:
         ):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(base / filename, destination)
+    if CINEMATIC:
+        base = pathlib.Path(__file__).resolve().parent
+        for filename, destination in (
+            ("flower-apple-cinema.css", ROOT / "assets/css/flower-apple-cinema.css"),
+            ("flower-apple-cinema.js", ROOT / "assets/js/flower-apple-cinema.js")
+        ):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(base / filename, destination)
 
 
 def update_sitemap() -> None:
@@ -754,6 +768,37 @@ def tests() -> dict:
         result["motion_no_new_images"] = all(
             x not in motion_js for x in ("new Image(", "createElement(\"img\")")
         )
+    if CINEMATIC:
+        f4_soup = BeautifulSoup(f4, "html.parser")
+        f4_en_soup = BeautifulSoup(f4_en, "html.parser")
+        sections = [f4_soup.select_one("#flower-cinema"), f4_en_soup.select_one("#flower-cinema")]
+        result["cinema_three_verified_images"] = all(
+            sec is not None and len(sec.select("[data-cinema-scene]")) == 3
+            and [node.get("src") for node in sec.select("[data-cinema-scene] img")] == [scene["photo"] for scene in SCENES]
+            for sec in sections
+        )
+        result["cinema_bookings_unchanged"] = all(
+            sec is not None and sec.select_one('a[href="#booking"]') is not None
+            for sec in sections
+        ) and all(k in f4 for k in ('id="book-branch"', 'id="book-unit"', 'id="book-whatsapp"'))
+        result["cinema_en_ar"] = all(
+            len(sec.select("figcaption h3")) == 3 and len(sec.select(".flower-cinema-copy p")) == 3
+            for sec in sections if sec is not None
+        ) and all(sec is not None for sec in sections)
+        result["cinema_css_js_loaded"] = all(
+            '/assets/css/flower-apple-cinema.css' in txt and '/assets/js/flower-apple-cinema.js' in txt
+            for txt in (f4, f4_en)
+        )
+        result["cinema_only_flower4"] = all(
+            '/assets/js/flower-apple-cinema.js' not in (ROOT / rel).read_text(encoding="utf-8")
+            for rel in ("index.html", "en/index.html", "al-qaisumah/index.html")
+        )
+        motion_js = (ROOT / "assets/js/flower-apple-cinema.js").read_text(encoding="utf-8")
+        motion_css = (ROOT / "assets/css/flower-apple-cinema.css").read_text(encoding="utf-8")
+        result["cinema_accessible_and_throttled"] = all(
+            token in motion_js + motion_css
+            for token in ("prefers-reduced-motion", "requestAnimationFrame", "IntersectionObserver", "aria-hidden", "data-flower-cinema")
+        ) and all(no not in motion_js for no in ("fetch(", "XMLHttpRequest", "https://"))
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
     return result
@@ -782,7 +827,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
-        "variant": "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
+        "variant": "apple-v17.2-cinematic-staging" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
