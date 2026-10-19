@@ -15,12 +15,23 @@ import zipfile
 
 from bs4 import BeautifulSoup
 from flower_v16 import install_hero
+from flower_apple_v17 import apply_apple_v17, PAGE_PATHS as APPLE_PAGES
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
-EDITORIAL = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower() == "editorial"
-OUT_ZIP = pathlib.Path("deploy-assets/flower-site-editorial-staging.zip" if EDITORIAL else "deploy-assets/flower-site-production.zip")
-MANIFEST = pathlib.Path("deploy-assets/flower-editorial-staging-manifest.json" if EDITORIAL else "deploy-assets/flower-site-manifest.json")
+VARIANT = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower()
+APPLE = VARIANT == "apple"
+EDITORIAL = VARIANT in ("apple", "editorial")
+OUT_ZIP = pathlib.Path(
+    "deploy-assets/flower-site-apple-staging.zip" if APPLE else
+    "deploy-assets/flower-site-editorial-staging.zip" if EDITORIAL else
+    "deploy-assets/flower-site-production.zip"
+)
+MANIFEST = pathlib.Path(
+    "deploy-assets/flower-apple-staging-manifest.json" if APPLE else
+    "deploy-assets/flower-editorial-staging-manifest.json" if EDITORIAL else
+    "deploy-assets/flower-site-manifest.json"
+)
 BUILD_DATE = dt.datetime.now(dt.timezone.utc)
 BUILD_DAY = BUILD_DATE.date().isoformat()
 FEED_URL = "https://raw.githubusercontent.com/attiabadawy3-eng/flower-reviews-watchdog/main/public/reviews-summary.json"
@@ -475,6 +486,8 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
     if url_path in ("/al-majmaah-harmah/", "/en/al-majmaah-harmah/"):
         patch_flower4_units(soup, lang)
     install_editorial_layer(soup, url_path)
+    if APPLE:
+        apply_apple_v17(soup, url_path)
 
     path.write_text(str(soup), encoding="utf-8")
 
@@ -594,6 +607,11 @@ def write_live_assets() -> None:
         for src, target in files:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, target)
+    if APPLE:
+        src = pathlib.Path(__file__).resolve().parent / "flower-apple-v17.css"
+        dst = ROOT / "assets/css/flower-apple-v17.css"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dst)
 
 
 def update_sitemap() -> None:
@@ -657,6 +675,38 @@ def tests() -> dict:
         result["v16_unchanged_booking_forms"] = all('id="book-whatsapp"' in p and 'id="book-arrival"' in p and 'id="book-departure"' in p for p in [home, home_en, f4, f4_en])
         result["v16_review_live_hook"] = all('data-google-review-count="flower-4"' in p for p in [f4, f4_en])
 
+    if APPLE:
+        good = []
+        for url_path in sorted(APPLE_PAGES):
+            local = ROOT / (url_path.lstrip("/") + "index.html")
+            if url_path == "/":
+                local = ROOT / "index.html"
+            if not local.exists():
+                good.append(False)
+                continue
+            page_soup = BeautifulSoup(local.read_text(encoding="utf-8"), "html.parser")
+            good.append(
+                page_soup.html.get("data-flower-apple") == "v17"
+                and bool(page_soup.head.find("link", href="/assets/css/flower-apple-v17.css"))
+                and bool(page_soup.find("a", href=lambda h: bool(h) and ("#booking" in h or "booking.com" in h)))
+            )
+        result["apple_all_ten_pages"] = len(good) == 10 and all(good)
+        result["apple_h1_single"] = all(
+            len(BeautifulSoup((ROOT / rel).read_text(encoding="utf-8"), "html.parser").find_all("h1")) == 1
+            for rel in ("index.html", "en/index.html", "al-majmaah-harmah/index.html", "en/al-majmaah-harmah/index.html")
+        )
+        result["apple_no_preview_switcher"] = not any(
+            "flower-design-compare" in (ROOT / rel).read_text(encoding="utf-8")
+            for rel in ("index.html", "al-majmaah-harmah/index.html")
+        )
+        css_text = (ROOT / "assets/css/flower-apple-v17.css").read_text(encoding="utf-8")
+        result["apple_brand_and_reduced_motion"] = all(
+            token in css_text for token in ("#7A314D", "#5B2038", "#B79862", "prefers-reduced-motion")
+        )
+        result["apple_no_external_media"] = not any(
+            token in css_text for token in ("url(http", "@import", "three.js", "WebGL")
+        )
+
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
     return result
@@ -685,6 +735,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
+        "variant": "apple-v17" if APPLE else "editorial" if EDITORIAL else "production",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
