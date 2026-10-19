@@ -1,0 +1,225 @@
+/* FLOWER APPLE PREMIUM V17.3 — image-first product storytelling / staging only.
+   Reuses original FLOWER 4 images; no external fonts, stock imagery, dependencies.
+   Loaded after V17/V17.2. No HTML content hidden without working motion engine. */
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"]){
+ --fp-wine:#7A314D;--fp-dark:#5B2038;--fp-gold:#B79862;
+}
+/* A clear, authentic property photo from the first phone screen. */
+@media(max-width:700px){
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero{
+  display:flex!important;flex-direction:column!important;padding:0 0 29px!important;
+  margin:0!important;background:#fff!important;overflow:visible!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .flower-v16-hero-bg{
+  order:0!important;position:relative!important;display:block!important;
+  width:100%!important;max-width:none!important;height:clamp(280px,74vw,410px)!important;
+  min-height:0!important;max-height:none!important;margin:0!important;
+  object-fit:cover!important;object-position:center 43%!important;
+  border:0!important;border-radius:0!important;filter:none!important;
+  box-shadow:none!important;opacity:1!important;visibility:visible!important;
+  animation:none!important;transform:none!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-content{
+  order:1!important;display:flex!important;align-items:flex-start!important;
+  text-align:start!important;width:calc(100% - 40px)!important;
+  max-width:none!important;padding:21px 0 14px!important;min-height:0!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero :is(h1,.v16-branch-intro,.v16-breadcrumb,.v16-property-proof){
+ text-align:start!important;align-self:stretch!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero h1{
+ font-size:clamp(31px,8vw,40px)!important;margin:7px 0 0!important;
+ line-height:1.26!important;text-align:start!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-headline-sub{
+ margin:6px 0 0!important;font-size:.6em!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero :is(.v16-hero-intro,.v16-branch-intro){
+ margin:10px 0 0!important;font-size:13px!important;line-height:1.75!important;
+ text-align:start!important;max-width:43ch!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-property-proof{
+ justify-content:flex-start!important;margin:12px 0 0!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-hero-actions{
+ margin:18px 0 0!important;display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;gap:0!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-hero-actions .v16-secondary{
+ display:none!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-hero-actions .v16-primary{
+ max-width:100%!important;min-height:49px!important;background:#7A314D!important;
+ color:white!important;font-weight:720!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-property-hero-thumbs{display:none!important}
+}
+/* Desktop: make the initial hero visibly photographic; no half-page of empty whites. */
+@media(min-width:701px){
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-content{
+ padding:clamp(26px,3.2vw,47px) 0 28px!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero h1{
+ font-size:clamp(43px,4.4vw,69px)!important;margin:12px 0 0!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-branch-intro{
+ margin:11px auto 0!important;font-size:15px!important;max-width:52ch!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-hero-actions{
+ margin:20px 0 0!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .flower-v16-hero-bg{
+ height:clamp(345px,43vw,570px)!important;
+}
+html[data-flower-apple="v17"] body.v15-editorial.v7-branch:has(#flower-cinema[data-flower-story="premium"])
+ .flower-v16-property-hero .v16-property-hero-thumbs{
+ margin-top:11px!important;
+}
+}
+/* Cinema: product focus, restrained copy, one final booking action. */
+#flower-cinema[data-flower-story="premium"] .flower-cinema-intro{
+ padding-top:clamp(44px,7vw,96px);padding-bottom:clamp(25px,4vw,46px);
+}
+#flower-cinema[data-flower-story="premium"] .flower-cinema-intro h2{
+ font-size:clamp(34px,5.3vw,72px);letter-spacing:-.048em;line-height:1.16;
+}
+#flower-cinema[data-flower-story="premium"] .flower-cinema-intro>p:last-child{
+ max-width:46ch;font-size:clamp(14px,1.2vw,17px);
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-track{height:290svh!important}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-frame{
+ transform:scale(var(--fc-frame-scale,.91)) translateZ(0)!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-scene::after{
+ background:linear-gradient(0deg,rgba(19,8,15,.75) 0%,rgba(19,8,15,.12) 33%,transparent 68%)!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-copy{
+ bottom:clamp(90px,14vh,135px)!important;
+ inset-inline-start:clamp(26px,6vw,100px)!important;
+ width:min(760px,78%)!important;
+ transform:translate3d(0,18px,0)!important;
+ opacity:0!important;transition:opacity .64s cubic-bezier(.2,.72,.2,1),
+ transform .7s cubic-bezier(.2,.72,.2,1)!important;
+ pointer-events:none!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-copy h3{
+ font-size:clamp(38px,5.2vw,74px)!important;line-height:1.13!important;
+ max-width:14ch!important;text-shadow:0 6px 26px rgba(0,0,0,.26)!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-copy p{
+ font-size:clamp(15px,1.4vw,19px)!important;line-height:1.75!important;max-width:35ch!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-controls{justify-content:center!important}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-link{
+ opacity:0;visibility:hidden;pointer-events:none!important;
+ position:absolute;inset-inline-end:0;
+ transition:opacity .3s ease,visibility .3s ease!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-progress span{
+ height:4px;width:clamp(40px,5vw,72px);transition:background .3s ease;
+}
+/* Text arrives after each photograph has settled. The book CTA only on chapter 3. */
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-stage[data-cinema-chapter="1"] [data-cinema-scene="0"] .flower-cinema-copy,
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-stage[data-cinema-chapter="2"] [data-cinema-scene="1"] .flower-cinema-copy,
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-stage[data-cinema-chapter="3"] [data-cinema-scene="2"] .flower-cinema-copy{
+ opacity:1!important;transform:translate3d(0,0,0)!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-stage[data-cinema-chapter="3"] .flower-cinema-link{
+ opacity:1;visibility:visible;pointer-events:auto!important;
+}
+/* The detail cards read as individual hospitality products on wide screens. */
+@media(min-width:901px){
+html[data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list{display:grid!important;grid-template-columns:1fr!important;gap:22px!important}
+html[data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list .v7-unit{
+ display:grid!important;grid-template-columns:1fr 1fr!important;
+ min-height:390px!important;align-items:stretch!important;padding:0!important;gap:0!important;
+ border-radius:24px!important;overflow:hidden!important;
+}
+html[data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list .v7-unit:nth-child(2n){
+ direction:ltr!important;
+}
+html[data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list .v7-unit .v7-unit-media{
+ min-height:390px!important;height:100%!important;max-height:none!important;overflow:hidden!important;
+}
+html[data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list .v7-unit .v7-unit-media>img{
+ width:100%!important;height:100%!important;min-height:390px!important;
+ object-fit:cover!important;display:block!important;
+}
+html[data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list .v7-unit .v7-unit-copy{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+ justify-content:center!important;padding:clamp(28px,4.5vw,66px)!important;min-width:0!important;
+ direction:rtl!important;text-align:start!important;
+}
+html[lang="en"][data-flower-apple="v17"] body:has(#flower-cinema[data-flower-story="premium"])
+ #stay .v7-unit-list .v7-unit .v7-unit-copy{direction:ltr!important}
+}
+@media(max-width:700px){
+#flower-cinema[data-flower-story="premium"] .flower-cinema-intro{padding:41px 20px 24px}
+#flower-cinema[data-flower-story="premium"] .flower-cinema-intro h2{font-size:clamp(31px,8vw,40px)}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"] .flower-cinema-track{
+ height:255svh!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"] .flower-cinema-copy{
+ width:auto!important;inset-inline:22px!important;bottom:107px!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"] .flower-cinema-copy h3{
+ font-size:clamp(34px,8.8vw,45px)!important;max-width:11ch!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"] .flower-cinema-copy p{
+ font-size:14px!important;max-width:28ch!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"] .flower-cinema-controls{
+ justify-content:flex-start!important;inset-inline:20px!important;bottom:27px!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-stage[data-cinema-chapter="3"] .flower-cinema-controls{
+ justify-content:space-between!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"] .flower-cinema-link{
+ position:relative;inset:auto;font-size:12px!important;padding:7px 12px!important;min-height:40px!important;
+}
+html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-progress span{width:26px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-copy{opacity:1!important;transform:none!important;pointer-events:auto!important}
+ html[data-flower-cinema="ready"] #flower-cinema[data-flower-story="premium"]
+ .flower-cinema-link{opacity:1!important;visibility:visible!important;pointer-events:auto!important;position:static!important}
+}
