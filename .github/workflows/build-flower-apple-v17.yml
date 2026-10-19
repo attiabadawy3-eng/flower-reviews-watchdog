@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: flower-website-artifact-writers
+  group: flower-apple-v17-build
   cancel-in-progress: false
 
 jobs:
