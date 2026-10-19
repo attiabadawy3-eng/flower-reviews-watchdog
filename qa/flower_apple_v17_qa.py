@@ -2,8 +2,8 @@ import asyncio, json, os
 from pathlib import Path
 from playwright.async_api import async_playwright
 
-BASE="https://flower-unified-staging.onrender.com"
-OUT=Path("apple-qa")
+BASE=os.environ.get("FLOWER_QA_BASE_URL","https://flower-unified-staging.onrender.com").rstrip("/")
+OUT=Path(os.environ.get("FLOWER_QA_OUTPUT","apple-qa"))
 OUT.mkdir(parents=True,exist_ok=True)
 CASES=[
     ("/",390,"home-ar-mobile"),("/en/",390,"home-en-mobile"),
