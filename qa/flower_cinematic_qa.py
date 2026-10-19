@@ -105,7 +105,8 @@ async def main():
             # JS disabled: semantic complete scenes must remain visible.
             context=await browser.new_context(viewport={"width":390,"height":860},java_script_enabled=False)
             page=await context.new_page()
-            await page.goto(BASE+"/al-majmaah-harmah/?cinema_nojs=1",wait_until="domcontentloaded")
+            await page.goto(BASE+"/al-majmaah-harmah/?cinema_nojs=1",wait_until="load",timeout=45000)
+            await page.wait_for_timeout(500)
             data=await measure(page)
             ok=data["mode"] is None and data["sceneCount"]==3 and data["booking"] and data["scrollWidth"]<=393
             results.append({"browser":browser_name,"case":"no-js-fallback","status":"PASS" if ok else "FAIL","metrics":data})
