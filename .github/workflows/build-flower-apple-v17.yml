@@ -1,0 +1,70 @@
+name: Build FLOWER Apple V17 Staging
+
+on:
+  push:
+    paths:
+      - "site-build/**"
+      - ".github/workflows/build-flower-apple-v17.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flower-website-artifact-writers
+  cancel-in-progress: false
+
+jobs:
+  apple-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      FLOWER_BUILD_VARIANT: apple
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install HTML parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Build V17 from actual FLOWER live source
+        run: python site-build/build_flower_site.py
+      - name: Validate ten pages and archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-site-apple-staging.zip > /dev/null
+          python - <<'PY'
+          import json,pathlib,zipfile
+          m=json.loads(pathlib.Path("deploy-assets/flower-apple-staging-manifest.json").read_text(encoding="utf-8"))
+          assert m["variant"] == "apple-v17"
+          assert all(m["tests"].values()), m["tests"]
+          with zipfile.ZipFile("deploy-assets/flower-site-apple-staging.zip") as z:
+              names=set(z.namelist())
+              required={"index.html","en/index.html","al-majmaah-harmah/index.html",
+                        "en/al-majmaah-harmah/index.html","assets/css/flower-apple-v17.css",
+                        "assets/js/google-reviews-live.js","robots.txt","sitemap.xml"}
+              assert not (required - names),required-names
+          print("FLOWER APPLE V17 VALIDATED",m["fileCount"],m["zipBytes"])
+          PY
+      - name: Publish isolated V17 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "flower-apple-site-builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add deploy-assets/flower-site-apple-staging.zip deploy-assets/flower-apple-staging-manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "build: FLOWER Apple V17 staging ZIP"
+          for i in 1 2 3 4; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git reset --mixed origin/main
+            git add deploy-assets/flower-site-apple-staging.zip deploy-assets/flower-apple-staging-manifest.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "build: FLOWER Apple V17 staging ZIP"
+            sleep 2
+          done
+          exit 1
