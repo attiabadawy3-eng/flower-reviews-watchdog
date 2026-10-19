@@ -1,16 +1,17 @@
 {
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
-  "variant": "production",
-  "builtAt": "2026-10-19T10:59:14.914943+00:00",
-  "fileCount": 54,
-  "zipBytes": 2629504,
+  "variant": "apple-v17",
+  "builtAt": "2026-10-19T11:13:57.590014+00:00",
+  "fileCount": 55,
+  "zipBytes": 2632597,
   "changes": [
     "automatic Google review metrics feed",
     "verified fallback Google counts for all four branches",
     "Flower 4 unit amenity de-generalization",
     "ThreeUI-inspired native CSS micro-interactions without React/WebGL",
-    "sitemap lastmod refresh for home and Flower 4"
+    "sitemap lastmod refresh for home and Flower 4",
+    "Apple-inspired FLOWER V17: 10 bilingual pages, photo-first heroes, booking UX, no preview toolbar, and single H1"
   ],
   "tests": {
     "f4_review_fallback_142": true,
@@ -23,6 +24,25 @@
     "canonical_kept": true,
     "booking_link_kept": true,
     "whatsapp_kept": true,
-    "motion_reduced_supported": true
+    "motion_reduced_supported": true,
+    "editorial_home_ar_en": true,
+    "editorial_f4_ar_en": true,
+    "design_switcher_staging_only": true,
+    "original_images_only": true,
+    "no_threejs_dependency": true,
+    "editorial_reduced_motion": true,
+    "editorial_focus_visible": true,
+    "v16_new_immersive_hero": true,
+    "v16_ar_en_both_pages": true,
+    "v16_switcher_preserves_classic": true,
+    "v16_original_photos_only": true,
+    "v16_mobile_breakpoint": true,
+    "v16_unchanged_booking_forms": true,
+    "v16_review_live_hook": true,
+    "apple_all_ten_pages": true,
+    "apple_h1_single": true,
+    "apple_no_preview_switcher": true,
+    "apple_brand_and_reduced_motion": true,
+    "apple_no_external_media": true
   }
 }
