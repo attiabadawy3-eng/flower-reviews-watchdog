@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
   "variant": "apple-v17",
-  "builtAt": "2026-10-19T10:59:54.993636+00:00",
+  "builtAt": "2026-10-19T11:13:57.181315+00:00",
   "fileCount": 55,
   "zipBytes": 2632597,
   "changes": [
@@ -11,7 +11,7 @@
     "Flower 4 unit amenity de-generalization",
     "ThreeUI-inspired native CSS micro-interactions without React/WebGL",
     "sitemap lastmod refresh for home and Flower 4",
-    "ThreeUI-inspired editorial hero, gallery, real booking CTA and staging A/B switcher"
+    "Apple-inspired FLOWER V17: 10 bilingual pages, photo-first heroes, booking UX, no preview toolbar, and single H1"
   ],
   "tests": {
     "f4_review_fallback_142": true,
