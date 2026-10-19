@@ -16,23 +16,28 @@ import zipfile
 from bs4 import BeautifulSoup
 from flower_v16 import install_hero
 from flower_apple_v17 import apply_apple_v17, PAGE_PATHS as APPLE_PAGES
+from flower_apple_motion import install_motion
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
 VARIANT = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower()
 # V17 is the accepted production baseline. Keep staging artifacts separate.
 # Explicit "editorial" retains the historical V16 A/B candidate for reference only.
-if VARIANT not in ("", "production", "apple", "editorial"):
+if VARIANT not in ("", "production", "apple", "editorial", "apple-motion"):
     raise SystemExit(f"unsupported FLOWER_BUILD_VARIANT: {VARIANT!r}")
 IS_APPLE_STAGING = VARIANT == "apple"
+IS_MOTION_STAGING = VARIANT == "apple-motion"
 APPLE = VARIANT != "editorial"
+MOTION = IS_MOTION_STAGING
 EDITORIAL = True
 OUT_ZIP = pathlib.Path(
+    "deploy-assets/flower-site-apple-motion-staging.zip" if MOTION else
     "deploy-assets/flower-site-apple-staging.zip" if IS_APPLE_STAGING else
     "deploy-assets/flower-site-editorial-staging.zip" if VARIANT == "editorial" else
     "deploy-assets/flower-site-production.zip"
 )
 MANIFEST = pathlib.Path(
+    "deploy-assets/flower-apple-motion-staging-manifest.json" if MOTION else
     "deploy-assets/flower-apple-staging-manifest.json" if IS_APPLE_STAGING else
     "deploy-assets/flower-editorial-staging-manifest.json" if VARIANT == "editorial" else
     "deploy-assets/flower-site-manifest.json"
@@ -493,6 +498,8 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
     install_editorial_layer(soup, url_path)
     if APPLE:
         apply_apple_v17(soup, url_path)
+    if MOTION:
+        install_motion(soup, url_path)
 
     path.write_text(str(soup), encoding="utf-8")
 
@@ -617,6 +624,14 @@ def write_live_assets() -> None:
         dst = ROOT / "assets/css/flower-apple-v17.css"
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, dst)
+    if MOTION:
+        base = pathlib.Path(__file__).resolve().parent
+        for filename, destination in (
+            ("flower-apple-motion.css", ROOT / "assets/css/flower-apple-motion.css"),
+            ("flower-apple-motion.js", ROOT / "assets/js/flower-apple-motion.js")
+        ):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(base / filename, destination)
 
 
 def update_sitemap() -> None:
@@ -712,6 +727,33 @@ def tests() -> dict:
             token in css_text for token in ("url(http", "@import", "three.js", "WebGL")
         )
 
+    if MOTION:
+        import re
+        pages = (
+            "index.html","en/index.html","al-majmaah-harmah/index.html",
+            "en/al-majmaah-harmah/index.html", "dammam-al-anoud/index.html",
+            "en/dammam-al-anoud/index.html", "dammam-al-salam/index.html",
+            "en/dammam-al-salam/index.html", "al-qaisumah/index.html",
+            "en/al-qaisumah/index.html",
+        )
+        result["motion_isolation_ten_pages"] = all(
+            '/assets/css/flower-apple-motion.css' in (ROOT / p).read_text(encoding="utf-8")
+            and '/assets/js/flower-apple-motion.js' in (ROOT / p).read_text(encoding="utf-8")
+            for p in pages
+        )
+        motion_js = (ROOT / "assets/js/flower-apple-motion.js").read_text(encoding="utf-8")
+        motion_css = (ROOT / "assets/css/flower-apple-motion.css").read_text(encoding="utf-8")
+        result["motion_accessibility"] = all(
+            x in motion_js + motion_css for x in
+            ("prefers-reduced-motion", "aria-label", "aria-live", "IntersectionObserver")
+        )
+        result["motion_no_network_or_external_packages"] = all(
+            x not in motion_js + motion_css for x in
+            ("fetch(", "XMLHttpRequest", "@import", "https://", "three.js")
+        )
+        result["motion_no_new_images"] = all(
+            x not in motion_js for x in ("new Image(", "createElement(\"img\")")
+        )
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
     return result
@@ -740,7 +782,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
-        "variant": "apple-v17" if APPLE else "editorial-v16-legacy",
+        "variant": "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
