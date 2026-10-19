@@ -1,10 +1,10 @@
 from __future__ import annotations
-import asyncio, json
+import asyncio, json, os
 from pathlib import Path
 from playwright.async_api import async_playwright
 
-BASE = "https://flower-unified-staging.onrender.com"
-OUT = Path("premium-qa")
+BASE = os.environ.get("FLOWER_PREMIUM_QA_BASE","https://flower-unified-staging.onrender.com").rstrip("/")
+OUT = Path(os.environ.get("FLOWER_PREMIUM_QA_OUTPUT","premium-qa"))
 OUT.mkdir(exist_ok=True)
 
 async def main():
