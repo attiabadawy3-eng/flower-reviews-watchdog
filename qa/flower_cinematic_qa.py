@@ -119,6 +119,7 @@ async def main():
             await context.close()
             await browser.close()
     (OUT/"report.json").write_text(json.dumps(results,ensure_ascii=False,indent=2))
+    print("FALLBACK CHECKS "+json.dumps([r for r in results if "metrics" in r or "homepage" in r["case"]],ensure_ascii=False),flush=True)
     failed=[r for r in results if r["status"]!="PASS"]
     print(f"FLOWER CINEMATIC V17.2 QA: {len(results)-len(failed)}/{len(results)} PASS",flush=True)
     if failed:raise SystemExit(1)
