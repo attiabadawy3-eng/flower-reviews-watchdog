@@ -63,7 +63,7 @@ async def main():
                         if len(details["copyTitles"])!=3:issues.append("story_titles_missing")
                         if details["cta"]!="#booking":issues.append("final_enquiry_link_missing")
                         if not details["unit"] or not details["unitMedia"] or not details["unitCopy"]:issues.append("units_missing")
-                        if width>=900 and details["unitMedia"] and details["unitCopy"] and
+                        if (width>=900 and details["unitMedia"] and details["unitCopy"] and
                             min(details["unitMedia"]["width"],details["unitCopy"]["width"])<width*.25):
                             issues.append("desktop_units_layout_too_narrow")
                         if errors:issues.append("js_errors:"+str(errors)[:100])
