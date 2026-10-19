@@ -1,0 +1,107 @@
+/* FLOWER | Apple-style cinematic showcase. Original FL4 images only.
+   Staging candidate. Accessible non-JS, reduced-motion and save-data fallback. */
+.flower-cinema{--fc-wine:#7A314D;--fc-deep:#5B2038;--fc-gold:#B79862;background:#f7f7f8;color:#241820;contain:layout style}
+.flower-cinema *{box-sizing:border-box}
+.flower-cinema-intro{text-align:center;padding:clamp(62px,9vw,114px) 20px clamp(27px,5vw,65px);max-width:1100px;margin-inline:auto}
+.flower-cinema-eyebrow{font-size:12px;color:var(--fc-wine);font-weight:740;letter-spacing:.16em;line-height:1.5}
+.flower-cinema-intro h2{color:#271d24;font-size:clamp(36px,5.1vw,76px);line-height:1.2;letter-spacing:-.045em;font-weight:780;text-wrap:balance;max-width:920px;margin:13px auto 17px}
+.flower-cinema-intro>p:last-child{font-size:clamp(15px,1.45vw,18px);color:#605761;line-height:1.85;max-width:600px;margin:0 auto}
+.flower-cinema-track{max-width:1500px;margin:auto;padding:0 20px 45px}
+.flower-cinema-stage{position:relative}
+.flower-cinema-frame{display:grid;gap:22px;grid-template-columns:repeat(3,minmax(0,1fr));}
+.flower-cinema-scene{position:relative;overflow:hidden;border-radius:21px;min-width:0;margin:0;min-height:440px;background:#210e19}
+.flower-cinema-scene img{display:block;width:100%;height:440px;object-fit:cover;object-position:center;filter:saturate(.96)}
+.flower-cinema-scene::after{content:"";pointer-events:none;position:absolute;inset:30% 0 0;background:linear-gradient(0deg,rgba(15,7,11,.78) 0%,transparent 100%)}
+.flower-cinema-copy{position:absolute;z-index:2;inset-inline:clamp(16px,2.8vw,40px);bottom:clamp(20px,2.8vw,38px);color:#fff;direction:inherit}
+.flower-cinema-index{display:block;color:#e2c297;font-size:12px;letter-spacing:.12em;font-weight:700;margin-bottom:11px}
+.flower-cinema-copy h3{color:#fff;font-size:clamp(22px,2.35vw,35px);font-weight:740;letter-spacing:-.04em;line-height:1.22;margin:0 0 9px}
+.flower-cinema-copy p{color:#f4ebef;font-size:clamp(12px,1.1vw,15px);line-height:1.85;margin:0;max-width:45ch}
+.flower-cinema-controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:20px}
+.flower-cinema-progress{display:none;gap:7px}
+.flower-cinema-progress span{display:block;width:28px;height:3px;border-radius:99px;background:#ded2d8}
+.flower-cinema-link{display:inline-flex;align-items:center;justify-content:center;min-height:45px;padding:10px 24px;border:1px solid #7A314D;background:#7A314D;color:#fff!important;text-decoration:none;border-radius:999px;font-size:14px;font-weight:670}
+.flower-cinema-link:hover{background:#5B2038}
+.flower-cinema-link:focus-visible{outline:3px solid #B79862;outline-offset:3px}
+/* The scroll-pinned scene is activated only by JS, never hides content by default. */
+html[data-flower-cinema="ready"] .flower-cinema{background:linear-gradient(180deg,#f7f7f8,#f0eef0)}
+html[data-flower-cinema="ready"] .flower-cinema-track{height:320svh;max-width:none;padding:0;margin:0;position:relative}
+html[data-flower-cinema="ready"] .flower-cinema-stage{position:sticky;top:0;height:100svh;min-height:520px;overflow:hidden;isolation:isolate;background:#201019}
+html[data-flower-cinema="ready"] .flower-cinema-frame{
+ position:absolute;inset:0;display:block;overflow:hidden;
+ border-radius:var(--fc-radius,34px);
+ transform:scale(var(--fc-frame-scale,.88)) translateZ(0);
+ will-change:transform;border:1px solid rgba(183,152,98,.2);background:#21101a;
+}
+html[data-flower-cinema="ready"] .flower-cinema-scene{
+ display:block!important;position:absolute;inset:0;height:100%;min-height:0;
+ border-radius:0;margin:0;overflow:hidden;opacity:0;will-change:opacity;
+ pointer-events:none;
+}
+html[data-flower-cinema="ready"] .flower-cinema-scene:first-child{opacity:1}
+html[data-flower-cinema="ready"] .flower-cinema-scene img{
+ display:block;width:100%;height:100%;min-height:100%;object-fit:cover;
+ transform:scale(var(--fc-img-scale,1.04));will-change:transform;filter:saturate(.94) brightness(.92);
+}
+html[data-flower-cinema="ready"] .flower-cinema-scene::after{
+ content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(21,9,16,.68),rgba(21,9,16,.04) 70%);
+ pointer-events:none;
+}
+html[data-flower-cinema="ready"] .flower-cinema-copy{
+ bottom:clamp(100px,14vh,160px);inset-inline-start:clamp(30px,7vw,115px);
+ inset-inline-end:auto;width:min(560px,72%);z-index:3;
+ transform:translate3d(0,var(--fc-copy-shift,0px),0);
+}
+html[dir="rtl"][data-flower-cinema="ready"] .flower-cinema-copy{inset-inline-start:clamp(30px,7vw,115px)}
+html[data-flower-cinema="ready"] .flower-cinema-copy h3{font-size:clamp(35px,5vw,68px);line-height:1.14;text-wrap:balance;text-shadow:0 4px 16px rgba(10,4,9,.27)}
+html[data-flower-cinema="ready"] .flower-cinema-copy p{font-size:clamp(15px,1.6vw,20px);max-width:44ch}
+html[data-flower-cinema="ready"] .flower-cinema-controls{
+ position:absolute;z-index:5;bottom:clamp(28px,5vw,68px);
+ inset-inline-start:clamp(30px,7vw,115px);inset-inline-end:clamp(30px,7vw,115px);
+ display:flex;align-items:center;justify-content:space-between;padding:0;
+ pointer-events:none;
+}
+html[data-flower-cinema="ready"] .flower-cinema-progress{display:flex}
+html[data-flower-cinema="ready"] .flower-cinema-progress span{background:rgba(255,255,255,.38);width:clamp(30px,4vw,60px);height:4px}
+html[data-flower-cinema="ready"] .flower-cinema-progress span.fc-active{background:#D9B885}
+html[data-flower-cinema="ready"] .flower-cinema-link{pointer-events:auto;background:#fff;color:#5B2038!important;border-color:#fff;min-height:48px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+html[data-flower-cinema="ready"] .flower-cinema-link:hover{background:#eee4ea}
+/* Make phone chapters cinematic, without forcing a giant or blank initial hero. */
+@media(max-width:700px){
+ .flower-cinema-intro{padding:63px 21px 30px}
+ .flower-cinema-intro h2{font-size:clamp(30px,8.4vw,42px);line-height:1.3}
+ .flower-cinema-track{padding:0 13px 26px}
+ .flower-cinema-frame{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px}
+ .flower-cinema-scene{flex:0 0 88%;min-height:380px;scroll-snap-align:center;border-radius:17px}
+ .flower-cinema-scene img{height:440px;min-height:440px}
+ .flower-cinema-copy h3{font-size:25px}
+ html[data-flower-cinema="ready"] .flower-cinema-track{height:280svh;padding:0}
+ html[data-flower-cinema="ready"] .flower-cinema-stage{height:90svh;min-height:390px;top:0;overflow:hidden}
+ html[data-flower-cinema="ready"] .flower-cinema-frame{border-radius:var(--fc-radius,17px)}
+ html[data-flower-cinema="ready"] .flower-cinema-scene img{object-position:center;filter:brightness(.88) saturate(.95)}
+ html[data-flower-cinema="ready"] .flower-cinema-scene::after{background:linear-gradient(0deg,rgba(21,9,16,.85),rgba(21,9,16,.06) 75%)}
+ html[data-flower-cinema="ready"] .flower-cinema-copy{bottom:105px;inset-inline:22px;width:auto}
+ html[data-flower-cinema="ready"] .flower-cinema-copy h3{font-size:clamp(29px,7.5vw,42px);line-height:1.21}
+ html[data-flower-cinema="ready"] .flower-cinema-copy p{font-size:14px;max-width:34ch}
+ html[data-flower-cinema="ready"] .flower-cinema-controls{inset-inline:20px;bottom:32px;gap:13px}
+ html[data-flower-cinema="ready"] .flower-cinema-link{font-size:12px;padding:9px 16px;min-height:42px}
+ html[data-flower-cinema="ready"] .flower-cinema-progress span{width:25px}
+}
+@media(max-width:380px){
+ html[data-flower-cinema="ready"] .flower-cinema-copy{bottom:98px}
+ html[data-flower-cinema="ready"] .flower-cinema-controls{bottom:24px}
+}
+/* Accessibility: no scroll pinning, no invisible scenes when reduced motion is requested. */
+@media(prefers-reduced-motion:reduce){
+ html[data-flower-cinema="ready"] .flower-cinema-track{height:auto!important;position:static!important;padding:0 14px 30px!important}
+ html[data-flower-cinema="ready"] .flower-cinema-stage{height:auto!important;position:static!important;min-height:0!important;overflow:visible!important;background:transparent!important}
+ html[data-flower-cinema="ready"] .flower-cinema-frame{position:static!important;inset:auto!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important;transform:none!important;border:0!important;will-change:auto!important}
+ html[data-flower-cinema="ready"] .flower-cinema-scene{position:relative!important;inset:auto!important;opacity:1!important;min-height:390px!important;border-radius:15px!important;pointer-events:auto!important}
+ html[data-flower-cinema="ready"] .flower-cinema-scene img{height:390px!important;transform:none!important}
+ html[data-flower-cinema="ready"] .flower-cinema-copy{inset-inline:18px!important;bottom:25px!important;width:auto!important;transform:none!important}
+ html[data-flower-cinema="ready"] .flower-cinema-copy h3{font-size:24px!important}
+ html[data-flower-cinema="ready"] .flower-cinema-controls{position:static!important;padding:20px!important;justify-content:center!important}
+ html[data-flower-cinema="ready"] .flower-cinema-progress{display:none!important}
+}
+@media(max-width:850px) and (prefers-reduced-motion:reduce){
+ html[data-flower-cinema="ready"] .flower-cinema-frame{grid-template-columns:minmax(0,1fr)!important}
+}
