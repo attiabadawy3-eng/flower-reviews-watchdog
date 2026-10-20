@@ -150,7 +150,47 @@ def tune_units(s, main, en):
             if not img.get("decoding"): img["decoding"]="async"
     return stay
 
-def patch(raw, filename, assets):
+
+# V19 stylesheet bundling preserves the exact cascade and source files, replacing
+# eleven to fifteen sequential CSS requests with one per distinct template.
+# The real CSS file bytes are untouched inside the archive for rollback.
+BUNDLES = {}
+
+def consolidate_css(s, archive, names):
+    import re
+    links=list(s.head.select('link[rel="stylesheet"]'))
+    local=[node for node in links if (node.get("href") or "").startswith("/assets/css/")]
+    assert len(local)>=8,("unexpected missing stylesheets",len(local))
+    urls=[node.get("href") for node in local]
+    for href in urls:
+        assert href == "/"+CSS_PATH or href.lstrip("/") in names,("stylesheet missing",href)
+    # The original site's external font stylesheet occurs before local style
+    # sheets. Abort rather than silently changing cascade around an external.
+    positions=[links.index(x) for x in local]
+    assert positions == list(range(min(positions),max(positions)+1)),("noncontiguous CSS",urls)
+    sections=[]
+    for href in urls:
+        data=(pathlib.Path("site-build/flower-v19.css").read_bytes()
+              if href == "/"+CSS_PATH else archive.read(href.lstrip("/")))
+        decoded=data.decode("utf-8")
+        assert not re.search(r"@import\b",decoded,re.I),("import would change cascade",href)
+        decoded=re.sub(r'^\ufeff?\s*@charset\s+["\'][^"\']+["\'];', '', decoded, flags=re.I)
+        sections.append(f"\n/* FLOWER V19 preserved cascade: {href} */\n{decoded}\n")
+    signature=hashlib.sha256("|".join(urls).encode("utf8")).hexdigest()[:12]
+    bundle=f"assets/css/flower-signature-v19-bundle-{signature}.css"
+    payload="\n".join(sections).encode("utf8")
+    if bundle in BUNDLES:
+        assert BUNDLES[bundle]==payload
+    else:
+        BUNDLES[bundle]=payload
+    anchor=local[0]
+    bundled=new(s,"link",**{"rel":"stylesheet","href":"/"+bundle})
+    anchor.insert_before(bundled)
+    for item in local: item.decompose()
+    assert len(s.head.select('link[rel="stylesheet"]'))==len(links)-len(local)+1
+    return bundle
+
+def patch(raw, filename, assets, archive):
     soup=BeautifulSoup(raw.decode("utf-8"),"html.parser")
     en=filename.startswith("en/")
     relative=filename[3:] if en else filename
@@ -201,7 +241,8 @@ def patch(raw, filename, assets):
     script=new(soup,"script",**{"src":"/"+JS_PATH,"defer":"defer"})
     soup.body.append(script)
     preload=new(soup,"link",**{"rel":"preload","as":"image","href":photo,"fetchpriority":"high"})
-    soup.head.append(preload)
+    soup.head.insert(0,preload)
+    stylesheet_bundle=consolidate_css(soup,archive,assets)
     # No invented prices/availability, no SEO rewrites, maintain one accessible H1.
     assert len(soup.select("h1"))==1,filename
     assert soup.select_one("#book-arrival") and soup.select_one("#book-departure")
@@ -213,7 +254,7 @@ def patch(raw, filename, assets):
         assert soup.select_one(".v7-policy-list"),filename
     return str(soup).encode("utf-8"), {"path":filename,"photo":photo,"branches_preserved":len(soup.select("#book-branch option")),
         "h1":soup.select_one("h1").get_text(" ",strip=True),"unit_count":len(soup.select("#stay .v7-unit")),
-        "v19_css":True,"v19_js":True}
+        "v19_css":True,"v19_js":True,"css_bundle":stylesheet_bundle}
 
 def main():
     if not SOURCE.is_file(): raise SystemExit(f"V18 source missing: {SOURCE}")
@@ -229,19 +270,23 @@ def main():
         for i in z.infolist():
             content=z.read(i.filename)
             if i.filename in paths:
-                content,details=patch(content,i.filename,available)
+                content,details=patch(content,i.filename,available,z)
                 rows.append(details)
             out.writestr(i,content)
         out.writestr(CSS_PATH,css)
         out.writestr(JS_PATH,js)
+        for path,data in BUNDLES.items():
+            out.writestr(path,data)
     assert len(rows)==10
     with zipfile.ZipFile(SOURCE) as z1,zipfile.ZipFile(OUTPUT) as z2:
-        assert set(z2.namelist())==set(z1.namelist())|{CSS_PATH,JS_PATH}
+        assert set(z2.namelist())==set(z1.namelist())|{CSS_PATH,JS_PATH}|set(BUNDLES)
         same=[x for x in z1.namelist() if x not in paths]
         assert all(hashlib.sha256(z1.read(n)).digest()==hashlib.sha256(z2.read(n)).digest() for n in same)
         for filename in paths:
             doc=BeautifulSoup(z2.read(filename),"html.parser")
             assert len(doc.select("section.fx19-hero"))==1
+            assert len(doc.select('link[href*="flower-signature-v19-bundle-"]'))==1
+            assert not doc.select('link[href="/assets/css/site-v2.css"]')
             assert doc.select_one("#book-whatsapp") and doc.select_one("#book-booking")
             assert doc.select_one('#book-branch option[data-booking][data-phone]')
             assert doc.select_one("#stay") and doc.select_one("#gallery")
@@ -262,6 +307,8 @@ def main():
        "production_changed":False,
        "total_pages_changed":len(rows),
        "all_original_assets_unchanged":True,
+       "render_critical_stylesheet_bundles":{k:len(v) for k,v in BUNDLES.items()},
+       "css_link_requests_reduced":True,
        "all_untouched_files_byte_identical":True,
        "booking_ids_preserved":True,
        "live_prices_or_availability_invented":False,
