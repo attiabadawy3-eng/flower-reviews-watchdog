@@ -1,0 +1,106 @@
+{
+  "variant": "flower-signature-v19-staging",
+  "based_on": "flower-signature-v18-unified-times.zip",
+  "baseline_preserved": true,
+  "production_changed": false,
+  "total_pages_changed": 10,
+  "all_original_assets_unchanged": true,
+  "all_untouched_files_byte_identical": true,
+  "booking_ids_preserved": true,
+  "live_prices_or_availability_invented": false,
+  "all_branches_ar_en_checked": true,
+  "pages": [
+    {
+      "path": "al-majmaah-harmah/index.html",
+      "photo": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+      "branches_preserved": 4,
+      "h1": "فلور 4  ·  حرمة إقامتك في حرمة بطابع مختلف.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "al-qaisumah/index.html",
+      "photo": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+      "branches_preserved": 4,
+      "h1": "فلور 3  ·  القيصومة اختيار مريح لكل تفاصيل الرحلة.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "dammam-al-anoud/index.html",
+      "photo": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+      "branches_preserved": 4,
+      "h1": "فلور 1  ·  العنود مساحة هادئة في قلب الدمام.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "dammam-al-salam/index.html",
+      "photo": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+      "branches_preserved": 4,
+      "h1": "فلور 2  ·  السلام تفاصيل دافئة لإقامة أكثر راحة.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "en/al-majmaah-harmah/index.html",
+      "photo": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+      "branches_preserved": 4,
+      "h1": "FLOWER 04  ·  Harmah Make your stay in Harmah your own.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "en/al-qaisumah/index.html",
+      "photo": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+      "branches_preserved": 4,
+      "h1": "FLOWER 03  ·  Al Qaisumah Room for a more comfortable journey.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "en/dammam-al-anoud/index.html",
+      "photo": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+      "branches_preserved": 4,
+      "h1": "FLOWER 01  ·  Al Anoud A quieter place to land in Dammam.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "en/dammam-al-salam/index.html",
+      "photo": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+      "branches_preserved": 4,
+      "h1": "FLOWER 02  ·  Al Salam Comfort that feels considered.",
+      "unit_count": 3,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "en/index.html",
+      "photo": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+      "branches_preserved": 4,
+      "h1": "FLOWER Serviced Apartments A better way to feel at home.",
+      "unit_count": 0,
+      "v19_css": true,
+      "v19_js": true
+    },
+    {
+      "path": "index.html",
+      "photo": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+      "branches_preserved": 4,
+      "h1": "فلور للشقق المخدومة مساحات تليق براحتك.",
+      "unit_count": 0,
+      "v19_css": true,
+      "v19_js": true
+    }
+  ],
+  "archive_sha256": "c3e80531869a4caa979a844d4725be847095eb72374cfbf51f24c8e392a3a17c",
+  "archive_bytes": 2660662
+}
