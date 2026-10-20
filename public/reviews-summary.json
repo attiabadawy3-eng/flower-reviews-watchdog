@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "source": "Google Business Profile via FLOWER Reviews",
-  "verifiedAt": "2026-10-20T12:06:18.916509+00:00",
+  "verifiedAt": "2026-10-20T12:45:13.231659+00:00",
   "timezone": "Asia/Riyadh",
   "branches": {
     "flower-1": {
       "locationId": "15590271709505521163",
       "rating": 4.83,
-      "reviewCount": 118
+      "reviewCount": 119
     },
     "flower-2": {
       "locationId": "9619996328379786259",
       "rating": 4.51,
-      "reviewCount": 271
+      "reviewCount": 270
     },
     "flower-3": {
       "locationId": "12277969251636822325",
