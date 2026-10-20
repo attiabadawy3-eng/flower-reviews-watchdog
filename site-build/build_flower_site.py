@@ -19,25 +19,28 @@ from flower_apple_v17 import apply_apple_v17, PAGE_PATHS as APPLE_PAGES
 from flower_apple_motion import install_motion
 from flower_apple_cinema import install_cinema, SCENES
 from flower_apple_premium import apply_premium
+from flower_interactive_v17_4 import install_flower_interactive
 
 BASE = "https://flower-serviced-apartments-sa.onrender.com"
 ROOT = pathlib.Path(os.environ.get("FLOWER_BUILD_ROOT", "/tmp/flower-site"))
 VARIANT = os.environ.get("FLOWER_BUILD_VARIANT", "").strip().lower()
 # V17 is the accepted production baseline. Keep staging artifacts separate.
 # Explicit "editorial" retains the historical V16 A/B candidate for reference only.
-if VARIANT not in ("", "production", "apple", "editorial", "apple-motion", "apple-cinematic", "apple-premium"):
+if VARIANT not in ("", "production", "apple", "editorial", "apple-motion", "apple-cinematic", "apple-premium", "flower-interactive"):
     raise SystemExit(f"unsupported FLOWER_BUILD_VARIANT: {VARIANT!r}")
 IS_APPLE_STAGING = VARIANT == "apple"
 IS_MOTION_STAGING = VARIANT == "apple-motion"
 IS_CINEMATIC_STAGING = VARIANT == "apple-cinematic"
 IS_PREMIUM_STAGING = VARIANT == "apple-premium"
+INTERACTIVE = VARIANT == "flower-interactive"
 # Accepted production baseline: premium V17.3, with image-first Flower 4 hero.
-CINEMATIC = VARIANT in ("", "production", "apple-cinematic", "apple-premium")
-PREMIUM = VARIANT in ("", "production", "apple-premium")
+CINEMATIC = VARIANT in ("", "production", "apple-cinematic", "apple-premium", "flower-interactive")
+PREMIUM = VARIANT in ("", "production", "apple-premium", "flower-interactive")
 APPLE = VARIANT != "editorial"
 MOTION = IS_MOTION_STAGING or CINEMATIC
 EDITORIAL = True
 OUT_ZIP = pathlib.Path(
+    "deploy-assets/flower-interactive-v17-4-staging.zip" if INTERACTIVE else
     "deploy-assets/flower-site-apple-premium-staging.zip" if IS_PREMIUM_STAGING else
     "deploy-assets/flower-site-apple-cinematic-staging.zip" if IS_CINEMATIC_STAGING else
     "deploy-assets/flower-site-apple-motion-staging.zip" if IS_MOTION_STAGING else
@@ -46,6 +49,7 @@ OUT_ZIP = pathlib.Path(
     "deploy-assets/flower-site-production.zip"
 )
 MANIFEST = pathlib.Path(
+    "deploy-assets/flower-interactive-v17-4-manifest.json" if INTERACTIVE else
     "deploy-assets/flower-apple-premium-staging-manifest.json" if IS_PREMIUM_STAGING else
     "deploy-assets/flower-apple-cinematic-staging-manifest.json" if IS_CINEMATIC_STAGING else
     "deploy-assets/flower-apple-motion-staging-manifest.json" if IS_MOTION_STAGING else
@@ -515,6 +519,8 @@ def patch_page(path: pathlib.Path, url_path: str) -> None:
         install_cinema(soup, url_path)
     if PREMIUM:
         apply_premium(soup, url_path)
+    if INTERACTIVE:
+        install_flower_interactive(soup, url_path)
 
     path.write_text(str(soup), encoding="utf-8")
 
@@ -660,6 +666,15 @@ def write_live_assets() -> None:
         dst = ROOT / "assets/css/flower-apple-premium-v17-3.css"
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, dst)
+    if INTERACTIVE:
+        base = pathlib.Path(__file__).resolve().parent
+        for src_file, target_file in (
+            ("flower-interactive-v17-4.css", "assets/css/flower-interactive-v17-4.css"),
+            ("flower-interactive-v17-4.js", "assets/js/flower-interactive-v17-4.js"),
+        ):
+            target=ROOT / target_file
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(base / src_file, target)
 
 
 def update_sitemap() -> None:
@@ -845,6 +860,40 @@ def tests() -> dict:
             word in (ROOT / "assets/css/flower-apple-premium-v17-3.css").read_text(encoding="utf-8")
             for word in ('@media(max-width:700px)', 'prefers-reduced-motion', 'flower-cinema-stage')
         )
+    if INTERACTIVE:
+        docs = [BeautifulSoup(f4,"html.parser"), BeautifulSoup(f4_en,"html.parser")]
+        result["interactive_bilingual_sections"] = all(
+            len(q.select("#flower-interactive")) == 1 and
+            len(q.select("#flower-interactive [data-fi-floor]")) == 4 and
+            len(q.select("#flower-interactive [data-fi-choose]")) == 4 and
+            len(q.select("#flower-interactive [data-fi-unit]")) == 3
+            for q in docs
+        )
+        result["interactive_original_images_match_units"] = all(
+            [i["src"] for i in q.select("#flower-interactive .fi-unit-card img")]
+            == [i["src"] for i in q.select("#stay .v7-unit-media img")][:3]
+            for q in docs
+        )
+        result["interactive_real_unit_detail_anchors"] = all(
+            all(q.select_one("#flower-unit-choice-"+str(i)) for i in range(3))
+            for q in docs
+        )
+        result["interactive_booking_google_untouched"] = all(
+            q.select_one("#book-whatsapp") and q.select_one("#book-branch")
+            and q.select_one('a[href*="booking.com"]') and
+            q.select_one('[data-google-rating="flower-4"]')
+            for q in docs
+        )
+        result["interactive_staging_only"] = all(
+            "/assets/js/flower-interactive-v17-4.js" not in
+            (ROOT / loc).read_text(encoding="utf-8")
+            for loc in ("index.html","en/index.html","al-qaisumah/index.html")
+        )
+        result["interactive_accessible"] = all(
+            p in (ROOT/"assets/js/flower-interactive-v17-4.js").read_text(encoding="utf-8")+
+                 (ROOT/"assets/css/flower-interactive-v17-4.css").read_text(encoding="utf-8")
+            for p in ("prefers-reduced-motion","aria-pressed","ArrowLeft","pointermove")
+        )
     if not all(result.values()):
         raise SystemExit("build tests failed: " + json.dumps(result, ensure_ascii=False))
     return result
@@ -873,7 +922,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "source": BASE,
-        "variant": "apple-v17.3-premium-staging" if IS_PREMIUM_STAGING else "apple-v17.3-premium-production" if PREMIUM else "apple-v17.2-cinematic-staging" if IS_CINEMATIC_STAGING else "apple-v17.2-cinematic-production" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
+        "variant": "flower-interactive-v17.4-staging" if INTERACTIVE else "apple-v17.3-premium-staging" if IS_PREMIUM_STAGING else "apple-v17.3-premium-production" if PREMIUM else "apple-v17.2-cinematic-staging" if IS_CINEMATIC_STAGING else "apple-v17.2-cinematic-production" if CINEMATIC else "apple-v17.1-motion-staging" if MOTION else "apple-v17" if APPLE else "editorial-v16-legacy",
         "builtAt": BUILD_DATE.isoformat(),
         "fileCount": sum(1 for p in ROOT.rglob("*") if p.is_file()),
         "zipBytes": OUT_ZIP.stat().st_size,
