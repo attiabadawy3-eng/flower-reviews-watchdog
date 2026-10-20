@@ -1,0 +1,53 @@
+name: FLOWER V19 Staging Structure Inspection
+on:
+  push:
+    branches: [flower-signature-v19-staging]
+    paths: [".github/workflows/flower-v19-inspect.yml"]
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: flower-signature-v19-staging}
+      - run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Extract structure without changing production source
+        shell: bash
+        run: |
+          python - <<'PY'
+          import zipfile,json,pathlib
+          from bs4 import BeautifulSoup
+          z=zipfile.ZipFile("deploy-assets/flower-signature-v18-unified-times.zip")
+          docs={}
+          for filename in ("index.html","en/index.html","dammam-al-anoud/index.html","en/dammam-al-anoud/index.html","dammam-al-salam/index.html","al-qaisumah/index.html","al-majmaah-harmah/index.html"):
+            s=BeautifulSoup(z.read(filename),"html.parser")
+            main=s.select_one("main")
+            sections=[]
+            for x in main.find_all("section",recursive=False) if main else []:
+              sections.append({"id":x.get("id"),"class":x.get("class"),"heading":x.h1.get_text(" ",strip=True) if x.h1 else x.h2.get_text(" ",strip=True) if x.h2 else "", "images":[{"src":im.get("src"),"class":im.get("class")} for im in x.select("img")][:4]})
+            docs[filename]={
+              "language":s.html.get("lang"),"mainClass":main.get("class") if main else None,
+              "sections":sections,
+              "book":str(s.select_one("#booking"))[:8000],
+              "hero_candidates":[{"class":x.get("class"),"outer":str(x)[:1400]} for x in s.select("section.flower-v16-home-hero,section.flower-v16-property-hero,section.v10-property-hero,section.v13-group-hero")],
+              "nav":str(s.select_one("header"))[:4500],
+              "h1":[x.get_text(" ",strip=True) for x in s.find_all("h1")],
+              "logo": [{"src":i.get("src"),"alt":i.get("alt")} for i in s.select('img[src*="brand"]')][:3],
+              "scripts":[x.get("src") for x in s.select("script[src]")],
+              "originalStyleSheetCount":len(s.select('link[rel="stylesheet"]')),
+              "unit":str(s.select_one(".v7-unit"))[:2800],
+              "links":[{"href":a.get("href"),"title":a.get_text(" ",strip=True)[:60]} for a in s.find_all("a",href=True) if ("wa.me" in a.get("href") or "booking.com" in a.get("href"))][:8]
+            }
+          p=pathlib.Path("deploy-assets/flower-v19-structure.json")
+          p.write_text(json.dumps(docs,ensure_ascii=False,indent=2),encoding="utf-8")
+          print("INSPECTED",len(docs),"PAGES",p.stat().st_size,"BYTES")
+          PY
+      - name: Save structure report on staging branch only
+        run: |
+          git config user.email "flower-v19@users.noreply.github.com"
+          git config user.name "flower-v19-builder"
+          git add deploy-assets/flower-v19-structure.json
+          git commit -m "inspect: capture V18 DOM for V19 refactor"
+          git push origin HEAD:flower-signature-v19-staging
