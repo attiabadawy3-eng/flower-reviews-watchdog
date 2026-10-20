@@ -745,7 +745,11 @@ def tests() -> dict:
         result["editorial_reduced_motion"] = "prefers-reduced-motion" in new_css
         result["editorial_focus_visible"] = "focus-visible" in new_css
         v16_css = (ROOT / "assets/css/flower-editorial-v16.css").read_text(encoding="utf-8")
-        result["v16_new_immersive_hero"] = 'class="flower-v16-home-hero"' in home and 'class="flower-v16-property-hero"' in f4
+        result["v16_new_immersive_hero"] = (
+            'class="flower-v16-home-hero"' in home and
+            ('class="flower-v16-property-hero lx-hero"' in f4 if LUXURY
+             else 'class="flower-v16-property-hero"' in f4)
+        )
         result["v16_ar_en_both_pages"] = all("flower-editorial-v16.css" in p and "v16-hero-actions" in p for p in [home, home_en, f4, f4_en])
         result["v16_switcher_preserves_classic"] = APPLE or (all("v13-group-hero" in p for p in [home, home_en]) and all("v10-property-hero" in p for p in [f4, f4_en]))
         result["v16_original_photos_only"] = all("/assets/images/" in p for p in [home, home_en, f4, f4_en]) and "threeui.com" not in v16_css
