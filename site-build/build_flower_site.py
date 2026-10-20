@@ -837,8 +837,13 @@ def tests() -> dict:
         )
         result["premium_css_last"] = all(
             bool(q.head.find("link",href="/assets/css/flower-apple-premium-v17-3.css"))
-            and q.head.find_all("link",href="/assets/css/flower-apple-premium-v17-3.css")[-1] ==
-            q.head.find_all("link",rel="stylesheet")[-1]
+            and (
+                INTERACTIVE and
+                q.head.find_all("link",rel="stylesheet")[-2].get("href") == "/assets/css/flower-apple-premium-v17-3.css"
+                and q.head.find_all("link",rel="stylesheet")[-1].get("href") == "/assets/css/flower-interactive-v17-4.css"
+                or not INTERACTIVE and
+                q.head.find_all("link",rel="stylesheet")[-1].get("href") == "/assets/css/flower-apple-premium-v17-3.css"
+            )
             for q in (ar,en)
         )
         result["premium_first_image_preloaded"] = all(
