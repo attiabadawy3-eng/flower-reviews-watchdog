@@ -12,6 +12,11 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install HTML parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
       - name: Check immutable ZIP Arabic English and live staging
         shell: bash
         run: |
