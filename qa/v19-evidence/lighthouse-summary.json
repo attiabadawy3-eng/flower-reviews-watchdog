@@ -1,0 +1,106 @@
+{
+  "variant": "FLOWER Signature V19 staging",
+  "testedAt": "2026-10-20T21:56:26.214399+00:00",
+  "results": [
+    {
+      "page": "home",
+      "device": "mobile",
+      "url": "https://flower-unified-staging.onrender.com/",
+      "score": {
+        "performance": 81,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "largestContentfulPaint": {
+        "displayValue": "4.1 s",
+        "numericValue": 4110.772
+      },
+      "cumulativeLayoutShift": {
+        "displayValue": "0",
+        "numericValue": 0
+      },
+      "totalBlockingTime": {
+        "displayValue": "60 ms",
+        "numericValue": 55
+      },
+      "warnings": [],
+      "topAccessibilityIssues": []
+    },
+    {
+      "page": "home",
+      "device": "desktop",
+      "url": "https://flower-unified-staging.onrender.com/",
+      "score": {
+        "performance": 62,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "largestContentfulPaint": {
+        "displayValue": "4.3 s",
+        "numericValue": 4253.897
+      },
+      "cumulativeLayoutShift": {
+        "displayValue": "0",
+        "numericValue": 0
+      },
+      "totalBlockingTime": {
+        "displayValue": "0 ms",
+        "numericValue": 0
+      },
+      "warnings": [],
+      "topAccessibilityIssues": []
+    },
+    {
+      "page": "f4",
+      "device": "mobile",
+      "url": "https://flower-unified-staging.onrender.com/al-majmaah-harmah/",
+      "score": {
+        "performance": 85,
+        "accessibility": 96,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "largestContentfulPaint": {
+        "displayValue": "3.6 s",
+        "numericValue": 3608.8544999999995
+      },
+      "cumulativeLayoutShift": {
+        "displayValue": "0",
+        "numericValue": 0
+      },
+      "totalBlockingTime": {
+        "displayValue": "0 ms",
+        "numericValue": 0
+      },
+      "warnings": [],
+      "topAccessibilityIssues": []
+    },
+    {
+      "page": "f4",
+      "device": "desktop",
+      "url": "https://flower-unified-staging.onrender.com/al-majmaah-harmah/",
+      "score": {
+        "performance": 64,
+        "accessibility": 96,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "largestContentfulPaint": {
+        "displayValue": "3.6 s",
+        "numericValue": 3605.1550000000007
+      },
+      "cumulativeLayoutShift": {
+        "displayValue": "0",
+        "numericValue": 0
+      },
+      "totalBlockingTime": {
+        "displayValue": "0 ms",
+        "numericValue": 0
+      },
+      "warnings": [],
+      "topAccessibilityIssues": []
+    }
+  ]
+}
