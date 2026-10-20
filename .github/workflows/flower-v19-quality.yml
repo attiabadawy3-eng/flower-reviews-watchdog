@@ -1,0 +1,84 @@
+name: FLOWER V19 Lighthouse Staging Performance & Accessibility
+on:
+  push:
+    branches: [flower-signature-v19-staging]
+    paths: [".github/workflows/flower-v19-quality.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: flower-signature-v19-staging}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Lighthouse
+        run: npm install --no-save --ignore-scripts lighthouse@12.8.2
+      - name: Audit actual Staging website on phone and desktop
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa/v19-evidence
+          if command -v google-chrome >/dev/null; then
+            export CHROME_PATH="$(command -v google-chrome)"
+          elif command -v chromium >/dev/null; then
+            export CHROME_PATH="$(command -v chromium)"
+          else
+            echo "Chromium not installed; installing system Chromium"
+            sudo apt-get update -qq && sudo apt-get install -y -qq chromium >/dev/null
+            export CHROME_PATH="$(command -v chromium)"
+          fi
+          for pair in home:mobile:root home:desktop:root f4:mobile:al-majmaah-harmah f4:desktop:al-majmaah-harmah; do
+            IFS=: read -r property device route <<< "$pair"
+            if [ "$route" = root ]; then url="https://flower-unified-staging.onrender.com/"; else url="https://flower-unified-staging.onrender.com/$route/"; fi
+            echo "Lighthouse: $property $device $url"
+            node node_modules/lighthouse/cli/index.js "$url" --quiet --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" --only-categories=performance,accessibility,best-practices,seo --form-factor="$device" --screenEmulation.disabled --throttling-method=simulate --output=json --output-path="/tmp/fx19-$property-$device.json" || true
+          done
+          python - <<'PY'
+          import json,pathlib,datetime
+          out=[]
+          for hotel in ["home","f4"]:
+            for device in ["mobile","desktop"]:
+              f=pathlib.Path(f"/tmp/fx19-{hotel}-{device}.json")
+              if not f.exists():
+                out.append({"page":hotel,"device":device,"status":"Lighthouse CLI unavailable"})
+                continue
+              j=json.loads(f.read_text())
+              cats=j.get("categories") or {}
+              a=j.get("audits") or {}
+              def metric(k):
+                  x=a.get(k) or {}
+                  return {"displayValue":x.get("displayValue"),"numericValue":x.get("numericValue")}
+              out.append({
+                "page":hotel,"device":device,"url":j.get("finalDisplayedUrl"),
+                "score":{k:round(cats[k]["score"]*100) if cats.get(k,{}).get("score") is not None else None for k in ("performance","accessibility","best-practices","seo")},
+                "largestContentfulPaint":metric("largest-contentful-paint"),
+                "cumulativeLayoutShift":metric("cumulative-layout-shift"),
+                "totalBlockingTime":metric("total-blocking-time"),
+                "warnings":j.get("runWarnings"),
+                "topAccessibilityIssues":[{"id":k,"title":v.get("title"),"score":v.get("score")}
+                  for k,v in a.items() if v.get("details",{}).get("type")=="table" and "accessibility" in (v.get("id") or "").lower() and v.get("score")==0][:6],
+              })
+          result={"variant":"FLOWER Signature V19 staging","testedAt":datetime.datetime.now(datetime.timezone.utc).isoformat(),"results":out}
+          p=pathlib.Path("qa/v19-evidence/lighthouse-summary.json")
+          p.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(result,ensure_ascii=False))
+          PY
+      - name: Commit measured results to staging branch
+        if: always()
+        run: |
+          if [ ! -f qa/v19-evidence/lighthouse-summary.json ]; then exit 0; fi
+          git config user.name flower-v19-lighthouse
+          git config user.email v19-lighthouse@users.noreply.github.com
+          git add qa/v19-evidence/lighthouse-summary.json
+          git diff --cached --quiet && exit 0
+          git commit -m "test(v19): measured mobile desktop Lighthouse scores"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:flower-signature-v19-staging; then exit 0; fi
+            git pull --rebase origin flower-signature-v19-staging
+            sleep 2
+          done
+          exit 1
