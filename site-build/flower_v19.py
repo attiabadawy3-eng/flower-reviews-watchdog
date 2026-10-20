@@ -18,13 +18,13 @@ CSS_PATH = "assets/css/flower-signature-v19.css"
 JS_PATH = "assets/js/flower-signature-v19.js"
 BRANCHES = (
     ("dammam-al-anoud", "01", "العنود", "Al Anoud", "الدمام", "Dammam",
-     "مساحة هادئة في قلب الدمام.", "A quieter place to land in Dammam."),
+     "مساحة هادئة في قلب الدمام.", "A calmer Dammam stay."),
     ("dammam-al-salam", "02", "السلام", "Al Salam", "الدمام", "Dammam",
-     "تفاصيل دافئة لإقامة أكثر راحة.", "Comfort that feels considered."),
+     "تفاصيل دافئة لإقامة أكثر راحة.", "Comfort, considered."),
     ("al-qaisumah", "03", "القيصومة", "Al Qaisumah", "القيصومة", "Al Qaisumah",
-     "اختيار مريح لكل تفاصيل الرحلة.", "Room for a more comfortable journey."),
+     "اختيار مريح لكل تفاصيل الرحلة.", "Stay at your own pace."),
     ("al-majmaah-harmah", "04", "حرمة", "Harmah", "المجمعة", "Al Majmaah",
-     "إقامتك في حرمة بطابع مختلف.", "Make your stay in Harmah your own."),
+     "إقامتك في حرمة بطابع مختلف.", "Your own space in Harmah."),
 )
 BRANCH_BY_SLUG = {x[0]: x for x in BRANCHES}
 
