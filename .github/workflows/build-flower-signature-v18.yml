@@ -1,4 +1,5 @@
 name: Build FLOWER Signature V18 Staging
+# Isolated retry: all earlier parallel variant builds have settled.
 on:
   push:
     paths:
