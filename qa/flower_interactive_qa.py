@@ -19,7 +19,17 @@ async def check(page,route,width,engine,language):
         issues.append("interactive_section_missing")
         return {"engine":engine,"case":language,"width":width,"status":"FAIL","issues":issues}
     await section.scroll_into_view_if_needed()
-    await page.wait_for_timeout(500)
+    await page.wait_for_timeout(350)
+    # Photos are lazily loaded; verify each after scrolling it into view.
+    for i in range(3):
+        photo=page.locator(".fi-unit-card img").nth(i)
+        await photo.scroll_into_view_if_needed()
+        try:
+            await page.wait_for_function(
+              "(i) => {const img=document.querySelectorAll('.fi-unit-card img')[i];return img && img.complete && img.naturalWidth>0}",
+              arg=i,timeout=6500)
+        except Exception:
+            issues.append("card_"+str(i)+"_photo_not_loaded_on_view")
     start=await page.evaluate("""() => {
       const root=document.documentElement, sec=document.querySelector('#flower-interactive');
       const img=document.querySelector('.flower-v16-hero-bg');
