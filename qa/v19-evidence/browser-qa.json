@@ -3,37 +3,36 @@
   "variant": "FLOWER Signature V19",
   "screenshots": "authentic Playwright Chromium 1440x900 + 390x844",
   "pageChecks": 20,
-  "passed": 16,
-  "failed": 4,
-  "errors": [
-    {
-      "mode": "desktop",
-      "page": "/",
-      "error": "('/', 'missing date validation', 'false')"
-    },
-    {
-      "mode": "desktop",
-      "page": "/en/",
-      "error": "('/en/', 'missing date validation', 'false')"
-    },
-    {
-      "mode": "mobile",
-      "page": "/",
-      "error": "('/', 'missing date validation', 'false')"
-    },
-    {
-      "mode": "mobile",
-      "page": "/en/",
-      "error": "('/en/', 'missing date validation', 'false')"
-    }
-  ],
+  "passed": 20,
+  "failed": 0,
+  "errors": [],
   "results": [
     {
       "mode": "desktop",
+      "page": "/",
+      "status": "PASS",
+      "heroHeight": 635,
+      "bookingTop": 718,
+      "horizontalOverflow": 0,
+      "unitCount": 0,
+      "originalHeroLoaded": true
+    },
+    {
+      "mode": "desktop",
+      "page": "/en/",
+      "status": "PASS",
+      "heroHeight": 751,
+      "bookingTop": 834,
+      "horizontalOverflow": 0,
+      "unitCount": 0,
+      "originalHeroLoaded": true
+    },
+    {
+      "mode": "desktop",
       "page": "/dammam-al-anoud/",
       "status": "PASS",
-      "heroHeight": 745,
-      "bookingTop": 835,
+      "heroHeight": 637,
+      "bookingTop": 727,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -42,8 +41,8 @@
       "mode": "desktop",
       "page": "/en/dammam-al-anoud/",
       "status": "PASS",
-      "heroHeight": 830,
-      "bookingTop": 920,
+      "heroHeight": 570,
+      "bookingTop": 660,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -52,8 +51,8 @@
       "mode": "desktop",
       "page": "/dammam-al-salam/",
       "status": "PASS",
-      "heroHeight": 745,
-      "bookingTop": 835,
+      "heroHeight": 637,
+      "bookingTop": 727,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -62,8 +61,8 @@
       "mode": "desktop",
       "page": "/en/dammam-al-salam/",
       "status": "PASS",
-      "heroHeight": 830,
-      "bookingTop": 920,
+      "heroHeight": 570,
+      "bookingTop": 660,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -72,8 +71,8 @@
       "mode": "desktop",
       "page": "/al-qaisumah/",
       "status": "PASS",
-      "heroHeight": 745,
-      "bookingTop": 835,
+      "heroHeight": 637,
+      "bookingTop": 727,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -82,8 +81,8 @@
       "mode": "desktop",
       "page": "/en/al-qaisumah/",
       "status": "PASS",
-      "heroHeight": 830,
-      "bookingTop": 920,
+      "heroHeight": 637,
+      "bookingTop": 727,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -92,8 +91,8 @@
       "mode": "desktop",
       "page": "/al-majmaah-harmah/",
       "status": "PASS",
-      "heroHeight": 745,
-      "bookingTop": 835,
+      "heroHeight": 637,
+      "bookingTop": 727,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -102,18 +101,38 @@
       "mode": "desktop",
       "page": "/en/al-majmaah-harmah/",
       "status": "PASS",
-      "heroHeight": 830,
-      "bookingTop": 920,
+      "heroHeight": 637,
+      "bookingTop": 727,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
     },
     {
       "mode": "mobile",
+      "page": "/",
+      "status": "PASS",
+      "heroHeight": 599,
+      "bookingTop": 670,
+      "horizontalOverflow": 0,
+      "unitCount": 0,
+      "originalHeroLoaded": true
+    },
+    {
+      "mode": "mobile",
+      "page": "/en/",
+      "status": "PASS",
+      "heroHeight": 707,
+      "bookingTop": 778,
+      "horizontalOverflow": 0,
+      "unitCount": 0,
+      "originalHeroLoaded": true
+    },
+    {
+      "mode": "mobile",
       "page": "/dammam-al-anoud/",
       "status": "PASS",
-      "heroHeight": 601,
-      "bookingTop": 670,
+      "heroHeight": 540,
+      "bookingTop": 609,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -122,8 +141,8 @@
       "mode": "mobile",
       "page": "/en/dammam-al-anoud/",
       "status": "PASS",
-      "heroHeight": 752,
-      "bookingTop": 821,
+      "heroHeight": 678,
+      "bookingTop": 747,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -132,8 +151,8 @@
       "mode": "mobile",
       "page": "/dammam-al-salam/",
       "status": "PASS",
-      "heroHeight": 601,
-      "bookingTop": 670,
+      "heroHeight": 540,
+      "bookingTop": 609,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -142,8 +161,8 @@
       "mode": "mobile",
       "page": "/en/dammam-al-salam/",
       "status": "PASS",
-      "heroHeight": 752,
-      "bookingTop": 821,
+      "heroHeight": 635,
+      "bookingTop": 704,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -152,8 +171,8 @@
       "mode": "mobile",
       "page": "/al-qaisumah/",
       "status": "PASS",
-      "heroHeight": 601,
-      "bookingTop": 670,
+      "heroHeight": 540,
+      "bookingTop": 609,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -162,8 +181,8 @@
       "mode": "mobile",
       "page": "/en/al-qaisumah/",
       "status": "PASS",
-      "heroHeight": 752,
-      "bookingTop": 821,
+      "heroHeight": 678,
+      "bookingTop": 747,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -172,8 +191,8 @@
       "mode": "mobile",
       "page": "/al-majmaah-harmah/",
       "status": "PASS",
-      "heroHeight": 601,
-      "bookingTop": 725,
+      "heroHeight": 540,
+      "bookingTop": 664,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
@@ -182,8 +201,8 @@
       "mode": "mobile",
       "page": "/en/al-majmaah-harmah/",
       "status": "PASS",
-      "heroHeight": 752,
-      "bookingTop": 876,
+      "heroHeight": 678,
+      "bookingTop": 802,
       "horizontalOverflow": 0,
       "unitCount": 3,
       "originalHeroLoaded": true
