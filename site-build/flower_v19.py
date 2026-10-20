@@ -146,7 +146,8 @@ def tune_units(s, main, en):
     for idx,unit in enumerate(stay.select(".v7-unit,.v7-home-unit"),1):
         unit["data-v19-unit"]=str(idx)
         imgs=unit.select(".v7-unit-media img")
-        for img in imgs: img.setdefault("decoding","async")
+        for img in imgs:
+            if not img.get("decoding"): img["decoding"]="async"
     return stay
 
 def patch(raw, filename, assets):
