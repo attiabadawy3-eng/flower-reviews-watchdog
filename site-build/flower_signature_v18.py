@@ -23,6 +23,25 @@ def apply_signature(soup:BeautifulSoup,path:str)->None:
     if not soup.html or not soup.head or not soup.body:
         raise RuntimeError("Invalid FLOWER HTML")
     en=path.startswith("/en/")
+    # Checkout time is 2 PM. Avoid implying every booking lasts exactly one night.
+    policy = soup.select_one(".v7-policy-list")
+    if policy is None:
+        raise RuntimeError("Missing existing check-out policy")
+    for entry in policy.find_all("div", recursive=False):
+        title = entry.find("span")
+        value = entry.find("strong")
+        if not title or not value:
+            continue
+        label = title.get_text(" ", strip=True).casefold()
+        if label in ("وقت الخروج", "check-out"):
+            original = value.get_text(" ", strip=True)
+            expected = "2:00 PM the following day" if en else "2:00 م من اليوم التالي"
+            if original != expected:
+                raise RuntimeError(f"Unexpected check-out text: {original}")
+            value.string = "2:00 PM" if en else "2:00 م"
+            break
+    else:
+        raise RuntimeError("Check-out field not found")
     soup.html["data-flower-signature"]="v18"
     hero=soup.select_one("section.flower-v16-property-hero")
     mainimg=hero.select_one("img.flower-v16-hero-bg") if hero else None
