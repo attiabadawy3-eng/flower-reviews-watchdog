@@ -1,0 +1,42 @@
+name: FLOWER V19 Live Staging Browser QA
+on:
+  push:
+    branches: [flower-signature-v19-staging]
+    paths:
+      - ".github/workflows/flower-v19-browser-qa.yml"
+      - "qa/flower_v19_browser_qa.py"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: flower-signature-v19-staging}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install real Chromium browser and test runner
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install chromium --with-deps
+      - name: Test all ten real staging pages on desktop and mobile
+        run: python qa/flower_v19_browser_qa.py
+      - name: Preserve authentic screenshot and machine-readable test results
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f qa/v19-evidence/browser-qa.json ]; then exit 0; fi
+          git config user.name flower-v19-qa
+          git config user.email v19-qa@users.noreply.github.com
+          git add qa/v19-evidence/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(v19): preserve real desktop/mobile staging screenshots and browser QA"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:flower-signature-v19-staging; then exit 0; fi
+            git pull --rebase origin flower-signature-v19-staging
+            sleep 2
+          done
+          exit 1
