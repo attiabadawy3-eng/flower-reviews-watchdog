@@ -1,28 +1,28 @@
 {
   "variant": "FLOWER Signature V19 staging",
-  "testedAt": "2026-10-20T21:57:49.433740+00:00",
+  "testedAt": "2026-10-20T22:07:27.901369+00:00",
   "results": [
     {
       "page": "home",
       "device": "mobile",
       "url": "https://flower-unified-staging.onrender.com/",
       "score": {
-        "performance": 76,
+        "performance": 80,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "largestContentfulPaint": {
-        "displayValue": "4.7 s",
-        "numericValue": 4709.222
+        "displayValue": "4.0 s",
+        "numericValue": 3954.762
       },
       "cumulativeLayoutShift": {
         "displayValue": "0",
         "numericValue": 0
       },
       "totalBlockingTime": {
-        "displayValue": "130 ms",
-        "numericValue": 127
+        "displayValue": "170 ms",
+        "numericValue": 169
       },
       "warnings": [],
       "topAccessibilityIssues": []
@@ -32,21 +32,21 @@
       "device": "desktop",
       "url": "https://flower-unified-staging.onrender.com/",
       "score": {
-        "performance": 98,
+        "performance": 99,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "largestContentfulPaint": {
-        "displayValue": "1.0 s",
-        "numericValue": 955.845
+        "displayValue": "0.8 s",
+        "numericValue": 823.2175
       },
       "cumulativeLayoutShift": {
         "displayValue": "0",
-        "numericValue": 7.879225794436372e-7
+        "numericValue": 7.879225794436372e-07
       },
       "totalBlockingTime": {
-        "displayValue": "0 ms",
+        "displayValue": "0 ms",
         "numericValue": 0
       },
       "warnings": [],
@@ -57,22 +57,22 @@
       "device": "mobile",
       "url": "https://flower-unified-staging.onrender.com/al-majmaah-harmah/",
       "score": {
-        "performance": 65,
+        "performance": 83,
         "accessibility": 96,
         "best-practices": 100,
         "seo": 100
       },
       "largestContentfulPaint": {
-        "displayValue": "7.1 s",
-        "numericValue": 7094.298
+        "displayValue": "3.5 s",
+        "numericValue": 3503.9600000000005
       },
       "cumulativeLayoutShift": {
         "displayValue": "0",
         "numericValue": 0
       },
       "totalBlockingTime": {
-        "displayValue": "70 ms",
-        "numericValue": 72
+        "displayValue": "0 ms",
+        "numericValue": 0
       },
       "warnings": [],
       "topAccessibilityIssues": []
@@ -88,24 +88,19 @@
         "seo": 100
       },
       "largestContentfulPaint": {
-        "displayValue": "1.1 s",
-        "numericValue": 1071.64
+        "displayValue": "1.0 s",
+        "numericValue": 1029.2165000000002
       },
       "cumulativeLayoutShift": {
         "displayValue": "0",
         "numericValue": 0
       },
       "totalBlockingTime": {
-        "displayValue": "0 ms",
+        "displayValue": "0 ms",
         "numericValue": 0
       },
-      "warnings": [
-        "The page loaded too slowly to finish within the time limit. Results may be incomplete."
-      ],
+      "warnings": [],
       "topAccessibilityIssues": []
     }
-  ],
-  "auditRun": "39504263421",
-  "deviceEmulation": "Lighthouse mobile emulation and desktop preset",
-  "note": "Mobile performance requires further optimization; numbers are lab measurements, not user field data."
+  ]
 }
