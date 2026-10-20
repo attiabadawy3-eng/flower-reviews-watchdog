@@ -1,0 +1,115 @@
+name: FLOWER V18 Unified Branch Times
+on:
+  push:
+    paths:
+      - ".github/workflows/flower-v18-unified-branch-times.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: flower-v18-unified-branch-times
+  cancel-in-progress: false
+jobs:
+  patch-existing-v18:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install HTML verification parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Patch only the six outstanding branch checkout labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, pathlib, re, zipfile
+          from bs4 import BeautifulSoup
+
+          root = pathlib.Path("deploy-assets")
+          source = root / "flower-signature-v18-staging.zip"
+          target = root / "flower-signature-v18-unified-times.zip"
+          manifest = root / "flower-signature-v18-unified-times-manifest.json"
+          branches = ("dammam-al-anoud", "dammam-al-salam", "al-qaisumah", "al-majmaah-harmah")
+          paths = {f"{prefix}{branch}/index.html": prefix == "en/" for prefix in ("", "en/") for branch in branches}
+          assert source.is_file(), f"Missing baseline V18 archive: {source}"
+
+          def policy_value(html, label):
+              soup = BeautifulSoup(html, "html.parser")
+              policy = soup.select_one(".v7-policy-list")
+              assert policy, f"Missing policy section: {label}"
+              rows = [row for row in policy.find_all("div", recursive=False)
+                      if row.find("span") and row.find("span").get_text(" ", strip=True) == label]
+              assert len(rows) == 1, (label, len(rows))
+              strong = rows[0].find("strong")
+              assert strong is not None, f"Missing value: {label}"
+              return strong.get_text(" ", strip=True)
+
+          snapshots = []
+          changed = []
+          with zipfile.ZipFile(source, "r") as old, zipfile.ZipFile(target, "w") as new:
+              names = {item.filename for item in old.infolist()}
+              assert paths.keys() <= names, paths.keys() - names
+              for item in old.infolist():
+                  data = old.read(item.filename)
+                  if item.filename in paths:
+                      english = paths[item.filename]
+                      lang = "en" if english else "ar"
+                      entry = "Check-in" if english else "وقت الدخول"
+                      exit = "Check-out" if english else "وقت الخروج"
+                      expected_entry = "4:00 PM" if english else "4:00 م"
+                      expected_exit = "2:00 PM" if english else "2:00 م"
+                      old_exit = "2:00 PM the following day" if english else "2:00 م من اليوم التالي"
+                      html = data.decode("utf-8")
+                      assert policy_value(html, entry) == expected_entry, (item.filename, "unexpected checkin")
+                      actual_exit = policy_value(html, exit)
+                      assert actual_exit in (old_exit, expected_exit), (item.filename, actual_exit)
+                      if actual_exit == old_exit:
+                          assert html.count(old_exit) == 1, (item.filename, "ambiguous checkout occurrences", html.count(old_exit))
+                          html = html.replace(old_exit, expected_exit, 1)
+                          assert policy_value(html, exit) == expected_exit, item.filename
+                          data = html.encode("utf-8")
+                          changed.append(item.filename)
+                      assert policy_value(data.decode("utf-8"), entry) == expected_entry
+                      assert policy_value(data.decode("utf-8"), exit) == expected_exit
+                      assert old_exit not in data.decode("utf-8")
+                      snapshots.append({"page": item.filename, "checkin": expected_entry, "checkout": expected_exit})
+                  new.writestr(item, data)
+
+          assert len(snapshots) == 8, snapshots
+          assert len(changed) == 6, changed
+          with zipfile.ZipFile(source) as before, zipfile.ZipFile(target) as after:
+              assert before.namelist() == after.namelist()
+              for filename in before.namelist():
+                  a, b = before.read(filename), after.read(filename)
+                  if filename not in changed:
+                      assert hashlib.sha256(a).digest() == hashlib.sha256(b).digest(), filename
+                  else:
+                      assert a != b, filename
+
+          manifest.write_text(json.dumps({
+              "variant": "flower-signature-v18-unified-times",
+              "baseline": source.name,
+              "pages_verified": snapshots,
+              "changed_pages": changed,
+              "preserves_original_assets": True,
+              "all_other_archive_members_unchanged": True,
+              "archive_sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+          }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(json.dumps({"source": str(source), "output": str(target), "pages_checked": len(snapshots), "pages_changed": changed, "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}, ensure_ascii=False))
+          PY
+          unzip -t deploy-assets/flower-signature-v18-unified-times.zip | tail -n 1
+      - name: Commit verified archive without changing the original V18 ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name flower-site-policy-bot
+          git config user.email actions@users.noreply.github.com
+          git add deploy-assets/flower-signature-v18-unified-times.zip deploy-assets/flower-signature-v18-unified-times-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "build: align 4 PM check-in and 2 PM checkout on all FLOWER branches"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+            sleep 2
+          done
+          exit 1
