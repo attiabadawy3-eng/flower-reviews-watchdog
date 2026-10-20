@@ -5,6 +5,7 @@ No live availability, prices, or checkout transaction is represented or invented
 from __future__ import annotations
 
 import hashlib
+import copy
 import json
 import pathlib
 import zipfile
@@ -272,7 +273,9 @@ def main():
             if i.filename in paths:
                 content,details=patch(content,i.filename,available,z)
                 rows.append(details)
-            out.writestr(i,content)
+            # ZipFile.writestr mutates ZipInfo.header_offset. Clone it so
+            # random reads from the source archive remain valid while building.
+            out.writestr(copy.copy(i),content)
         out.writestr(CSS_PATH,css)
         out.writestr(JS_PATH,js)
         for path,data in BUNDLES.items():
