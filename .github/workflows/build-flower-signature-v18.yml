@@ -1,0 +1,67 @@
+name: Build FLOWER Signature V18 Staging
+on:
+  push:
+    paths:
+      - "site-build/**"
+      - ".github/workflows/build-flower-signature-v18.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: flower-signature-v18
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FLOWER_BUILD_VARIANT: flower-signature
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Build photography-first signature website
+        run: python site-build/build_flower_site.py
+      - name: Validate ZIP and baseline functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-signature-v18-staging.zip >/dev/null
+          python - <<'PY'
+          import json,zipfile,pathlib
+          m=json.loads(pathlib.Path('deploy-assets/flower-signature-v18-manifest.json').read_text())
+          assert m['variant']=='flower-signature-v18-staging',m['variant']
+          assert all(m['tests'].values()),m['tests']
+          with zipfile.ZipFile('deploy-assets/flower-signature-v18-staging.zip') as z:
+              names=set(z.namelist())
+              essential={'index.html','al-majmaah-harmah/index.html',
+                  'en/al-majmaah-harmah/index.html','assets/css/flower-signature-v18.css',
+                  'assets/js/flower-signature-v18.js','assets/js/google-reviews-live.js',
+                  'sitemap.xml','robots.txt'}
+              assert essential<=names,essential-names
+          print('SIGNATURE V18 VALIDATION PASS',m['zipBytes'])
+          PY
+      - name: Save standalone staging archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name flower-signature-builder
+          git config user.email actions@users.noreply.github.com
+          git add deploy-assets/flower-signature-v18-staging.zip deploy-assets/flower-signature-v18-manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'build: FLOWER Signature V18 staging archive'
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git reset --mixed origin/main
+            git add deploy-assets/flower-signature-v18-staging.zip deploy-assets/flower-signature-v18-manifest.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'build: FLOWER Signature V18 staging archive'
+            sleep 2
+          done
+          exit 1
