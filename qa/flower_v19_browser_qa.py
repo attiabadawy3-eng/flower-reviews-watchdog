@@ -59,7 +59,7 @@ async def main():
                         bookTop:b?.getBoundingClientRect().top,
                         bookFields:['book-branch','book-unit','book-arrival','book-departure','book-adults','book-children','book-whatsapp','book-booking'].every(id=>!!document.getElementById(id)),
                         branches:one('#book-branch')?.options.length,
-                        hasCss:!!one('link[href="/assets/css/flower-signature-v19.css"]'),
+                        hasCss:!!one('link[href*="flower-signature-v19-bundle-"]'),
                         hasJs:!!one('script[src="/assets/js/flower-signature-v19.js"]'),
                         canonical:!!one('link[rel=canonical]'),meta:!!one('meta[name=description]'),
                         bodyWidth:document.documentElement.scrollWidth,viewport:innerWidth,
