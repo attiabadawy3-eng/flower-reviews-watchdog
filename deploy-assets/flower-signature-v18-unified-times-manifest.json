@@ -1,0 +1,57 @@
+{
+  "variant": "flower-signature-v18-unified-times",
+  "baseline": "flower-signature-v18-staging.zip",
+  "pages_verified": [
+    {
+      "page": "al-majmaah-harmah/index.html",
+      "checkin": "4:00 م",
+      "checkout": "2:00 م"
+    },
+    {
+      "page": "al-qaisumah/index.html",
+      "checkin": "4:00 م",
+      "checkout": "2:00 م"
+    },
+    {
+      "page": "dammam-al-anoud/index.html",
+      "checkin": "4:00 م",
+      "checkout": "2:00 م"
+    },
+    {
+      "page": "dammam-al-salam/index.html",
+      "checkin": "4:00 م",
+      "checkout": "2:00 م"
+    },
+    {
+      "page": "en/al-majmaah-harmah/index.html",
+      "checkin": "4:00 PM",
+      "checkout": "2:00 PM"
+    },
+    {
+      "page": "en/al-qaisumah/index.html",
+      "checkin": "4:00 PM",
+      "checkout": "2:00 PM"
+    },
+    {
+      "page": "en/dammam-al-anoud/index.html",
+      "checkin": "4:00 PM",
+      "checkout": "2:00 PM"
+    },
+    {
+      "page": "en/dammam-al-salam/index.html",
+      "checkin": "4:00 PM",
+      "checkout": "2:00 PM"
+    }
+  ],
+  "changed_pages": [
+    "al-qaisumah/index.html",
+    "dammam-al-anoud/index.html",
+    "dammam-al-salam/index.html",
+    "en/al-qaisumah/index.html",
+    "en/dammam-al-anoud/index.html",
+    "en/dammam-al-salam/index.html"
+  ],
+  "preserves_original_assets": true,
+  "all_other_archive_members_unchanged": true,
+  "archive_sha256": "b005f573ca7c2bd09bffbbc2d28d73c95fcfc106e734fc9ad275c36e66cb93b9"
+}
