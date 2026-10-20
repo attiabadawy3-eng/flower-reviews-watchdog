@@ -444,3 +444,15 @@ html[data-flower-signature="v18"] .lx-reveal{opacity:1!important;transform:none!
  html[data-flower-signature="v18"] *,html[data-flower-signature="v18"] *:before,
  html[data-flower-signature="v18"] *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* Content never disappears: progressive enhancements start at 92% opacity. */
+@media(prefers-reduced-motion:no-preference){
+ html[data-flower-signature="v18"] .lx-observed{
+   opacity:.92;transform:translate3d(0,18px,0)!important;
+   transition:opacity .8s var(--lx-ease),transform 1s var(--lx-ease)!important;
+   transition-delay:var(--lx-delay,0ms)!important;
+ }
+ html[data-flower-signature="v18"] .lx-observed.lx-entered{
+   opacity:1;transform:translate3d(0,0,0)!important;
+ }
+}
