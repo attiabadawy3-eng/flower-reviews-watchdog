@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
   "variant": "flower-signature-v18-staging",
-  "builtAt": "2026-10-20T20:18:58.211696+00:00",
+  "builtAt": "2026-10-20T20:35:24.715270+00:00",
   "fileCount": 62,
-  "zipBytes": 2650838,
+  "zipBytes": 2650819,
   "changes": [
     "automatic Google review metrics feed",
     "verified fallback Google counts for all four branches",
