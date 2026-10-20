@@ -1,4 +1,5 @@
 name: FLOWER V19 Lighthouse Staging Performance & Accessibility
+# Performance regression retest after V19 stylesheet request consolidation.
 on:
   push:
     branches: [flower-signature-v19-staging]
