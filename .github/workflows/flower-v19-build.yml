@@ -1,0 +1,57 @@
+name: FLOWER Signature V19 Build — Staging Only
+on:
+  push:
+    branches: [flower-signature-v19-staging]
+    paths:
+      - ".github/workflows/flower-v19-build.yml"
+      - "site-build/flower_v19.py"
+      - "site-build/flower-v19.css"
+      - "site-build/flower-v19.js"
+permissions:
+  contents: write
+concurrency:
+  group: flower-signature-v19-staging-build
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: flower-signature-v19-staging}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install pinned HTML parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Build V19 from immutable approved V18 baseline
+        run: python site-build/flower_v19.py
+      - name: Verify archive integrity and all 10 original paths
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-signature-v19-staging.zip | tail -n 1
+          python - <<'PY'
+          import json,pathlib,zipfile
+          m=json.loads(pathlib.Path("deploy-assets/flower-signature-v19-manifest.json").read_text())
+          assert m["all_original_assets_unchanged"] and m["total_pages_changed"]==10
+          with zipfile.ZipFile("deploy-assets/flower-signature-v19-staging.zip") as z:
+              assert "assets/js/site-v2.js" in z.namelist()
+              assert "assets/js/flower-signature-v19.js" in z.namelist()
+              assert "assets/css/flower-signature-v19.css" in z.namelist()
+              assert "sitemap.xml" in z.namelist()
+          print("FLOWER V19 ARCHIVE QA PASS")
+          PY
+      - name: Commit staging ZIP and QA manifest only to V19 branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name flower-v19-staging-builder
+          git config user.email v19-staging@users.noreply.github.com
+          git add deploy-assets/flower-signature-v19-staging.zip deploy-assets/flower-signature-v19-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "build(v19): validated 10-page luxury staging archive"
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:flower-signature-v19-staging; then exit 0; fi
+            git pull --rebase origin flower-signature-v19-staging
+            sleep 2
+          done
+          exit 1
