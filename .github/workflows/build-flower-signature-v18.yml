@@ -1,4 +1,5 @@
 name: Build FLOWER Signature V18 Staging
+# Retry the localized checkout text change after shared source build jobs finished.
 # Isolated retry: all earlier parallel variant builds have settled.
 on:
   push:
