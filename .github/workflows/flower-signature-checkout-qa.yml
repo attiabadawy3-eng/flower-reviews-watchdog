@@ -1,0 +1,63 @@
+name: FLOWER V18 Checkout Text QA
+on:
+  push:
+    paths:
+      - ".github/workflows/flower-signature-checkout-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check immutable ZIP Arabic English and live staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from zipfile import ZipFile
+          from urllib.request import Request,urlopen
+          from datetime import datetime,timezone
+          from bs4 import BeautifulSoup
+          import os
+          p="deploy-assets/flower-signature-v18-staging.zip"
+          with ZipFile(p) as z:
+              ar=z.read("al-majmaah-harmah/index.html").decode()
+              en=z.read("en/al-majmaah-harmah/index.html").decode()
+          for lang,page,wanted,unwanted in [
+              ("AR",ar,"2:00 م","2:00 م من اليوم التالي"),
+              ("EN",en,"2:00 PM","2:00 PM the following day")]:
+              soup=BeautifulSoup(page,"html.parser")
+              row=next(r for r in soup.select(".v7-policy-list > div")
+                       if r.select_one("span") and
+                       r.select_one("span").get_text(" ",strip=True)
+                       ==("وقت الخروج" if lang=="AR" else "Check-out"))
+              actual=row.select_one("strong").get_text(" ",strip=True)
+              print("ZIP",lang,"CHECKOUT",repr(actual))
+              assert actual==wanted,(lang,actual)
+              assert unwanted not in page,(lang,"old wording still in ZIP")
+          print("ZIP CHECKOUT LABELS PASS")
+          PY
+      - name: Verify stage HTML through fresh URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import urllib.request,time
+          from bs4 import BeautifulSoup
+          url="https://flower-unified-staging.onrender.com"
+          for path,label,wanted in [
+              ("/al-majmaah-harmah/","وقت الخروج","2:00 م"),
+              ("/en/al-majmaah-harmah/","Check-out","2:00 PM")]:
+              target=url+path+"?verify_checkout_text="+str(int(time.time()*1000))
+              req=urllib.request.Request(target,headers={"User-Agent":"FLOWER-checkout-QA/1.0","Cache-Control":"no-cache"})
+              with urllib.request.urlopen(req,timeout=35) as response:
+                  soup=BeautifulSoup(response.read(),"html.parser")
+              row=next(r for r in soup.select(".v7-policy-list > div") if r.select_one("span") and r.select_one("span").get_text(" ",strip=True)==label)
+              actual=row.select_one("strong").get_text(" ",strip=True)
+              print("STAGING",label,repr(actual),flush=True)
+              assert actual==wanted,(label,actual)
+          print("STAGING CHECKOUT PASS")
+          PY
