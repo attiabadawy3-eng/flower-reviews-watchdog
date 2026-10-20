@@ -35,7 +35,8 @@ jobs:
             IFS=: read -r property device route <<< "$pair"
             if [ "$route" = root ]; then url="https://flower-unified-staging.onrender.com/"; else url="https://flower-unified-staging.onrender.com/$route/"; fi
             echo "Lighthouse: $property $device $url"
-            node node_modules/lighthouse/cli/index.js "$url" --quiet --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" --only-categories=performance,accessibility,best-practices,seo --form-factor="$device" --screenEmulation.disabled --throttling-method=simulate --output=json --output-path="/tmp/fx19-$property-$device.json" || true
+            if [ "$device" = "desktop" ]; then profile="--preset=desktop"; else profile="--form-factor=mobile"; fi
+            node node_modules/lighthouse/cli/index.js "$url" --quiet --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" --only-categories=performance,accessibility,best-practices,seo "$profile" --throttling-method=simulate --output=json --output-path="/tmp/fx19-$property-$device.json" || true
           done
           python - <<'PY'
           import json,pathlib,datetime
