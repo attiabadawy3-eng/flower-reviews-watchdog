@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": "https://flower-serviced-apartments-sa.onrender.com",
   "variant": "flower-interactive-v17.4-staging",
-  "builtAt": "2026-10-20T19:50:46.016594+00:00",
+  "builtAt": "2026-10-20T19:55:26.627205+00:00",
   "fileCount": 62,
-  "zipBytes": 2653696,
+  "zipBytes": 2653682,
   "changes": [
     "automatic Google review metrics feed",
     "verified fallback Google counts for all four branches",
