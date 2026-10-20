@@ -1,0 +1,44 @@
+name: FLOWER V19 Asset Weight Inspection
+on:
+  push:
+    branches: [flower-signature-v19-staging]
+    paths: [".github/workflows/flower-v19-asset-audit.yml"]
+permissions:
+  contents: write
+jobs:
+  asset-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: flower-signature-v19-staging}
+      - name: Measure archived hero and render-critical assets
+        run: |
+          python - <<'PY'
+          import zipfile,json,pathlib
+          p="deploy-assets/flower-signature-v19-staging.zip"
+          with zipfile.ZipFile(p) as z:
+              files=[]
+              for i in z.infolist():
+                  if i.filename.endswith((".webp",".jpg",".jpeg",".png",".css",".js")):
+                      files.append({"file":i.filename,"bytes":i.file_size,"compressed":i.compress_size})
+              files.sort(key=lambda x:x["bytes"],reverse=True)
+              hero=[
+                 "assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+                 "assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+                 "assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+                 "assets/images/al-qaisumah/enhanced/02-enhanced.webp"
+              ]
+              obj={"largestAssets":files[:18],"heroAssets":[x for x in files if x["file"] in hero],
+                   "cssTotalBytes":sum(x["bytes"] for x in files if x["file"].endswith(".css")),
+                   "jsTotalBytes":sum(x["bytes"] for x in files if x["file"].endswith(".js"))}
+              pathlib.Path("qa/v19-evidence/asset-weights.json").write_text(json.dumps(obj,indent=2)+"\n")
+              print(json.dumps(obj,indent=2))
+          PY
+      - name: Preserve measurement on staging branch
+        run: |
+          git config user.name flower-v19-assets
+          git config user.email v19-assets@users.noreply.github.com
+          git add qa/v19-evidence/asset-weights.json
+          git commit -m "test(v19): inspect real site image and stylesheet asset bytes"
+          git push origin HEAD:flower-signature-v19-staging
