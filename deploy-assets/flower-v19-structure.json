@@ -1,0 +1,1424 @@
+{
+  "index.html": {
+    "language": "ar-SA",
+    "mainClass": null,
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "flower-v16-home-hero"
+        ],
+        "heading": "فلور للشقق المخدومة تفاصيل تليق بإقامتك",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": [
+              "flower-v16-hero-bg"
+            ]
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "استفسر عن التوفر",
+        "images": []
+      },
+      {
+        "id": "branches",
+        "class": [
+          "v7-section",
+          "v7-branches"
+        ],
+        "heading": "اختر فرع فلور المناسب",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-home-units"
+        ],
+        "heading": "ثلاثة أنواع وحدات في فلور",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1223-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/04-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-home-gallery"
+        ],
+        "heading": "لقطات من فروع فلور",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/02-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "خدمات تسهّل إقامتك",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews-home"
+        ],
+        "heading": "تقييمات فروع فلور على Google",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "ابدأ من الفرع الأنسب لرحلتك",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>استفسر عن التوفر</h2><p>اختر الفرع وتفاصيل الإقامة، ثم أرسل الاستفسار مباشرة إلى واتساب الفرع. لا يمثل ذلك تأكيد حجز فوريًا.</p></div><div class=\"v7-booking-form\" data-lang=\"ar\"><label class=\"v12-book-field\"><span>الفرع</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" value=\"dammam-al-anoud\">الدمام · العنود</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" value=\"dammam-al-salam\">الدمام · السلام</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" value=\"al-qaisumah\">القيصومة</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" value=\"al-majmaah-harmah\">المجمعة · حرمة</option></select></label><label class=\"v12-book-field\"><span>نوع الوحدة</span><select id=\"book-unit\"><option value=\"غرفة\">غرفة</option><option value=\"غرفة وصالة\">غرفة وصالة</option><option value=\"غرفتان وصالة\">غرفتان وصالة</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>تواريخ الإقامة</legend><label><span>الوصول</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>المغادرة</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>الضيوف</legend><label><span>البالغون</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>الأطفال</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">استفسر عبر واتساب</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">فتح صفحة Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "flower-v16-home-hero"
+        ],
+        "outer": "<section aria-label=\"فلور | للشقق المخدومة\" class=\"flower-v16-home-hero\">\n<img alt=\"صورة أصلية من وحدات فلور للشقق المخدومة\" class=\"flower-v16-hero-bg\" decoding=\"async\" fetchpriority=\"high\" loading=\"eager\" src=\"/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp\"/>\n<div class=\"v16-content\">\n<div class=\"v16-overline\">فلور | للشقق المخدومة</div>\n<h1>فلور للشقق المخدومة<span class=\"v16-headline-sub\">تفاصيل تليق بإقامتك</span></h1>\n<p class=\"v16-hero-intro\">أربع وجهات للإقامة في الدمام والقيصومة والمجمعة. استكشف صور وحدات فلور الحقيقية وتواصل مباشرة مع الفرع المناسب لك.</p>\n<div class=\"v16-hero-actions\">\n<a class=\"v16-primary\" href=\"#branches\">اكتشف فروع فلور</a>\n<a class=\"v16-secondary\" href=\"#booking\">استفسر عن التوفر</a>\n</div>\n<div class=\"v16-trustline\">4 فروع <span></span> تواصل مباشر <span></span> صور حقيقية</div>\n</div>\n<nav aria-label=\"فروع فلور\" class=\"v16-branch-rail\"><a class=\"v16-branch-tile\" href=\"/dammam-al-anoud/\"><img alt=\"العنود\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp\"/><small>DAMMAM</small><strong>العنود</strong><span aria-hidden=\"true\" class=\"v16-arrow\">↗</span></a><a class=\"v16-branch-tile\" href=\"/dammam-al-salam/\"><img alt=\"السلام\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-salam/enhanced/05-enhanced.webp\"/><small>DAMMAM</small><strong>السلام</strong><span aria-hidden=\"true\" class=\"v"
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">القائمة</button><nav id=\"main-nav\"><a href=\"#branches\">فروعنا</a><a href=\"#stay\">خيارات الإقامة</a><a href=\"#services\">خدماتنا</a><a href=\"#location\">تواصل معنا</a></nav><div class=\"v7-tools\"><a class=\"v7-lang\" href=\"/en/\">English</a><a class=\"btn v7-book\" href=\"#booking\">استفسر الآن</a></div></div></header>",
+    "h1": [
+      "فلور للشقق المخدومة تفاصيل تليق بإقامتك"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js"
+    ],
+    "originalStyleSheetCount": 13,
+    "unit": "None",
+    "links": []
+  },
+  "en/index.html": {
+    "language": "en",
+    "mainClass": null,
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "flower-v16-home-hero"
+        ],
+        "heading": "FLOWER Serviced Apartments A better stay begins here",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": [
+              "flower-v16-hero-bg"
+            ]
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "Enquire about availability",
+        "images": []
+      },
+      {
+        "id": "branches",
+        "class": [
+          "v7-section",
+          "v7-branches"
+        ],
+        "heading": "Choose your FLOWER location",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-home-units"
+        ],
+        "heading": "Three unit types across FLOWER",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1223-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/04-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-home-gallery"
+        ],
+        "heading": "A closer look at FLOWER",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/02-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "Services that support your stay",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews-home"
+        ],
+        "heading": "Google ratings for each FLOWER branch",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "Start with the branch that suits your trip",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>Enquire about availability</h2><p>Choose your branch and stay details. Your enquiry is sent directly to the branch on WhatsApp; it is not an instant booking confirmation.</p></div><div class=\"v7-booking-form\" data-lang=\"en\"><label class=\"v12-book-field\"><span>Branch</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" value=\"dammam-al-anoud\">Dammam · Al Anoud</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" value=\"dammam-al-salam\">Dammam · Al Salam</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" value=\"al-qaisumah\">Al Qaisumah</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" value=\"al-majmaah-harmah\">Al Majmaah · Harmah</option></select></label><label class=\"v12-book-field\"><span>Unit type</span><select id=\"book-unit\"><option value=\"Room\">Room</option><option value=\"One Bedroom + Living Room\">One Bedroom + Living Room</option><option value=\"Two Bedrooms + Living Room\">Two Bedrooms + Living Room</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>Stay dates</legend><label><span>Arrival</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>Departure</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>Guests</legend><label><span>Adults</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>Children</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">Enquire via WhatsApp</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">Open on Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "flower-v16-home-hero"
+        ],
+        "outer": "<section aria-label=\"FLOWER | SERVICED APARTMENTS\" class=\"flower-v16-home-hero\">\n<img alt=\"Original FLOWER serviced apartments interior photo\" class=\"flower-v16-hero-bg\" decoding=\"async\" fetchpriority=\"high\" loading=\"eager\" src=\"/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp\"/>\n<div class=\"v16-content\">\n<div class=\"v16-overline\">FLOWER | SERVICED APARTMENTS</div>\n<h1>FLOWER Serviced Apartments<span class=\"v16-headline-sub\">A better stay begins here</span></h1>\n<p class=\"v16-hero-intro\">Four serviced-apartment locations in Dammam, Al Qaisumah and Al Majmaah. Explore real rooms and enquire directly with your chosen branch.</p>\n<div class=\"v16-hero-actions\">\n<a class=\"v16-primary\" href=\"#branches\">Explore our locations</a>\n<a class=\"v16-secondary\" href=\"#booking\">Enquire about availability</a>\n</div>\n<div class=\"v16-trustline\">4 locations <span></span> Direct branch contact <span></span> Real photos</div>\n</div>\n<nav aria-label=\"FLOWER locations\" class=\"v16-branch-rail\"><a class=\"v16-branch-tile\" href=\"/en/dammam-al-anoud/\"><img alt=\"Al Anoud\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp\"/><small>DAMMAM</small><strong>Al Anoud</strong><span aria-hidden=\"true\" class=\"v16-arrow\">↗</span></a><a class=\"v16-branch-tile\" href=\"/en/dammam-al-salam/\"><img alt=\"Al Salam\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al"
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/en/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">Menu</button><nav id=\"main-nav\"><a href=\"#branches\">Our branches</a><a href=\"#stay\">Stay options</a><a href=\"#services\">Our services</a><a href=\"#location\">Contact us</a></nav><div class=\"v7-tools\"><a class=\"v7-lang\" href=\"/\">العربية</a><a class=\"btn v7-book\" href=\"#booking\">Enquire</a></div></div></header>",
+    "h1": [
+      "FLOWER Serviced Apartments A better stay begins here"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js"
+    ],
+    "originalStyleSheetCount": 13,
+    "unit": "None",
+    "links": []
+  },
+  "dammam-al-anoud/index.html": {
+    "language": "ar-SA",
+    "mainClass": [
+      "v8-property-page",
+      "v10-property-page"
+    ],
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "v10-property-hero"
+        ],
+        "heading": "فلور 1 للشقق المخدومة",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/01-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "استفسر عن التوفر",
+        "images": []
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-units",
+          "v10-units"
+        ],
+        "heading": "الوحدات المتاحة",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "policy",
+        "class": [
+          "v7-section",
+          "v7-policy"
+        ],
+        "heading": "معلومات قبل الوصول",
+        "images": []
+      },
+      {
+        "id": "about",
+        "class": [
+          "v7-section",
+          "v8-about"
+        ],
+        "heading": "عن الفرع",
+        "images": []
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "خدمات متاحة أثناء إقامتك",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-section",
+          "v7-location"
+        ],
+        "heading": "العنود، الدمام",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews"
+        ],
+        "heading": "ثقة الضيوف على Google",
+        "images": []
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-gallery"
+        ],
+        "heading": "استكشف الفرع بالصورة",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-section",
+          "v8-similar"
+        ],
+        "heading": "فروع فلور الأخرى",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "خطط لإقامتك في العنود",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>استفسر عن التوفر</h2><p>اختر الفرع وتفاصيل الإقامة، ثم أرسل الاستفسار مباشرة إلى واتساب الفرع. لا يمثل ذلك تأكيد حجز فوريًا.</p></div><div class=\"v7-booking-form\" data-lang=\"ar\"><label class=\"v12-book-field\"><span>الفرع</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" selected=\"\" value=\"dammam-al-anoud\">الدمام · العنود</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" value=\"dammam-al-salam\">الدمام · السلام</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" value=\"al-qaisumah\">القيصومة</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" value=\"al-majmaah-harmah\">المجمعة · حرمة</option></select></label><label class=\"v12-book-field\"><span>نوع الوحدة</span><select id=\"book-unit\"><option value=\"غرفة\">غرفة</option><option value=\"غرفة وصالة\">غرفة وصالة</option><option value=\"غرفتان وصالة\">غرفتان وصالة</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>تواريخ الإقامة</legend><label><span>الوصول</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>المغادرة</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>الضيوف</legend><label><span>البالغون</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>الأطفال</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">استفسر عبر واتساب</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">فتح صفحة Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "v10-property-hero"
+        ],
+        "outer": "<section class=\"v10-property-hero\"><div class=\"wrap\"><div class=\"v8-breadcrumb v10-breadcrumb\"><a href=\"/\">الرئيسية</a><span>‹</span><span>فلور 1 للشقق المخدومة</span></div><div class=\"v10-hero-card\"><div class=\"v10-photo-panel\"><a class=\"v10-photo-main\" href=\"#gallery\"><img alt=\"فلور 1 للشقق المخدومة\" decoding=\"async\" fetchpriority=\"high\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp\"/></a><div class=\"v10-photo-row\"><a class=\"v10-photo-all\" href=\"#gallery\"><span>عرض جميع الصور</span><small>6 صورة</small></a><a href=\"#gallery\"><img alt=\"فلور 1 للشقق المخدومة\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/01-enhanced.webp\"/></a><a href=\"#gallery\"><img alt=\"فلور 1 للشقق المخدومة\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp\"/></a></div></div><aside class=\"v10-property-info\"><div class=\"v10-property-brand\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-transparent.png\"/><span>FLOWER STAY / 01</span></div><span class=\"v10-eyebrow\">إقامة من فلور للشقق المخدومة</span><h1>فلور 1 للشقق المخدومة</h1><div class=\"v10-meta\"><span>★ <b data-google-rating=\"flower-1\">4.8</b> / 5</span><a href=\"https://www.google.com/maps/search/?api=1&amp;query=FLOWER&amp;query_place_id=ChIJc1UMtG79ST4RrpWbJlFmnPM\" rel=\"noopener\" target=\"_blank\">الدمام، العنود</a></div><p class=\"v10-su"
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">القائمة</button><nav id=\"main-nav\"><a href=\"/\">الرئيسية</a><a href=\"#stay\">الوحدات</a><a href=\"#gallery\">الصور</a><a href=\"#services\">الخدمات</a><a href=\"#reviews\">التقييمات</a><a href=\"#location\">الموقع</a></nav><div class=\"v7-tools\"><label class=\"v7-branch-switch\"><span>تغيير الفرع</span><select id=\"site-branch-switch\"><option value=\"/\">كل الفروع</option><option selected=\"\" value=\"/dammam-al-anoud/\">الدمام · العنود</option><option value=\"/dammam-al-salam/\">الدمام · السلام</option><option value=\"/al-qaisumah/\">القيصومة</option><option value=\"/al-majmaah-harmah/\">المجمعة · حرمة</option></select></label><a class=\"v7-lang\" href=\"/en/dammam-al-anoud/\">English</a><a class=\"btn v7-book\" href=\"#booking\">استفسر عن الحجز</a></div></div></header>",
+    "h1": [
+      "فلور 1 للشقق المخدومة"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js"
+    ],
+    "originalStyleSheetCount": 11,
+    "unit": "<article class=\"v7-unit v10-room-card\"><div class=\"v7-unit-media\"><img alt=\"فلور العنود - غرفة نوم\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp\"/><span class=\"v10-photo-count\">1 صور الوحدة</span></div><div class=\"v7-unit-copy\"><span class=\"v7-kicker\">إقامة في فلور</span><h3>غرفة</h3><div class=\"v10-amenity-chips\"><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>مطبخ</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><rect height=\"18\" rx=\"2\" width=\"14\" x=\"5\" y=\"3\"></rect><circle cx=\"12\" cy=\"13\" r=\"4\"></circle><path d=\"M8 7h1M11 7h5\"></path></svg><b>غسالة</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>ثلاجة</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>ميكروويف</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M7 3l10 10M14 10l4-4 3 3-4 4M6 14l4 4-3 3-4-4z\"></path></svg><b>تلفزيون ذكي</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 2 3-2M9 19l3-2 3 2\"></path></svg><b>تكييف</b></span></div><p>خيار عملي لإقامة مريحة مع التجهيزات المتوفرة في الفرع.</p><div class=\"v7-unit-actions\"><button class=\"btn v7-btn-outline v7-unit-detail\" data-unit-dialog=\"unit-dammam-al-anoud-0\" type=\"button\">تفاصيل الوحدة</button><button class=\"btn v10-room-cta v7-unit-enquire\" data-unit-value=\"غرفة\" type=\"button\">استفسر عن هذه الوحدة</button></div></div></article>",
+    "links": [
+      {
+        "href": "https://wa.me/966559366744",
+        "title": "تواصل عبر واتساب"
+      },
+      {
+        "href": "https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html",
+        "title": "عرض على Booking.com"
+      }
+    ]
+  },
+  "en/dammam-al-anoud/index.html": {
+    "language": "en",
+    "mainClass": [
+      "v8-property-page",
+      "v10-property-page"
+    ],
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "v10-property-hero"
+        ],
+        "heading": "FLOWER 1 Serviced Apartments",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/01-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "Enquire about availability",
+        "images": []
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-units",
+          "v10-units"
+        ],
+        "heading": "Available unit types",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "policy",
+        "class": [
+          "v7-section",
+          "v7-policy"
+        ],
+        "heading": "Before you arrive",
+        "images": []
+      },
+      {
+        "id": "about",
+        "class": [
+          "v7-section",
+          "v8-about"
+        ],
+        "heading": "About this property",
+        "images": []
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "Services available during your stay",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-section",
+          "v7-location"
+        ],
+        "heading": "Al Anoud, Dammam",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews"
+        ],
+        "heading": "Guest confidence, linked to Google",
+        "images": []
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-gallery"
+        ],
+        "heading": "Explore this branch",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-section",
+          "v8-similar"
+        ],
+        "heading": "Other FLOWER locations",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "Plan your stay in Al Anoud",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>Enquire about availability</h2><p>Choose your branch and stay details. Your enquiry is sent directly to the branch on WhatsApp; it is not an instant booking confirmation.</p></div><div class=\"v7-booking-form\" data-lang=\"en\"><label class=\"v12-book-field\"><span>Branch</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" selected=\"\" value=\"dammam-al-anoud\">Dammam · Al Anoud</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" value=\"dammam-al-salam\">Dammam · Al Salam</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" value=\"al-qaisumah\">Al Qaisumah</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" value=\"al-majmaah-harmah\">Al Majmaah · Harmah</option></select></label><label class=\"v12-book-field\"><span>Unit type</span><select id=\"book-unit\"><option value=\"Room\">Room</option><option value=\"One Bedroom + Living Room\">One Bedroom + Living Room</option><option value=\"Two Bedrooms + Living Room\">Two Bedrooms + Living Room</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>Stay dates</legend><label><span>Arrival</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>Departure</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>Guests</legend><label><span>Adults</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>Children</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">Enquire via WhatsApp</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">Open on Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "v10-property-hero"
+        ],
+        "outer": "<section class=\"v10-property-hero\"><div class=\"wrap\"><div class=\"v8-breadcrumb v10-breadcrumb\"><a href=\"/en/\">Home</a><span>‹</span><span>FLOWER 1 Serviced Apartments</span></div><div class=\"v10-hero-card\"><div class=\"v10-photo-panel\"><a class=\"v10-photo-main\" href=\"#gallery\"><img alt=\"FLOWER 1 Serviced Apartments\" decoding=\"async\" fetchpriority=\"high\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp\"/></a><div class=\"v10-photo-row\"><a class=\"v10-photo-all\" href=\"#gallery\"><span>View all photos</span><small>6 photos</small></a><a href=\"#gallery\"><img alt=\"FLOWER 1 Serviced Apartments\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/01-enhanced.webp\"/></a><a href=\"#gallery\"><img alt=\"FLOWER 1 Serviced Apartments\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/03-enhanced.webp\"/></a></div></div><aside class=\"v10-property-info\"><div class=\"v10-property-brand\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-transparent.png\"/><span>FLOWER STAY / 01</span></div><span class=\"v10-eyebrow\">FLOWER SERVICED APARTMENTS</span><h1>FLOWER 1 Serviced Apartments</h1><div class=\"v10-meta\"><span>★ <b data-google-rating=\"flower-1\">4.8</b> / 5</span><a href=\"https://www.google.com/maps/search/?api=1&amp;query=FLOWER&amp;query_place_id=ChIJc1UMtG79ST4RrpWbJlFmnPM\" rel=\"noopener\" target=\"_blank\">Damma"
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/en/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">Menu</button><nav id=\"main-nav\"><a href=\"/en/\">Home</a><a href=\"#stay\">Units</a><a href=\"#gallery\">Gallery</a><a href=\"#services\">Amenities</a><a href=\"#reviews\">Reviews</a><a href=\"#location\">Location</a></nav><div class=\"v7-tools\"><label class=\"v7-branch-switch\"><span>Switch branch</span><select id=\"site-branch-switch\"><option value=\"/en/\">All branches</option><option selected=\"\" value=\"/en/dammam-al-anoud/\">Dammam · Al Anoud</option><option value=\"/en/dammam-al-salam/\">Dammam · Al Salam</option><option value=\"/en/al-qaisumah/\">Al Qaisumah</option><option value=\"/en/al-majmaah-harmah/\">Al Majmaah · Harmah</option></select></label><a class=\"v7-lang\" href=\"/dammam-al-anoud/\">العربية</a><a class=\"btn v7-book\" href=\"#booking\">Enquire</a></div></div></header>",
+    "h1": [
+      "FLOWER 1 Serviced Apartments"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js"
+    ],
+    "originalStyleSheetCount": 11,
+    "unit": "<article class=\"v7-unit v10-room-card\"><div class=\"v7-unit-media\"><img alt=\"فلور العنود - غرفة نوم\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-anoud/enhanced/02-enhanced.webp\"/><span class=\"v10-photo-count\">1 unit photos</span></div><div class=\"v7-unit-copy\"><span class=\"v7-kicker\">STAY AT FLOWER</span><h3>Room</h3><div class=\"v10-amenity-chips\"><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>Kitchen</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><rect height=\"18\" rx=\"2\" width=\"14\" x=\"5\" y=\"3\"></rect><circle cx=\"12\" cy=\"13\" r=\"4\"></circle><path d=\"M8 7h1M11 7h5\"></path></svg><b>Washing machine</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>Refrigerator</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>Microwave</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M7 3l10 10M14 10l4-4 3 3-4 4M6 14l4 4-3 3-4-4z\"></path></svg><b>Smart TV</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 2 3-2M9 19l3-2 3 2\"></path></svg><b>Air conditioning</b></span></div><p>A practical room option with the amenities available at the selected branch.</p><div class=\"v7-unit-actions\"><button class=\"btn v7-btn-outline v7-unit-detail\" data-unit-dialog=\"unit-dammam-al-anoud-0\" type=\"button\">Unit details</button><button class=\"btn v10-room-cta v7-unit-enquire\" data-unit-value=\"Room\" type=\"button\">Enquire about this unit</button></div></div></article>",
+    "links": [
+      {
+        "href": "https://wa.me/966559366744",
+        "title": "WhatsApp the branch"
+      },
+      {
+        "href": "https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html",
+        "title": "View on Booking.com"
+      }
+    ]
+  },
+  "dammam-al-salam/index.html": {
+    "language": "ar-SA",
+    "mainClass": [
+      "v8-property-page",
+      "v10-property-page"
+    ],
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "v10-property-hero"
+        ],
+        "heading": "فلور 2 للشقق المخدومة",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/01-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "استفسر عن التوفر",
+        "images": []
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-units",
+          "v10-units"
+        ],
+        "heading": "الوحدات المتاحة",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/04-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "policy",
+        "class": [
+          "v7-section",
+          "v7-policy"
+        ],
+        "heading": "معلومات قبل الوصول",
+        "images": []
+      },
+      {
+        "id": "about",
+        "class": [
+          "v7-section",
+          "v8-about"
+        ],
+        "heading": "عن الفرع",
+        "images": []
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "خدمات متاحة أثناء إقامتك",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-section",
+          "v7-location"
+        ],
+        "heading": "السلام، الدمام",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews"
+        ],
+        "heading": "ثقة الضيوف على Google",
+        "images": []
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-gallery"
+        ],
+        "heading": "استكشف الفرع بالصورة",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/03-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/04-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-section",
+          "v8-similar"
+        ],
+        "heading": "فروع فلور الأخرى",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "خطط لإقامتك في السلام",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>استفسر عن التوفر</h2><p>اختر الفرع وتفاصيل الإقامة، ثم أرسل الاستفسار مباشرة إلى واتساب الفرع. لا يمثل ذلك تأكيد حجز فوريًا.</p></div><div class=\"v7-booking-form\" data-lang=\"ar\"><label class=\"v12-book-field\"><span>الفرع</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" value=\"dammam-al-anoud\">الدمام · العنود</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" selected=\"\" value=\"dammam-al-salam\">الدمام · السلام</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" value=\"al-qaisumah\">القيصومة</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" value=\"al-majmaah-harmah\">المجمعة · حرمة</option></select></label><label class=\"v12-book-field\"><span>نوع الوحدة</span><select id=\"book-unit\"><option value=\"غرفة\">غرفة</option><option value=\"غرفة وصالة\">غرفة وصالة</option><option value=\"غرفتان وصالة\">غرفتان وصالة</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>تواريخ الإقامة</legend><label><span>الوصول</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>المغادرة</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>الضيوف</legend><label><span>البالغون</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>الأطفال</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">استفسر عبر واتساب</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">فتح صفحة Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "v10-property-hero"
+        ],
+        "outer": "<section class=\"v10-property-hero\"><div class=\"wrap\"><div class=\"v8-breadcrumb v10-breadcrumb\"><a href=\"/\">الرئيسية</a><span>‹</span><span>فلور 2 للشقق المخدومة</span></div><div class=\"v10-hero-card\"><div class=\"v10-photo-panel\"><a class=\"v10-photo-main\" href=\"#gallery\"><img alt=\"فلور 2 للشقق المخدومة\" decoding=\"async\" fetchpriority=\"high\" loading=\"lazy\" src=\"/assets/images/dammam-al-salam/enhanced/05-enhanced.webp\"/></a><div class=\"v10-photo-row\"><a class=\"v10-photo-all\" href=\"#gallery\"><span>عرض جميع الصور</span><small>5 صورة</small></a><a href=\"#gallery\"><img alt=\"فلور 2 للشقق المخدومة\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-salam/enhanced/01-enhanced.webp\"/></a><a href=\"#gallery\"><img alt=\"فلور 2 للشقق المخدومة\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-salam/enhanced/03-enhanced.webp\"/></a></div></div><aside class=\"v10-property-info\"><div class=\"v10-property-brand\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-transparent.png\"/><span>FLOWER STAY / 02</span></div><span class=\"v10-eyebrow\">إقامة من فلور للشقق المخدومة</span><h1>فلور 2 للشقق المخدومة</h1><div class=\"v10-meta\"><span>★ <b data-google-rating=\"flower-2\">4.5</b> / 5</span><a href=\"https://www.google.com/maps/search/?api=1&amp;query=FLOWER&amp;query_place_id=ChIJqfPHpgz9ST4RZ6uu6XMnrcc\" rel=\"noopener\" target=\"_blank\">الدمام، السلام</a></div><p class=\"v10-su"
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">القائمة</button><nav id=\"main-nav\"><a href=\"/\">الرئيسية</a><a href=\"#stay\">الوحدات</a><a href=\"#gallery\">الصور</a><a href=\"#services\">الخدمات</a><a href=\"#reviews\">التقييمات</a><a href=\"#location\">الموقع</a></nav><div class=\"v7-tools\"><label class=\"v7-branch-switch\"><span>تغيير الفرع</span><select id=\"site-branch-switch\"><option value=\"/\">كل الفروع</option><option value=\"/dammam-al-anoud/\">الدمام · العنود</option><option selected=\"\" value=\"/dammam-al-salam/\">الدمام · السلام</option><option value=\"/al-qaisumah/\">القيصومة</option><option value=\"/al-majmaah-harmah/\">المجمعة · حرمة</option></select></label><a class=\"v7-lang\" href=\"/en/dammam-al-salam/\">English</a><a class=\"btn v7-book\" href=\"#booking\">استفسر عن الحجز</a></div></div></header>",
+    "h1": [
+      "فلور 2 للشقق المخدومة"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js"
+    ],
+    "originalStyleSheetCount": 11,
+    "unit": "<article class=\"v7-unit v10-room-card\"><div class=\"v7-unit-media\"><img alt=\"فلور السلام - غرفة نوم\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/dammam-al-salam/enhanced/05-enhanced.webp\"/><span class=\"v10-photo-count\">1 صور الوحدة</span></div><div class=\"v7-unit-copy\"><span class=\"v7-kicker\">إقامة في فلور</span><h3>غرفة</h3><div class=\"v10-amenity-chips\"><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>مطبخ</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><rect height=\"18\" rx=\"2\" width=\"14\" x=\"5\" y=\"3\"></rect><circle cx=\"12\" cy=\"13\" r=\"4\"></circle><path d=\"M8 7h1M11 7h5\"></path></svg><b>غسالة</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>ثلاجة</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>ميكروويف</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M7 3l10 10M14 10l4-4 3 3-4 4M6 14l4 4-3 3-4-4z\"></path></svg><b>تلفزيون ذكي</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 2 3-2M9 19l3-2 3 2\"></path></svg><b>تكييف</b></span></div><p>خيار عملي لإقامة مريحة مع التجهيزات المتوفرة في الفرع.</p><div class=\"v7-unit-actions\"><button class=\"btn v7-btn-outline v7-unit-detail\" data-unit-dialog=\"unit-dammam-al-salam-0\" type=\"button\">تفاصيل الوحدة</button><button class=\"btn v10-room-cta v7-unit-enquire\" data-unit-value=\"غرفة\" type=\"button\">استفسر عن هذه الوحدة</button></div></div></article>",
+    "links": [
+      {
+        "href": "https://wa.me/966567780349",
+        "title": "تواصل عبر واتساب"
+      },
+      {
+        "href": "https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html",
+        "title": "عرض على Booking.com"
+      }
+    ]
+  },
+  "al-qaisumah/index.html": {
+    "language": "ar-SA",
+    "mainClass": [
+      "v8-property-page",
+      "v10-property-page"
+    ],
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "v10-property-hero"
+        ],
+        "heading": "فلور 3 للشقق المخدومة",
+        "images": [
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/04-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "استفسر عن التوفر",
+        "images": []
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-units",
+          "v10-units"
+        ],
+        "heading": "الوحدات المتاحة",
+        "images": [
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/04-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "policy",
+        "class": [
+          "v7-section",
+          "v7-policy"
+        ],
+        "heading": "معلومات قبل الوصول",
+        "images": []
+      },
+      {
+        "id": "about",
+        "class": [
+          "v7-section",
+          "v8-about"
+        ],
+        "heading": "عن الفرع",
+        "images": []
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "خدمات متاحة أثناء إقامتك",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-section",
+          "v7-location"
+        ],
+        "heading": "القيصومة",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews"
+        ],
+        "heading": "ثقة الضيوف على Google",
+        "images": []
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-gallery"
+        ],
+        "heading": "استكشف الفرع بالصورة",
+        "images": [
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/01-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/04-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/05-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-section",
+          "v8-similar"
+        ],
+        "heading": "فروع فلور الأخرى",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "خطط لإقامتك في القيصومة",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>استفسر عن التوفر</h2><p>اختر الفرع وتفاصيل الإقامة، ثم أرسل الاستفسار مباشرة إلى واتساب الفرع. لا يمثل ذلك تأكيد حجز فوريًا.</p></div><div class=\"v7-booking-form\" data-lang=\"ar\"><label class=\"v12-book-field\"><span>الفرع</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" value=\"dammam-al-anoud\">الدمام · العنود</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" value=\"dammam-al-salam\">الدمام · السلام</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" selected=\"\" value=\"al-qaisumah\">القيصومة</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" value=\"al-majmaah-harmah\">المجمعة · حرمة</option></select></label><label class=\"v12-book-field\"><span>نوع الوحدة</span><select id=\"book-unit\"><option value=\"غرفة\">غرفة</option><option value=\"غرفة وصالة\">غرفة وصالة</option><option value=\"غرفتان وصالة\">غرفتان وصالة</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>تواريخ الإقامة</legend><label><span>الوصول</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>المغادرة</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>الضيوف</legend><label><span>البالغون</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>الأطفال</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">استفسر عبر واتساب</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">فتح صفحة Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "v10-property-hero"
+        ],
+        "outer": "<section class=\"v10-property-hero\"><div class=\"wrap\"><div class=\"v8-breadcrumb v10-breadcrumb\"><a href=\"/\">الرئيسية</a><span>‹</span><span>فلور 3 للشقق المخدومة</span></div><div class=\"v10-hero-card\"><div class=\"v10-photo-panel\"><a class=\"v10-photo-main\" href=\"#gallery\"><img alt=\"فلور 3 للشقق المخدومة\" decoding=\"async\" fetchpriority=\"high\" loading=\"lazy\" src=\"/assets/images/al-qaisumah/enhanced/02-enhanced.webp\"/></a><div class=\"v10-photo-row\"><a class=\"v10-photo-all\" href=\"#gallery\"><span>عرض جميع الصور</span><small>6 صورة</small></a><a href=\"#gallery\"><img alt=\"فلور 3 للشقق المخدومة\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/al-qaisumah/enhanced/06-enhanced.webp\"/></a><a href=\"#gallery\"><img alt=\"فلور 3 للشقق المخدومة\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/al-qaisumah/enhanced/04-enhanced.webp\"/></a></div></div><aside class=\"v10-property-info\"><div class=\"v10-property-brand\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-transparent.png\"/><span>FLOWER STAY / 03</span></div><span class=\"v10-eyebrow\">إقامة من فلور للشقق المخدومة</span><h1>فلور 3 للشقق المخدومة</h1><div class=\"v10-meta\"><span>★ <b data-google-rating=\"flower-3\">4.6</b> / 5</span><a href=\"https://www.google.com/maps/search/?api=1&amp;query=FLOWER&amp;query_place_id=ChIJi4p4EwAv1z8RKp_70YoHIxI\" rel=\"noopener\" target=\"_blank\">القيصومة</a></div><p class=\"v10-summary\">شقق مخدومة "
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">القائمة</button><nav id=\"main-nav\"><a href=\"/\">الرئيسية</a><a href=\"#stay\">الوحدات</a><a href=\"#gallery\">الصور</a><a href=\"#services\">الخدمات</a><a href=\"#reviews\">التقييمات</a><a href=\"#location\">الموقع</a></nav><div class=\"v7-tools\"><label class=\"v7-branch-switch\"><span>تغيير الفرع</span><select id=\"site-branch-switch\"><option value=\"/\">كل الفروع</option><option value=\"/dammam-al-anoud/\">الدمام · العنود</option><option value=\"/dammam-al-salam/\">الدمام · السلام</option><option selected=\"\" value=\"/al-qaisumah/\">القيصومة</option><option value=\"/al-majmaah-harmah/\">المجمعة · حرمة</option></select></label><a class=\"v7-lang\" href=\"/en/al-qaisumah/\">English</a><a class=\"btn v7-book\" href=\"#booking\">استفسر عن الحجز</a></div></div></header>",
+    "h1": [
+      "فلور 3 للشقق المخدومة"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js"
+    ],
+    "originalStyleSheetCount": 11,
+    "unit": "<article class=\"v7-unit v10-room-card\"><div class=\"v7-unit-media\"><img alt=\"فلور القيصومة - غرفة نوم\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/al-qaisumah/enhanced/02-enhanced.webp\"/><span class=\"v10-photo-count\">1 صور الوحدة</span></div><div class=\"v7-unit-copy\"><span class=\"v7-kicker\">إقامة في فلور</span><h3>غرفة</h3><div class=\"v10-amenity-chips\"><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>مطبخ</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><rect height=\"18\" rx=\"2\" width=\"14\" x=\"5\" y=\"3\"></rect><circle cx=\"12\" cy=\"13\" r=\"4\"></circle><path d=\"M8 7h1M11 7h5\"></path></svg><b>غسالة</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>ثلاجة</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M4 4h16v16H4zM8 4v16M12 8h5M12 12h5\"></path></svg><b>ميكروويف</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M7 3l10 10M14 10l4-4 3 3-4 4M6 14l4 4-3 3-4-4z\"></path></svg><b>تلفزيون ذكي</b></span><span class=\"v10-amenity-chip\"><svg aria-hidden=\"true\" class=\"v7-icon\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.7\" viewbox=\"0 0 24 24\"><path d=\"M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 2 3-2M9 19l3-2 3 2\"></path></svg><b>تكييف</b></span></div><p>خيار عملي لإقامة مريحة مع التجهيزات المتوفرة في الفرع.</p><div class=\"v7-unit-actions\"><button class=\"btn v7-btn-outline v7-unit-detail\" data-unit-dialog=\"unit-al-qaisumah-0\" type=\"button\">تفاصيل الوحدة</button><button class=\"btn v10-room-cta v7-unit-enquire\" data-unit-value=\"غرفة\" type=\"button\">استفسر عن هذه الوحدة</button></div></div></article>",
+    "links": [
+      {
+        "href": "https://wa.me/966573644047",
+        "title": "تواصل عبر واتساب"
+      },
+      {
+        "href": "https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html",
+        "title": "عرض على Booking.com"
+      }
+    ]
+  },
+  "al-majmaah-harmah/index.html": {
+    "language": "ar-SA",
+    "mainClass": [
+      "v8-property-page",
+      "v10-property-page"
+    ],
+    "sections": [
+      {
+        "id": null,
+        "class": [
+          "flower-v16-property-hero",
+          "lx-hero"
+        ],
+        "heading": "فلور 4 · حرمة إقامتك في المجمعة بصورة مختلفة",
+        "images": [
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": [
+              "flower-v16-hero-bg"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "booking",
+        "class": [
+          "v7-booking"
+        ],
+        "heading": "استفسر عن التوفر",
+        "images": []
+      },
+      {
+        "id": "flower-signature",
+        "class": [
+          "lx-story"
+        ],
+        "heading": "لكل إقامة تفاصيلها.",
+        "images": [
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": [
+              "lx-chapter-photo"
+            ]
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1362-enhanced.webp",
+            "class": [
+              "lx-chapter-photo"
+            ]
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1623-enhanced.webp",
+            "class": [
+              "lx-chapter-photo"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stay",
+        "class": [
+          "v7-section",
+          "v7-units",
+          "v10-units",
+          "lx-original-units"
+        ],
+        "heading": "الوحدات المتاحة",
+        "images": [
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1623-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1223-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1362-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": "policy",
+        "class": [
+          "v7-section",
+          "v7-policy"
+        ],
+        "heading": "معلومات قبل الوصول",
+        "images": []
+      },
+      {
+        "id": "about",
+        "class": [
+          "v7-section",
+          "v8-about"
+        ],
+        "heading": "عن الفرع",
+        "images": []
+      },
+      {
+        "id": "services",
+        "class": [
+          "v7-section",
+          "v7-services"
+        ],
+        "heading": "خدمات متاحة أثناء إقامتك",
+        "images": []
+      },
+      {
+        "id": "location",
+        "class": [
+          "v7-section",
+          "v7-location"
+        ],
+        "heading": "حرمة، المجمعة",
+        "images": []
+      },
+      {
+        "id": "reviews",
+        "class": [
+          "v7-section",
+          "v7-reviews"
+        ],
+        "heading": "ثقة الضيوف على Google",
+        "images": []
+      },
+      {
+        "id": "gallery",
+        "class": [
+          "v7-section",
+          "v7-gallery"
+        ],
+        "heading": "استكشف الفرع بالصورة",
+        "images": [
+          {
+            "src": "/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1623-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1154-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-majmaah-harmah/enhanced/IMG_1565-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-section",
+          "v8-similar"
+        ],
+        "heading": "فروع فلور الأخرى",
+        "images": [
+          {
+            "src": "/assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+            "class": null
+          },
+          {
+            "src": "/assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+            "class": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "class": [
+          "v7-final-cta"
+        ],
+        "heading": "خطط لإقامتك في حرمة",
+        "images": []
+      }
+    ],
+    "book": "<section class=\"v7-booking\" id=\"booking\"><div class=\"wrap\"><div class=\"v7-booking-head\"><span class=\"v12-booking-eyebrow\">FLOWER DIRECT</span><h2>استفسر عن التوفر</h2><p>اختر الفرع وتفاصيل الإقامة، ثم أرسل الاستفسار مباشرة إلى واتساب الفرع. لا يمثل ذلك تأكيد حجز فوريًا.</p></div><div class=\"v7-booking-form\" data-lang=\"ar\"><label class=\"v12-book-field\"><span>الفرع</span><select id=\"book-branch\"><option data-booking=\"https://www.booking.com/hotel/sa/flwr-lkhlyjy-llshqq-lmkhdwm.ar.html\" data-phone=\"+966559366744\" value=\"dammam-al-anoud\">الدمام · العنود</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm.ar.html\" data-phone=\"+966567780349\" value=\"dammam-al-salam\">الدمام · السلام</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lfndqy-lqyswm.ar.html\" data-phone=\"+966573644047\" value=\"al-qaisumah\">القيصومة</option><option data-booking=\"https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html\" data-phone=\"+966566374274\" selected=\"\" value=\"al-majmaah-harmah\">المجمعة · حرمة</option></select></label><label class=\"v12-book-field\"><span>نوع الوحدة</span><select id=\"book-unit\"><option value=\"غرفة وحمام\">غرفة وحمام</option><option value=\"غرفة وصالة\">غرفة وصالة</option><option value=\"غرفتان وصالة\">غرفتان وصالة</option></select></label><fieldset class=\"v12-book-group v12-date-group\"><legend>تواريخ الإقامة</legend><label><span>الوصول</span><input id=\"book-arrival\" type=\"date\"/></label><label><span>المغادرة</span><input id=\"book-departure\" type=\"date\"/></label></fieldset><fieldset class=\"v12-book-group v12-guests-group\"><legend>الضيوف</legend><label><span>البالغون</span><select id=\"book-adults\"><option value=\"1\">1</option><option selected=\"\" value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option><option value=\"7\">7</option><option value=\"8\">8</option></select></label><label><span>الأطفال</span><select id=\"book-children\"><option value=\"0\">0</option><option value=\"1\">1</option><option value=\"2\">2</option><option value=\"3\">3</option><option value=\"4\">4</option><option value=\"5\">5</option><option value=\"6\">6</option></select></label></fieldset><div class=\"v7-booking-actions\"><a class=\"btn v7-btn-primary\" href=\"#\" id=\"book-whatsapp\">استفسر عبر واتساب</a><a class=\"v12-booking-external\" href=\"#\" id=\"book-booking\" rel=\"noopener\" target=\"_blank\">فتح صفحة Booking.com ↗</a></div></div></div></section>",
+    "hero_candidates": [
+      {
+        "class": [
+          "flower-v16-property-hero",
+          "lx-hero"
+        ],
+        "outer": "<section aria-label=\"فلور 4 · حرمة\" class=\"flower-v16-property-hero lx-hero\">\n<div class=\"lx-media\"><img alt=\"صورة أصلية من وحدات فلور للشقق المخدومة\" class=\"flower-v16-hero-bg\" decoding=\"async\" fetchpriority=\"high\" loading=\"eager\" src=\"/assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp\"/><div class=\"lx-image-signature\">فلور 04  /  حرمة</div></div>\n<div class=\"v16-content lx-hero-content\"><p class=\"lx-eyebrow\">FLOWER · شقق مخدومة</p>\n<div class=\"v16-breadcrumb\"><a href=\"/\">الرئيسية</a> ‹ فلور 4 · حرمة</div>\n<div class=\"v16-overline\">فلور | إقامة في حرمة</div>\n<h1>فلور 4 · حرمة<span class=\"v16-headline-sub\">إقامتك في المجمعة بصورة مختلفة</span></h1>\n<p class=\"v16-branch-intro\">غرفة وحمام، غرفة وصالة، وغرفتان وصالة. تصفّح صور فلور الحقيقية ثم استفسر مباشرة عن الوحدة المناسبة لإقامتك.</p>\n<div class=\"v16-property-proof\">\n<a class=\"v16-review-link\" href=\"https://www.google.com/maps/search/?api=1&amp;query=FLOWER&amp;query_place_id=ChIJYVDYYgDJKj4RayfDdSuhdF8\" rel=\"noopener noreferrer\" target=\"_blank\">\n              ★ <b data-google-rating=\"flower-4\">4.6</b> / 5 ·\n              <b data-google-review-count=\"flower-4\">142</b> مراجعات Google\n            </a>\n</div>\n<div class=\"v16-hero-actions\">\n<a class=\"v16-primary\" href=\"#booking\">استفسر عن التوفر</a>\n<a class=\"v16-secondary\" href=\"#gallery\">شاهد صور الوحدات</a>\n</div>\n</div>\n</section>"
+      }
+    ],
+    "nav": "<header class=\"v7-header\"><div class=\"v7-nav wrap\"><a aria-label=\"FLOWER\" class=\"v7-logo\" href=\"/\"><img alt=\"FLOWER\" src=\"/assets/images/brand/flower-hotel-logo-crop.png\"/></a><button aria-controls=\"main-nav\" aria-expanded=\"false\" class=\"v7-menu\" type=\"button\">القائمة</button><nav id=\"main-nav\"><a href=\"/\">الرئيسية</a><a href=\"#stay\">الوحدات</a><a href=\"#gallery\">الصور</a><a href=\"#services\">الخدمات</a><a href=\"#reviews\">التقييمات</a><a href=\"#location\">الموقع</a></nav><div class=\"v7-tools\"><label class=\"v7-branch-switch\"><span>تغيير الفرع</span><select id=\"site-branch-switch\"><option value=\"/\">كل الفروع</option><option value=\"/dammam-al-anoud/\">الدمام · العنود</option><option value=\"/dammam-al-salam/\">الدمام · السلام</option><option value=\"/al-qaisumah/\">القيصومة</option><option selected=\"\" value=\"/al-majmaah-harmah/\">المجمعة · حرمة</option></select></label><a class=\"v7-lang\" href=\"/en/al-majmaah-harmah/\">English</a><a class=\"btn v7-book\" href=\"#booking\">استفسر عن الحجز</a></div></div></header>",
+    "h1": [
+      "فلور 4 · حرمة إقامتك في المجمعة بصورة مختلفة"
+    ],
+    "logo": [
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-crop.png",
+        "alt": "FLOWER"
+      },
+      {
+        "src": "/assets/images/brand/flower-hotel-logo-transparent.png",
+        "alt": "FLOWER"
+      }
+    ],
+    "scripts": [
+      "/assets/js/site-v2.js",
+      "/assets/js/site-v11-polish.js",
+      "/assets/js/google-reviews-live.js",
+      "/assets/js/flower-apple-motion.js",
+      "/assets/js/flower-signature-v18.js"
+    ],
+    "originalStyleSheetCount": 15,
+    "unit": "<article class=\"v7-unit v10-room-card lx-unit\" data-lx-unit=\"1\"><div class=\"v7-unit-media\"><img alt=\"فلور حرمة - غرفة نوم بسرير مزدوج\" decoding=\"async\" loading=\"lazy\" src=\"/assets/images/al-majmaah-harmah/enhanced/IMG_1623-enhanced.webp\"/><span class=\"v10-photo-count\">1 صور الوحدة</span></div><div class=\"v7-unit-copy\"><span class=\"v7-kicker\">إقامة في فلور</span><h3>غرفة وحمام</h3><div class=\"v10-amenity-chips\"><span class=\"v10-amenity-chip v14-confirmed-chip\"><b>حمام خاص</b></span></div><p>غرفة مستقلة مع حمام خاص، خيار عملي لإقامة مريحة.</p><div class=\"v7-unit-actions\"><button class=\"btn v7-btn-outline v7-unit-detail\" data-unit-dialog=\"unit-al-majmaah-harmah-0\" type=\"button\">تفاصيل الوحدة</button><button class=\"btn v10-room-cta v7-unit-enquire\" data-unit-value=\"غرفة وحمام\" type=\"button\">استفسر عن هذه الوحدة</button></div></div></article>",
+    "links": [
+      {
+        "href": "https://wa.me/966566374274",
+        "title": "تواصل عبر واتساب"
+      },
+      {
+        "href": "https://www.booking.com/hotel/sa/flwr-llshqq-lmkhdwm-lmjm-h.ar.html",
+        "title": "عرض على Booking.com"
+      }
+    ]
+  }
+}
