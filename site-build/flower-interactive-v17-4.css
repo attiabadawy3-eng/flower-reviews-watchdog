@@ -1,0 +1,101 @@
+/* FLOWER Interactive V17.4 • original Hairline-inspired isometric SVG experience
+   Stage only. No dependency, no existing booking/hero changes.
+   Palette: Burgundy #7A314D · Deep #5B2038 · Gold #B79862. */
+.fi-section{--fi-burgundy:#7A314D;--fi-deep:#5B2038;--fi-gold:#B79862;--fi-text:#261f25;--fi-muted:#746b72;--fi-ease:cubic-bezier(.22,.9,.2,1);
+ background:linear-gradient(180deg,#fff 0%,#f8f5f5 46%,#fff 100%);
+ padding:clamp(62px,8.3vw,120px) clamp(14px,3.6vw,55px) clamp(55px,7vw,98px);position:relative;overflow:clip;isolation:isolate;direction:rtl}
+html[lang="en"] .fi-section{direction:ltr}
+.fi-section *{box-sizing:border-box}
+.fi-section .fi-head{text-align:center;max-width:940px;margin:0 auto clamp(34px,5vw,60px)}
+.fi-section .fi-eyebrow,.fi-section .fi-units-kicker{display:block;color:var(--fi-burgundy);font-size:11px;font-weight:770;letter-spacing:.17em}
+.fi-section .fi-head h2{font-size:clamp(36px,5.4vw,76px);letter-spacing:-.056em;line-height:1.14;color:#241b22;margin:17px 0 14px;font-weight:800;text-wrap:balance}
+.fi-section .fi-head p{color:var(--fi-muted);font-size:clamp(15px,1.6vw,19px);margin:0;line-height:1.75}
+.fi-section .fi-shell{display:grid;grid-template-columns:minmax(0,1.17fr) minmax(0,.83fr);max-width:1320px;margin:0 auto;min-height:590px;border:1px solid #e9dce0;border-radius:28px;overflow:hidden;box-shadow:0 32px 90px rgba(75,36,58,.095),0 3px 14px rgba(60,29,45,.035);background:white}
+.fi-section .fi-illustration{min-width:0;min-height:585px;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 43% 44%,#4a273b 0%,#2d1526 55%,#170c17 100%);overflow:hidden}
+.fi-section .fi-illustration:before{content:"";position:absolute;inset:0;opacity:.21;background-image:linear-gradient(35deg,transparent 49.7%,#ae8a67 50%,transparent 50.3%),linear-gradient(-35deg,transparent 49.7%,#ae8a67 50%,transparent 50.3%);background-size:47px 30px;mask-image:radial-gradient(ellipse at 50% 60%,#000 10%,transparent 77%);pointer-events:none}
+.fi-section .fi-illustration:after{content:"";position:absolute;inset:0;border:1px solid rgba(217,180,129,.16);pointer-events:none}
+.fi-section .fi-illustration-tag{position:absolute;top:30px;inset-inline-start:32px;z-index:3;color:#dbb98b;font-size:11px;letter-spacing:.19em;font-weight:760}
+.fi-section .fi-illustration-hint{position:absolute;inset-inline:20px;bottom:24px;text-align:center;color:#dcc9cf;font-size:12px;line-height:1.5;z-index:2}
+.fi-section .fi-building{position:relative;display:block;width:min(100%,680px);aspect-ratio:640/520;overflow:visible;filter:drop-shadow(0 28px 24px rgba(0,0,0,.23));z-index:1}
+.fi-section .fi-floor{outline:none;cursor:pointer;transform-origin:center;transition:transform .46s var(--fi-ease),opacity .38s ease;opacity:.68}
+.fi-section .fi-floor[aria-pressed="true"]{opacity:1;transform:translateY(-11px);filter:drop-shadow(0 7px 9px rgba(233,183,116,.19))}
+.fi-section .fi-floor:hover,.fi-section .fi-floor:focus-visible{opacity:1;transform:translateY(-8px)}
+.fi-section .fi-floor:focus-visible{outline:2px solid #ffd399;outline-offset:2px}
+.fi-section .fi-floor[aria-pressed="true"] polygon{stroke:#f6d09b;stroke-width:2px}
+.fi-section .fi-floor polygon{transition:stroke .4s ease,fill-opacity .4s ease}
+.fi-section .fi-panel{padding:clamp(28px,4.8vw,67px) clamp(24px,4vw,58px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;direction:inherit}
+.fi-section .fi-panel-kicker{color:var(--fi-burgundy);font-size:11px;font-weight:800;letter-spacing:.13em}
+.fi-section .fi-panel h3{color:var(--fi-text);font-size:clamp(28px,3.4vw,48px);line-height:1.24;letter-spacing:-.05em;font-weight:790;margin:20px 0 14px}
+.fi-section .fi-panel p{color:var(--fi-muted);font-size:15px;line-height:1.9;margin:0;max-width:39ch}
+.fi-section .fi-level-readout{display:flex;align-items:baseline;flex-wrap:wrap;gap:11px;border-bottom:1px solid #ebdfe4;width:100%;margin:27px 0 23px;padding-bottom:15px}
+.fi-section .fi-level-label{font-size:12px;color:#81747b}
+.fi-section .fi-level-value{font-size:26px;font-weight:810;color:var(--fi-burgundy)}
+.fi-section .fi-floor-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}
+.fi-section .fi-floor-button{appearance:none;cursor:pointer;border:1px solid #e6d5dd;border-radius:13px;background:#fbf8f9;color:#633c50;min-height:52px;padding:11px 12px;text-align:center;font:700 14px/1.3 inherit;transition:transform .24s var(--fi-ease),background .23s ease,border-color .23s ease}
+.fi-section .fi-floor-button:hover{transform:translateY(-2px);border-color:#b79862}
+.fi-section .fi-floor-button[aria-pressed="true"]{color:white;background:var(--fi-burgundy);border-color:var(--fi-burgundy);box-shadow:0 7px 18px rgba(91,32,56,.15)}
+.fi-section .fi-floor-button:focus-visible,.fi-section .fi-unit-card:focus-visible,.fi-section .fi-unit-link:focus-visible{outline:3px solid #b79862;outline-offset:4px}
+.fi-section .fi-micro{font-size:11px;color:#94828d;margin-top:23px;letter-spacing:.015em}
+.fi-section .fi-units{max-width:1320px;margin:clamp(65px,9vw,125px) auto 0;text-align:center}
+.fi-section .fi-units h3{color:#251b23;font-size:clamp(34px,5.1vw,67px);letter-spacing:-.047em;font-weight:790;line-height:1.2;margin:15px auto}
+.fi-section .fi-units>p{color:#756b72;font-size:clamp(14px,1.4vw,17px);line-height:1.8;margin:0 auto 40px}
+.fi-section .fi-deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2.2vw,25px);perspective:1000px}
+.fi-section .fi-unit-card{appearance:none;position:relative;cursor:pointer;border:1px solid #e9dee2;background:#fff;border-radius:23px;padding:0;box-shadow:0 6px 17px rgba(46,24,37,.035);text-align:start;color:inherit;min-width:0;min-height:390px;overflow:hidden;transform:translate3d(0,var(--fi-lift,0px),0) rotateX(var(--fi-tiltx,0deg)) rotateY(var(--fi-tilty,0deg));transform-style:preserve-3d;transition:transform .36s var(--fi-ease),box-shadow .36s var(--fi-ease),border-color .36s ease;direction:inherit}
+.fi-section .fi-unit-card:is(:hover,:focus-visible),.fi-section .fi-unit-card[aria-pressed="true"]{--fi-lift:-11px;border-color:#b79862;box-shadow:0 28px 65px rgba(93,43,66,.15),0 0 0 1px rgba(183,152,98,.16)}
+.fi-section .fi-unit-photo{display:block;width:100%;height:275px;overflow:hidden;position:relative;background:#f2eaed}
+.fi-section .fi-unit-photo img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .7s var(--fi-ease),filter .6s ease;filter:saturate(.95)}
+.fi-section .fi-unit-card:hover .fi-unit-photo img,.fi-section .fi-unit-card[aria-pressed="true"] .fi-unit-photo img{transform:scale(1.055);filter:saturate(1.06)}
+.fi-section .fi-unit-info{display:flex;flex-direction:column;gap:11px;padding:23px 25px 24px}
+.fi-section .fi-unit-info small{color:#b79862;letter-spacing:.1em;font-size:10px;font-weight:750}
+.fi-section .fi-unit-info strong{color:#372130;font-size:clamp(21px,2.2vw,31px);font-weight:760;line-height:1.3;letter-spacing:-.025em}
+.fi-section .fi-card-action{font-size:12px;font-weight:690;color:#8c6377}
+.fi-section .fi-unit-card[aria-pressed="true"] .fi-card-action{color:#7a314d}
+.fi-section .fi-units-bottom{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px 15px;margin:32px 0 0;padding:21px 25px;background:#f5f0f2;border:1px solid #e9dce3;border-radius:17px}
+.fi-section .fi-selected-label{font-size:12px;color:#746774;margin:0}
+.fi-section .fi-selected-unit{color:#7A314D;font-size:17px}
+.fi-section .fi-unit-link{display:inline-flex;align-items:center;justify-content:center;border:1px solid #7A314D;border-radius:999px;background:#7A314D;text-decoration:none;color:#fff!important;font-size:13px;font-weight:740;min-height:44px;padding:9px 22px;margin-inline-start:auto}
+.fi-section .fi-unit-link:hover{background:#5B2038}
+.fi-section .fi-unit-card,.fi-section .fi-floor-button{touch-action:manipulation}
+@media(max-width:980px){
+.fi-section .fi-shell{grid-template-columns:1fr;max-width:750px;min-height:0}
+.fi-section .fi-illustration{min-height:380px}
+.fi-section .fi-building{width:min(100%,530px)}
+.fi-section .fi-panel{padding:30px 34px 38px}
+.fi-section .fi-deck{gap:13px}
+.fi-section .fi-unit-card{min-height:315px}
+.fi-section .fi-unit-photo{height:205px}
+.fi-section .fi-unit-info{padding:17px}
+.fi-section .fi-unit-info strong{font-size:21px}
+}
+@media(max-width:700px){
+.fi-section{padding:60px 13px 65px}
+.fi-section .fi-head{margin:0 auto 30px}
+.fi-section .fi-head h2{font-size:clamp(34px,8vw,46px)}
+.fi-section .fi-head p{font-size:14px}
+.fi-section .fi-shell{border-radius:19px}
+.fi-section .fi-illustration{min-height:310px}
+.fi-section .fi-building{width:min(100%,420px)}
+.fi-section .fi-illustration-tag{top:20px;inset-inline-start:18px;font-size:9px}
+.fi-section .fi-illustration-hint{bottom:16px;font-size:11px}
+.fi-section .fi-panel{padding:25px 22px 29px}
+.fi-section .fi-panel h3{font-size:30px;margin:12px 0 9px}
+.fi-section .fi-panel p{font-size:13px;line-height:1.8}
+.fi-section .fi-level-readout{margin:17px 0}
+.fi-section .fi-floor-button{min-height:48px}
+.fi-section .fi-units{margin-top:69px}
+.fi-section .fi-units h3{font-size:38px}
+.fi-section .fi-units>p{font-size:13px;margin-bottom:24px}
+.fi-section .fi-deck{display:flex;gap:13px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding:15px 3px 22px;direction:inherit}
+.fi-section .fi-deck::-webkit-scrollbar{display:none}
+.fi-section .fi-unit-card{flex:0 0 min(82%,320px);min-width:0;min-height:330px;scroll-snap-align:center}
+.fi-section .fi-unit-photo{height:228px}
+.fi-section .fi-unit-info{padding:16px 20px 20px}
+.fi-section .fi-unit-info strong{font-size:25px}
+.fi-section .fi-units-bottom{margin-top:14px;display:grid;grid-template-columns:1fr;gap:7px;justify-items:center;padding:19px}
+.fi-section .fi-unit-link{margin:9px auto 0;width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+.fi-section *,.fi-section *::before,.fi-section *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+.fi-section .fi-floor,.fi-section .fi-floor[aria-pressed="true"],.fi-section .fi-unit-card{transform:none!important}
+.fi-section .fi-unit-photo img{transform:none!important}
+}
