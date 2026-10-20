@@ -77,6 +77,13 @@ def building_svg(soup, english):
                                 fill="#d6bb95",fill_opacity=".06",stroke="#cba87b",stroke_opacity=".65",stroke_width="1")
             group.append(window)
         svg.append(group)
+    # SVG attributes use hyphens (BeautifulSoup does not normalize Python underscores).
+    for el in svg.find_all(True):
+        for old, new in (("stop_color","stop-color"),("stroke_width","stroke-width"),
+                         ("stroke_opacity","stroke-opacity"),("fill_opacity","fill-opacity"),
+                         ("stroke_linejoin","stroke-linejoin")):
+            if old in el.attrs:
+                el[new]=el.attrs.pop(old)
     return svg
 
 def install_flower_interactive(soup: BeautifulSoup, path:str)->None:
