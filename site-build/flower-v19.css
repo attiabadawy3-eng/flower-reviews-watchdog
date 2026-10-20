@@ -215,3 +215,29 @@ body.fx19-site :is(.v7-final-cta,.v7-footer) a:focus-visible{outline-color:#f5d9
  body.fx19-site .fx19-button,body.fx19-site .fx19-editorial-grid img,
  body.fx19-site .v7-branch-card,body.fx19-site .v7-unit{transition:none!important;transform:none!important}
 }
+
+
+/* V19 post-browser-audit adjustments: reclaim booking visibility above the fold
+   and prevent the branch switcher from crowding the language control. */
+@media(min-width:761px){
+  body.fx19-site .fx19-hero-inner{padding-top:48px;padding-bottom:77px}
+  body.fx19-site .fx19-hero h1{font-size:clamp(2.7rem,4.45vw,4.45rem)!important;line-height:1.19!important}
+  body.fx19-site .fx19-hero-description{margin-bottom:22px}
+  body.fx19-site .fx19-hero-facts{margin-top:26px}
+  body.fx19-site .fx19-property{min-height:570px}
+}
+body.fx19-site .v7-tools{display:flex;align-items:center;flex-wrap:nowrap;gap:12px}
+body.fx19-site .v7-tools .v7-branch-switch{display:block;flex:0 0 155px;width:155px!important;max-width:155px!important;min-width:155px!important;margin:0}
+body.fx19-site .v7-tools .v7-branch-switch span{display:none!important}
+body.fx19-site .v7-tools .v7-branch-switch select{width:155px!important;max-width:155px!important;height:44px;
+  padding:6px 9px!important;border:1px solid #e6ded7!important;border-radius:9px!important;
+  font:600 .78rem var(--fx19-font);background:#fff;color:var(--fx19-ink)}
+@media(max-width:1250px){body.fx19-site .v7-tools .v7-branch-switch{display:none!important}}
+@media(max-width:760px){
+  body.fx19-site .fx19-hero,body.fx19-site .fx19-property{min-height:540px}
+  body.fx19-site .fx19-hero-inner{min-height:540px;padding-top:55px;padding-bottom:78px}
+  body.fx19-site .fx19-hero h1{font-size:clamp(2.1rem,7.1vw,3rem)!important}
+  body.fx19-site .fx19-hero-facts{margin-top:22px}
+  body.fx19-site .fx19-hero-description{margin-bottom:18px}
+  body.fx19-site .v7-tools .v7-branch-switch{display:none!important}
+}
