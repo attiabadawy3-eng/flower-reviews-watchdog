@@ -1,0 +1,118 @@
+{
+  "largestAssets": [
+    {
+      "file": "assets/images/al-majmaah-harmah/enhanced/IMG_1154-enhanced.webp",
+      "bytes": 201038,
+      "compressed": 201103
+    },
+    {
+      "file": "assets/images/al-majmaah-harmah/enhanced/IMG_1565-enhanced.webp",
+      "bytes": 197012,
+      "compressed": 197077
+    },
+    {
+      "file": "assets/images/al-majmaah-harmah/enhanced/IMG_1362-enhanced.webp",
+      "bytes": 191860,
+      "compressed": 191920
+    },
+    {
+      "file": "assets/images/al-majmaah-harmah/enhanced/IMG_1623-enhanced.webp",
+      "bytes": 186216,
+      "compressed": 186276
+    },
+    {
+      "file": "assets/images/al-majmaah-harmah/enhanced/IMG_1223-enhanced.webp",
+      "bytes": 181602,
+      "compressed": 181662
+    },
+    {
+      "file": "assets/images/brand/flower-hotel-logo-crop.png",
+      "bytes": 149297,
+      "compressed": 147490
+    },
+    {
+      "file": "assets/images/brand/flower-hotel-logo-transparent.png",
+      "bytes": 148398,
+      "compressed": 146703
+    },
+    {
+      "file": "assets/images/al-majmaah-harmah/enhanced/IMG_1280-enhanced.webp",
+      "bytes": 133776,
+      "compressed": 133821
+    },
+    {
+      "file": "assets/images/dammam-al-salam/enhanced/04-enhanced.webp",
+      "bytes": 111646,
+      "compressed": 111681
+    },
+    {
+      "file": "assets/images/dammam-al-salam/enhanced/03-enhanced.webp",
+      "bytes": 98846,
+      "compressed": 98881
+    },
+    {
+      "file": "assets/images/al-qaisumah/enhanced/04-enhanced.webp",
+      "bytes": 88872,
+      "compressed": 88902
+    },
+    {
+      "file": "assets/images/dammam-al-anoud/enhanced/03-enhanced.webp",
+      "bytes": 85950,
+      "compressed": 85980
+    },
+    {
+      "file": "assets/css/site-v2.css",
+      "bytes": 81048,
+      "compressed": 16274
+    },
+    {
+      "file": "assets/images/dammam-al-salam/enhanced/01-enhanced.webp",
+      "bytes": 79694,
+      "compressed": 79719
+    },
+    {
+      "file": "assets/images/dammam-al-salam/enhanced/02-enhanced.webp",
+      "bytes": 74122,
+      "compressed": 74147
+    },
+    {
+      "file": "assets/images/dammam-al-anoud/enhanced/02-enhanced.webp",
+      "bytes": 69992,
+      "compressed": 70017
+    },
+    {
+      "file": "assets/images/dammam-al-anoud/enhanced/04-enhanced.webp",
+      "bytes": 69314,
+      "compressed": 69339
+    },
+    {
+      "file": "assets/images/dammam-al-anoud/enhanced/01-enhanced.webp",
+      "bytes": 68746,
+      "compressed": 68771
+    }
+  ],
+  "heroAssets": [
+    {
+      "file": "assets/images/dammam-al-anoud/enhanced/06-enhanced.webp",
+      "bytes": 49782,
+      "compressed": 49802
+    },
+    {
+      "file": "assets/images/al-qaisumah/enhanced/02-enhanced.webp",
+      "bytes": 49200,
+      "compressed": 49220
+    },
+    {
+      "file": "assets/images/dammam-al-salam/enhanced/05-enhanced.webp",
+      "bytes": 32982,
+      "compressed": 32997
+    },
+    {
+      "file": "assets/images/al-majmaah-harmah/polished/harmah-twin-polished.webp",
+      "bytes": 17172,
+      "compressed": 17182
+    }
+  ],
+  "cssTotalBytes": 316171,
+  "jsTotalBytes": 38650
+}
