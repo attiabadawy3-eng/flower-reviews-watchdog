@@ -1,0 +1,27 @@
+{
+  "version": "FLOWER Signature V19.1 approved",
+  "approvedStagingCommit": "9f57812dd829264ea49fa7914cae3ccea372770c",
+  "approvedStageZipSHA256": "8f872b1d0257cb3363ab0d42e826c729a5c2a1923882f60c5eb52a4974152fe3",
+  "productionSnapshotSHA256": "508ef2cc9308b9013e0d8cf85dfb984cf518843d68834f9384f3881915fa6013",
+  "releaseSHA256": "ad21473053cbd217783656f76052eaee059affa816c860d7efe025b6fdfd9408",
+  "releaseBytes": 5583375,
+  "snapshotBytes": 2851758,
+  "designPages": [
+    "/",
+    "/al-majmaah-harmah/",
+    "/en/",
+    "/en/al-majmaah-harmah/"
+  ],
+  "preservedV18Pages": [
+    "/al-qaisumah/",
+    "/dammam-al-anoud/",
+    "/dammam-al-salam/",
+    "/en/al-qaisumah/",
+    "/en/dammam-al-anoud/",
+    "/en/dammam-al-salam/"
+  ],
+  "preservedProductionPublicAssets": 49,
+  "legacyAlreadyMissing": [],
+  "productionPagesExactlySnapshot": true,
+  "allChecksPassed": true
+}
