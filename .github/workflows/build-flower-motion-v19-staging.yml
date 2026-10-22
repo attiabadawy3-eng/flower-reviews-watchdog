@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    name: Mirror stage, apply gentle motion, verify and archive
+    name: Mirror stage, apply authentic photo-editorial V19.1, verify and archive
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -46,7 +46,17 @@ jobs:
               assert '2:00 م' in ar and '2:00 PM' in en
               assert z.read('assets/js/flower-motion-v19.js')
               assert z.read('assets/css/flower-motion-v19.css')
-          print('V19 STAGING ZIP VERIFIED')
+              css=z.read('assets/css/flower-editorial-v19-1.css').decode('utf-8')
+              js=z.read('assets/js/flower-editorial-v19-1.js').decode('utf-8')
+              assert 'grid-template-columns:minmax(0,46%)' in css
+              assert 'flv-scene' in js
+              assert ar.count('data-fl-editorial="v19-1"')==1
+              assert en.count('data-fl-editorial="v19-1"')==1
+              for page in ('index.html','en/index.html'):
+                  assert b'flv-editorial-hero' in z.read(page)
+              for page in ('dammam-al-anoud/index.html','en/dammam-al-anoud/index.html'):
+                  assert b'flv-editorial-hero' not in z.read(page)
+          print('V19.1 VISUAL STAGING ZIP VERIFIED')
           PY
       - name: Commit candidate to isolated branch only
         shell: bash
