@@ -1,0 +1,60 @@
+name: Build FLOWER Motion V19 Isolated Staging
+on:
+  push:
+    branches:
+      - flower-motion-v19-staging
+    paths:
+      - "site-motion-v19/**"
+      - ".github/workflows/build-flower-motion-v19-staging.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: flower-motion-v19-staging-only
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Mirror stage, apply gentle motion, verify and archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout isolated candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Build from current staging (never production)
+        run: python site-motion-v19/build_motion_staging.py
+      - name: Validate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-motion-v19-staging.zip >/dev/null
+          python - <<'PY'
+          import json, pathlib, zipfile
+          m=json.loads(pathlib.Path('deploy-assets/flower-motion-v19-manifest.json').read_text())
+          assert m['checksPassed'] and m['productionUntouched']
+          assert m['pages']==10 and m['files']>=62
+          with zipfile.ZipFile('deploy-assets/flower-motion-v19-staging.zip') as z:
+              ar=z.read('al-majmaah-harmah/index.html').decode('utf-8')
+              en=z.read('en/al-majmaah-harmah/index.html').decode('utf-8')
+              assert '2:00 م' in ar and '2:00 PM' in en
+              assert z.read('assets/js/flower-motion-v19.js')
+              assert z.read('assets/css/flower-motion-v19.css')
+          print('V19 STAGING ZIP VERIFIED')
+          PY
+      - name: Commit candidate to isolated branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name flower-motion-v19-builder
+          git config user.email actions@users.noreply.github.com
+          git add deploy-assets/flower-motion-v19-staging.zip deploy-assets/flower-motion-v19-manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "build(staging): verified FLOWER Motion V19 candidate ZIP"
+          git push origin HEAD:flower-motion-v19-staging
