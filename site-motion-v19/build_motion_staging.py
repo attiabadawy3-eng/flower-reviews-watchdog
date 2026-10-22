@@ -210,6 +210,31 @@ def build() -> None:
                        "index.html", "en/index.html", "al-majmaah-harmah/index.html",
                        "en/al-majmaah-harmah/index.html"):
             assert needed in listing, needed
+    # Save a byte-for-byte-equivalent HTML rollback snapshot without the
+    # two injected tags. Other assets are unchanged from the mirrored staging.
+    rollback = pathlib.Path("deploy-assets/flower-motion-v19-rollback.zip")
+    with zipfile.ZipFile(ZIP_PATH) as source_archive, zipfile.ZipFile(
+            rollback, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as backup:
+        for member in source_archive.infolist():
+            if member.filename in ("assets/css/flower-motion-v19.css",
+                                   "assets/js/flower-motion-v19.js"):
+                continue
+            payload = source_archive.read(member.filename)
+            if member.filename.endswith("index.html"):
+                html = payload.decode("utf-8")
+                assert html.count(STYLE_TAG) == 1 and html.count(SCRIPT_TAG) == 1
+                html = html.replace(STYLE_TAG + "\n", "").replace(SCRIPT_TAG + "\n", "")
+                payload = html.encode("utf-8")
+            backup.writestr(member.filename, payload)
+    with zipfile.ZipFile(rollback) as backup:
+        assert backup.testzip() is None
+        assert len(backup.namelist()) >= 62
+        assert STYLE_TAG not in backup.read("index.html").decode("utf-8")
+    pathlib.Path("deploy-assets/flower-motion-v19-rollback-manifest.json").write_text(
+        json.dumps({"source": STAGE, "pages": len(PATHS),
+                    "files": len(listing) - 2, "checksPassed": True,
+                    "reason": "pre-motion staging snapshot"}, indent=2) + "\n", "utf-8")
+
     manifest = {"variant": "FLOWER Motion V19 staging candidate",
                 "source": STAGE, "originalV18Sha256": baseline_sha,
                 "pages": len(PATHS), "files": len(listing),
