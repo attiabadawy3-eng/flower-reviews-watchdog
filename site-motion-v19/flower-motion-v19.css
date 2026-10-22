@@ -1,0 +1,54 @@
+/* FLOWER Motion V19 — progressive, optional staging-only layer.
+   Pure CSS/JS; no dependencies, no content replacement. */
+:root{--fl-m19-ease:cubic-bezier(.22,1,.36,1)}
+html[data-flower-motion-v19="ready"] .fl-m19-reveal{
+  opacity:1;transform:none;transition:
+  opacity .78s var(--fl-m19-ease),transform .78s var(--fl-m19-ease);
+  transition-delay:var(--fl-m19-delay,0ms);
+}
+html[data-flower-motion-v19="ready"] .fl-m19-reveal:not(.fl-m19-shown){
+  opacity:.015;transform:translate3d(0,22px,0);
+}
+html[data-flower-motion-v19="ready"] .fl-m19-reveal.fl-m19-shown{
+  opacity:1;transform:translate3d(0,0,0);
+}
+html[data-flower-motion-v19="ready"] main>section:first-of-type h1{
+  animation:fl-m19-headline .8s var(--fl-m19-ease) both;
+}
+@keyframes fl-m19-headline{
+  from{opacity:.35;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+/* Gallery and authentic room photography: optical polish only. */
+#stay article img, #branches article img, .lx-chapter-visual img,
+#gallery figure img, #gallery article img{
+  transition:transform .85s var(--fl-m19-ease),filter .7s ease;
+  backface-visibility:hidden;
+}
+@media(hover:hover) and (pointer:fine){
+  #stay article:hover img, #branches article:hover img,
+  .lx-chapter:hover .lx-chapter-visual img,
+  #gallery figure:hover img, #gallery article:hover img{
+    transform:scale(1.035);
+  }
+  #stay article:focus-within img, #branches article:focus-within img{
+    transform:scale(1.025);
+  }
+}
+main dialog[open]{
+  animation:fl-m19-dialog .28s var(--fl-m19-ease) both;
+}
+@keyframes fl-m19-dialog{
+  from{opacity:.6;transform:translateY(8px) scale(.995)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-flower-motion-v19="ready"] .fl-m19-reveal,
+  html[data-flower-motion-v19="ready"] .fl-m19-reveal:not(.fl-m19-shown),
+  html[data-flower-motion-v19="ready"] main>section:first-of-type h1,
+  #stay article img,#branches article img,.lx-chapter-visual img,
+  #gallery figure img,#gallery article img,main dialog[open]{
+    animation:none!important;transition:none!important;
+    transform:none!important;opacity:1!important;
+  }
+}
