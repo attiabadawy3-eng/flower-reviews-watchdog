@@ -1,0 +1,51 @@
+name: Validate FLOWER V19.1 Approved Production Release
+on:
+  push:
+    branches: [flower-v19-1-production-release]
+    paths:
+      - "site-release-v19-1/**"
+      - ".github/workflows/flower-v19-1-production-release.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: flower-v19-1-production-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Freeze current production and build approved selective V19.1
+        run: python site-release-v19-1/build_approved_production.py
+      - name: Verify both complete archives and untouched policies
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-v19-1-production-approved.zip >/dev/null
+          unzip -t deploy-assets/flower-v18-production-snapshot-before-v19-1.zip >/dev/null
+          python - <<'PY'
+          import json,zipfile
+          p='deploy-assets/flower-v19-1-production-approved-manifest.json'
+          m=json.load(open(p))
+          assert m['allChecksPassed'] and m['productionPagesExactlySnapshot']
+          assert len(m['designPages'])==4 and len(m['preservedV18Pages'])==6
+          with zipfile.ZipFile('deploy-assets/flower-v19-1-production-approved.zip') as z:
+              assert b'flv-editorial-hero' in z.read('index.html')
+              assert b'flv-editorial-hero' in z.read('al-majmaah-harmah/index.html')
+              assert b'flower-v18-preserved/assets/' in z.read('dammam-al-anoud/index.html')
+          print('APPROVED V19.1 4-PAGE PRODUCTION RELEASE PASS')
+          PY
+      - name: Publish version-pinned release archive only to this isolated branch
+        run: |
+          set -euo pipefail
+          git config user.name flower-release-builder
+          git config user.email actions@users.noreply.github.com
+          git add deploy-assets/flower-v19-1-production-approved.zip deploy-assets/flower-v18-production-snapshot-before-v19-1.zip deploy-assets/flower-v19-1-production-approved-manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "release: verified approved FLOWER V19.1 plus original production rollback"
+          git push origin HEAD:flower-v19-1-production-release
