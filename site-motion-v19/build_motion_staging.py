@@ -124,6 +124,11 @@ def build() -> None:
         soup = BeautifulSoup(source, "html.parser")
         if not soup.head or not soup.body or not soup.find("h1"):
             raise AssertionError(f"Unexpected live staging HTML at {p}")
+        if p in ("/", "/al-majmaah-harmah/"):
+            top = soup.select_one("main > section")
+            if not top:
+                raise AssertionError(f"Missing hero section on {p}")
+            print("HERO_DIAGNOSTIC", p, "SECTION", str(top.attrs), "CHILDREN", [(c.name, c.get("class"), c.get("id"), c.get_text(" ", strip=True)[:90]) for c in top.find_all(recursive=False) if c.name], "HTML", str(top)[:5000], flush=True)
         if "book" not in source.lower() and "booking" not in source.lower():
             raise AssertionError(f"Missing booking affordance in {p}")
         if p.endswith("/al-majmaah-harmah/"):
