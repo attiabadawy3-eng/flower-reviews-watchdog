@@ -220,7 +220,9 @@ def build() -> None:
                                    "assets/js/flower-motion-v19.js"):
                 continue
             payload = source_archive.read(member.filename)
-            if member.filename.endswith("index.html"):
+            if member.filename in {
+                p.lstrip("/") + "index.html" for p in PATHS
+            }:
                 html = payload.decode("utf-8")
                 assert html.count(STYLE_TAG) == 1 and html.count(SCRIPT_TAG) == 1
                 html = html.replace(STYLE_TAG + "\n", "").replace(SCRIPT_TAG + "\n", "")
