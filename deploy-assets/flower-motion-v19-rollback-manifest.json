@@ -1,7 +1,7 @@
 {
   "source": "https://flower-unified-staging.onrender.com",
   "pages": 10,
-  "files": 67,
+  "files": 69,
   "checksPassed": true,
-  "reason": "pre-motion staging snapshot"
+  "reason": "exact pre-visual V19 staging HTML snapshot"
 }

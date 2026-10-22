@@ -1,14 +1,15 @@
 {
-  "variant": "FLOWER Motion V19 staging candidate",
+  "variant": "FLOWER Editorial V19.1 staging candidate",
   "source": "https://flower-unified-staging.onrender.com",
   "originalV18Sha256": "6659281935c4408518ff283d0ccf5c98e252295f02d34d25cb817c646c9165e3",
   "pages": 10,
-  "files": 69,
-  "zipBytes": 2803126,
+  "files": 71,
+  "zipBytes": 2808038,
   "effects": [
-    "gentle scroll reveals",
-    "subtle original photo hover",
-    "dialog transitions",
+    "high-contrast split hospitality hero on home and Harmah",
+    "bilingual accessible hotel-photo carousel",
+    "genuine hotel photography only",
+    "no changes to reservations, other six pages or production",
     "reduced-motion safety"
   ],
   "productionUntouched": true,
