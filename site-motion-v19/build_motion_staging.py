@@ -18,6 +18,7 @@ import zipfile
 from collections import deque
 
 from bs4 import BeautifulSoup
+from flower_editorial_v19_1 import apply_editorial, PAGES as EDITORIAL_PAGES, IMAGES as EDITORIAL_IMAGES
 
 STAGE = "https://flower-unified-staging.onrender.com"
 ROOT = pathlib.Path("/tmp/flower-motion-v19-snapshot")
@@ -118,17 +119,14 @@ def build() -> None:
 
     # Mirror latest staging page HTML, avoiding reversion to the older V18 page copy.
     queued: set[str] = set()
+    original_stage_html: dict[str, str] = {}
     for p in PATHS:
         url = STAGE + p
         source = read(url).decode("utf-8")
+        original_stage_html[p.lstrip("/") + "index.html"] = source
         soup = BeautifulSoup(source, "html.parser")
         if not soup.head or not soup.body or not soup.find("h1"):
             raise AssertionError(f"Unexpected live staging HTML at {p}")
-        if p in ("/", "/al-majmaah-harmah/"):
-            top = soup.select_one("main > section")
-            if not top:
-                raise AssertionError(f"Missing hero section on {p}")
-            print("HERO_DIAGNOSTIC", p, "SECTION", str(top.attrs), "CHILDREN", [(c.name, c.get("class"), c.get("id"), c.get_text(" ", strip=True)[:90]) for c in top.find_all(recursive=False) if c.name], "HTML", str(top)[:5000], flush=True)
         if "book" not in source.lower() and "booking" not in source.lower():
             raise AssertionError(f"Missing booking affordance in {p}")
         if p.endswith("/al-majmaah-harmah/"):
@@ -136,6 +134,10 @@ def build() -> None:
             if expected not in source:
                 raise AssertionError(f"Changed checkout policy in {p}")
         output = inject(source)
+        if p in EDITORIAL_PAGES:
+            design_soup = BeautifulSoup(output, "html.parser")
+            assert apply_editorial(design_soup, p)
+            output = str(design_soup)
         target = html_output(p)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(output, encoding="utf-8")
@@ -187,6 +189,8 @@ def build() -> None:
     (ROOT / "assets/js").mkdir(parents=True, exist_ok=True)
     shutil.copyfile(STYLES, ROOT / "assets/css/flower-motion-v19.css")
     shutil.copyfile(SCRIPTS, ROOT / "assets/js/flower-motion-v19.js")
+    shutil.copyfile("site-motion-v19/flower-editorial-v19-1.css", ROOT / "assets/css/flower-editorial-v19-1.css")
+    shutil.copyfile("site-motion-v19/flower-editorial-v19-1.js", ROOT / "assets/js/flower-editorial-v19-1.js")
 
     # Structural regression checks on both languages and all four branches.
     for path in PATHS:
@@ -196,6 +200,14 @@ def build() -> None:
         assert len(soup.select("h1")) == 1, path
         assert soup.find(id="booking"), path
         assert soup.find("link", rel="canonical"), path
+        if path in EDITORIAL_PAGES:
+            hero = soup.select_one(".fx19-hero.flv-editorial-hero")
+            assert hero and hero.get("data-fl-editorial") == "v19-1", path
+            assert len(hero.select(".flv-slide")) == len(EDITORIAL_IMAGES["home" if path in ("/", "/en/") else "property"]), path
+            assert len(hero.select("button.flv-arrow")) == 2, path
+            assert soup.select_one('link[href="/assets/css/flower-editorial-v19-1.css"]'), path
+            assert soup.select_one('script[src="/assets/js/flower-editorial-v19-1.js"]'), path
+            assert len(hero.select(".fx19-hero-actions a")) >= 2, path
         if "al-majmaah-harmah" in path:
             assert soup.find(id="stay"), path
             assert soup.select("a[href*='booking.com']"), path
@@ -215,39 +227,39 @@ def build() -> None:
                        "index.html", "en/index.html", "al-majmaah-harmah/index.html",
                        "en/al-majmaah-harmah/index.html"):
             assert needed in listing, needed
-    # Save a byte-for-byte-equivalent HTML rollback snapshot without the
-    # two injected tags. Other assets are unchanged from the mirrored staging.
+    # Exact HTML rollback snapshot of the currently live staging release;
+    # the new editorial layer can be removed without losing earlier V19.
     rollback = pathlib.Path("deploy-assets/flower-motion-v19-rollback.zip")
+    visual_files = {"assets/css/flower-editorial-v19-1.css",
+                    "assets/js/flower-editorial-v19-1.js"}
     with zipfile.ZipFile(ZIP_PATH) as source_archive, zipfile.ZipFile(
             rollback, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as backup:
         for member in source_archive.infolist():
-            if member.filename in ("assets/css/flower-motion-v19.css",
-                                   "assets/js/flower-motion-v19.js"):
+            if member.filename in visual_files:
                 continue
-            payload = source_archive.read(member.filename)
-            if member.filename in {
-                p.lstrip("/") + "index.html" for p in PATHS
-            }:
-                html = payload.decode("utf-8")
-                assert html.count(STYLE_TAG) == 1 and html.count(SCRIPT_TAG) == 1
-                html = html.replace(STYLE_TAG + "\n", "").replace(SCRIPT_TAG + "\n", "")
-                payload = html.encode("utf-8")
+            payload = (original_stage_html[member.filename].encode("utf-8")
+                       if member.filename in original_stage_html
+                       else source_archive.read(member.filename))
             backup.writestr(member.filename, payload)
     with zipfile.ZipFile(rollback) as backup:
         assert backup.testzip() is None
         assert len(backup.namelist()) >= 62
-        assert STYLE_TAG not in backup.read("index.html").decode("utf-8")
+        assert "data-fl-editorial" not in backup.read("index.html").decode("utf-8")
+        assert backup.read("index.html") == original_stage_html["index.html"].encode("utf-8")
     pathlib.Path("deploy-assets/flower-motion-v19-rollback-manifest.json").write_text(
         json.dumps({"source": STAGE, "pages": len(PATHS),
                     "files": len(listing) - 2, "checksPassed": True,
-                    "reason": "pre-motion staging snapshot"}, indent=2) + "\n", "utf-8")
+                    "reason": "exact pre-visual V19 staging HTML snapshot"}, indent=2) + "\n", "utf-8")
 
-    manifest = {"variant": "FLOWER Motion V19 staging candidate",
+    manifest = {"variant": "FLOWER Editorial V19.1 staging candidate",
                 "source": STAGE, "originalV18Sha256": baseline_sha,
                 "pages": len(PATHS), "files": len(listing),
                 "zipBytes": ZIP_PATH.stat().st_size,
-                "effects": ["gentle scroll reveals", "subtle original photo hover",
-                            "dialog transitions", "reduced-motion safety"],
+                "effects": ["high-contrast split hospitality hero on home and Harmah",
+                            "bilingual accessible hotel-photo carousel",
+                            "genuine hotel photography only",
+                            "no changes to reservations, other six pages or production",
+                            "reduced-motion safety"],
                 "productionUntouched": True, "checksPassed": True}
     MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", "utf-8")
     print("FLOWER V19 STAGING ARCHIVE PASS", json.dumps(manifest, ensure_ascii=False))
