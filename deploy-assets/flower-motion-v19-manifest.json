@@ -1,0 +1,16 @@
+{
+  "variant": "FLOWER Motion V19 staging candidate",
+  "source": "https://flower-unified-staging.onrender.com",
+  "originalV18Sha256": "6659281935c4408518ff283d0ccf5c98e252295f02d34d25cb817c646c9165e3",
+  "pages": 10,
+  "files": 69,
+  "zipBytes": 2803119,
+  "effects": [
+    "gentle scroll reveals",
+    "subtle original photo hover",
+    "dialog transitions",
+    "reduced-motion safety"
+  ],
+  "productionUntouched": true,
+  "checksPassed": true
+}
