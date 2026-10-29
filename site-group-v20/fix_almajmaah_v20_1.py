@@ -116,6 +116,21 @@ def main():
                  .replace("FLOWER Harmah","FLOWER Al Majmaah")
                  .replace("حرمة · المجمعة","فلور المجمعة")
                  .replace("Harmah · Al Majmaah","FLOWER Al Majmaah"))
+        if path in ("/", "/en/"):
+            # The first hero slide is the Al Majmaah branch: display the city
+            # explicitly, regardless of how its older caption was serialized.
+            homepage=BeautifulSoup(text,"html.parser")
+            scene=homepage.select_one('.flv-scene[data-flv-scene="home"]')
+            if not scene:raise AssertionError("Home photo carousel absent")
+            city="FLOWER Al Majmaah" if path=="/en/" else "فلور المجمعة"
+            for selector in (".flv-slide .flv-caption", ".flv-active-caption"):
+                cap=scene.select_one(selector)
+                if not cap:raise AssertionError("Home photo label absent "+selector)
+                cap.string=city
+            first_img=scene.select_one(".flv-slide img")
+            if not first_img:raise AssertionError("Main property photo missing")
+            first_img["alt"]="FLOWER Al Majmaah property photo" if path=="/en/" else "صورة من فلور المجمعة"
+            text=str(homepage)
         if path in MAIN:
             lang="en" if path.startswith("/en/") else "ar"
             # Keep location truth but lead with the city searchers use.
