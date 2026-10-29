@@ -112,7 +112,10 @@ def main():
         before=original[name]
         text=before.decode("utf-8")
         # Marketing labels only; generic Harmah/حرمة addresses are deliberately kept.
-        text=text.replace("فلور حرمة","فلور المجمعة").replace("FLOWER Harmah","FLOWER Al Majmaah")
+        text=(text.replace("فلور حرمة","فلور المجمعة")
+                 .replace("FLOWER Harmah","FLOWER Al Majmaah")
+                 .replace("حرمة · المجمعة","فلور المجمعة")
+                 .replace("Harmah · Al Majmaah","FLOWER Al Majmaah"))
         if path in MAIN:
             lang="en" if path.startswith("/en/") else "ar"
             # Keep location truth but lead with the city searchers use.
