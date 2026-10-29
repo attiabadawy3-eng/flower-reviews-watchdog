@@ -10,16 +10,23 @@
     "/en/dammam-al-anoud/",
     "/en/dammam-al-salam/"
   ],
-  "unchangedV19_1Pages": [
+  "copyLayerPages": [
     "/",
     "/en/",
     "/al-majmaah-harmah/",
-    "/en/al-majmaah-harmah/"
+    "/en/al-majmaah-harmah/",
+    "/al-qaisumah/",
+    "/dammam-al-anoud/",
+    "/dammam-al-salam/",
+    "/en/al-qaisumah/",
+    "/en/dammam-al-anoud/",
+    "/en/dammam-al-salam/"
   ],
+  "copyEdits": 124,
   "businessFactsMatchProduction": true,
-  "files": 120,
-  "zipBytes": 5587983,
-  "zipSHA256": "06f793df76f9acdaf2fb5644b8da956463b6acf7a84cad3977356637f03a89ea",
+  "files": 121,
+  "zipBytes": 5588390,
+  "zipSHA256": "9f216e1c4625e55bd3b40ab2fe49c3eedc7771a5a0554cdb5e9c934bf79aad66",
   "productionUntouched": true,
   "checksPassed": true
 }

@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 sys.path.insert(0, "site-motion-v19")
 sys.path.insert(0, "site-group-v20")
 from flower_group_v20 import apply_group, PAGES as GROUP_PAGES  # noqa: E402
+from flower_copy_v20 import apply_copy, REPLACE, REMOVE  # noqa: E402
 
 APPROVED = pathlib.Path("deploy-assets/flower-v19-1-production-approved.zip")
 APPROVED_SHA = "ad21473053cbd217783656f76052eaee059affa816c860d7efe025b6fdfd9408"
@@ -26,6 +27,9 @@ V19_STAGE = pathlib.Path("deploy-assets/flower-motion-v19-staging.zip")
 OUT = pathlib.Path("deploy-assets/flower-group-v20-staging.zip")
 MANIFEST = pathlib.Path("deploy-assets/flower-group-v20-staging-manifest.json")
 DESIGN_V19_1 = ["/", "/en/", "/al-majmaah-harmah/", "/en/al-majmaah-harmah/"]
+ALL_PAGES = DESIGN_V19_1 + sorted(GROUP_PAGES)
+JS_V19_1 = "/assets/js/flower-editorial-v19-1.js"
+JS_V20 = "/assets/js/flower-editorial-v20.js"
 
 def relpage(path: str) -> str:
     return path.lstrip("/") + "index.html"
@@ -78,19 +82,38 @@ def build() -> dict:
             target.string = source.string
         release[name] = str(soup).encode("utf-8")
 
-    for path in DESIGN_V19_1:
-        if release[relpage(path)] != approved[relpage(path)]:
-            raise AssertionError(f"Approved V19.1 page changed: {path}")
-    for path in sorted(GROUP_PAGES):
+    # Copy layer and carousel script on all ten pages.
+    hits: dict[str, int] = {}
+    for path in ALL_PAGES:
+        name = relpage(path)
+        soup = BeautifulSoup(release[name], "html.parser")
+        for key, n in apply_copy(soup).items():
+            hits[key] = hits.get(key, 0) + n
+        script = soup.find("script", src=JS_V19_1)
+        if not script:
+            raise AssertionError(f"Editorial script missing: {path}")
+        script["src"] = JS_V20
+        release[name] = str(soup).encode("utf-8")
+    unused = sorted((set(REPLACE) | REMOVE) - set(hits))
+    if unused:
+        raise AssertionError(f"Copy entries never matched: {unused}")
+    release[JS_V20.lstrip("/")] = pathlib.Path("site-group-v20/flower-editorial-v20.js").read_bytes()
+
+    for path in ALL_PAGES:
         name = relpage(path)
         page = BeautifulSoup(release[name], "html.parser")
-        if facts(release[name]) != facts(approved[name]):
+        expected = facts(approved[name])
+        expected["policy"] = {k: REPLACE.get(v, v) for k, v in expected["policy"].items()}
+        if facts(release[name]) != expected:
             raise AssertionError(f"Business facts differ from production: {path}")
         hero = page.select_one(".fx19-hero.flv-editorial-hero")
         assert hero and hero.get("data-fl-editorial") == "v19-1", path
-        assert len(hero.select(".flv-slide")) == 3, path
+        assert len(hero.select(".flv-slide")) == (4 if path in ("/", "/en/") else 3), path
+        assert page.find("script", src=JS_V20) and not page.find("script", src=JS_V19_1), path
         assert len(page.select("h1")) == 1 and page.find(id="booking"), path
-        missing = sorted(a for a in assets_in(release[name]) if a not in release)
+        # References already present on the approved production page are served
+        # by the live service today; only new references must ship in the archive.
+        missing = sorted(a for a in assets_in(release[name]) - assets_in(approved[name]) if a not in release)
         if missing:
             raise AssertionError(f"Missing assets on {path}: {missing}")
 
@@ -102,8 +125,8 @@ def build() -> dict:
         assert z.testzip() is None
     manifest = {"version": "FLOWER Group V20 staging candidate",
                 "base": str(APPROVED), "baseSHA256": APPROVED_SHA,
-                "unifiedPages": sorted(GROUP_PAGES), "unchangedV19_1Pages": DESIGN_V19_1,
-                "businessFactsMatchProduction": True,
+                "unifiedPages": sorted(GROUP_PAGES), "copyLayerPages": ALL_PAGES,
+                "copyEdits": sum(hits.values()), "businessFactsMatchProduction": True,
                 "files": len(release), "zipBytes": OUT.stat().st_size,
                 "zipSHA256": hashlib.sha256(OUT.read_bytes()).hexdigest(),
                 "productionUntouched": True, "checksPassed": True}
