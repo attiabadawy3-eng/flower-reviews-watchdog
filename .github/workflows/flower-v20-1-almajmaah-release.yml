@@ -1,0 +1,52 @@
+name: FLOWER V20.1 Al Majmaah SEO Release
+on:
+  push:
+    branches:
+      - flower-v20-1-almajmaah-release
+    paths:
+      - "site-group-v20/fix_almajmaah_v20_1.py"
+      - ".github/workflows/flower-v20-1-almajmaah-release.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: flower-v20-1-almajmaah-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --disable-pip-version-check beautifulsoup4==4.13.4
+      - name: Build exact 10-page brand name correction and validate all invariants
+        run: python site-group-v20/fix_almajmaah_v20_1.py
+      - name: Verify ZIP and release manifest
+        run: |
+          set -euo pipefail
+          unzip -t deploy-assets/flower-group-v20-1-almajmaah.zip >/dev/null
+          python - <<'PY'
+          import json,zipfile
+          p="deploy-assets/flower-group-v20-1-almajmaah-manifest.json"
+          m=json.load(open(p,encoding="utf-8"))
+          assert m["checksPassed"] and m["canonicalURLsUnchanged"]
+          assert m["bookingAndWhatsAppUnchanged"] and m["photosAndScriptsUnchanged"]
+          with zipfile.ZipFile("deploy-assets/flower-group-v20-1-almajmaah.zip") as z:
+              ar=z.read("al-majmaah-harmah/index.html").decode("utf-8")
+              en=z.read("en/al-majmaah-harmah/index.html").decode("utf-8")
+              assert "<title>فلور المجمعة |" in ar
+              assert "<title>FLOWER Al Majmaah |" in en
+          print("FLOWER V20.1 CITY SEO VERIFIED")
+          PY
+      - name: Commit verified versioned release ZIP (not production deploy)
+        run: |
+          set -euo pipefail
+          git config user.name flower-release-builder
+          git config user.email actions@users.noreply.github.com
+          git add deploy-assets/flower-group-v20-1-almajmaah.zip deploy-assets/flower-group-v20-1-almajmaah-manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "release: verified Al Majmaah SEO correction for FLOWER V20.1"
+          git push origin HEAD:flower-v20-1-almajmaah-release
