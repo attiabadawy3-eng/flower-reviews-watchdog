@@ -1,0 +1,25 @@
+{
+  "version": "FLOWER Group V20 staging candidate",
+  "base": "deploy-assets\\flower-v19-1-production-approved.zip",
+  "baseSHA256": "ad21473053cbd217783656f76052eaee059affa816c860d7efe025b6fdfd9408",
+  "unifiedPages": [
+    "/al-qaisumah/",
+    "/dammam-al-anoud/",
+    "/dammam-al-salam/",
+    "/en/al-qaisumah/",
+    "/en/dammam-al-anoud/",
+    "/en/dammam-al-salam/"
+  ],
+  "unchangedV19_1Pages": [
+    "/",
+    "/en/",
+    "/al-majmaah-harmah/",
+    "/en/al-majmaah-harmah/"
+  ],
+  "businessFactsMatchProduction": true,
+  "files": 120,
+  "zipBytes": 5587983,
+  "zipSHA256": "06f793df76f9acdaf2fb5644b8da956463b6acf7a84cad3977356637f03a89ea",
+  "productionUntouched": true,
+  "checksPassed": true
+}
