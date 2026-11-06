@@ -47,7 +47,7 @@ jobs:
             -X POST \
             -H "Authorization: Bearer $OIDC_TOKEN" \
             "https://flower-google-reviews-auto-reply.onrender.com/fallback/reviews/oidc")"
-          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True; print("reviews: seen=",d.get("seen",0),"candidates=",d.get("candidates",0),"posted=",d.get("posted",0),"held=",d.get("held",0),"errors=",d.get("errors",0))' "$response"
+          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True, "review scan failed"; errors=int(d.get("errors",0)); seen=int(d.get("seen",0)); print("reviews: seen=",seen,"candidates=",d.get("candidates",0),"posted=",d.get("posted",0),"held=",d.get("held",0),"errors=",errors); assert errors == 0, f"review scan reported {errors} errors"' "$response"
 
 
       - name: Publish website review metrics cache
