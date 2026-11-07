@@ -7,6 +7,12 @@ on:
       - 'v6-bundle/**'
       - 'v6/**'
       - '.github/workflows/flower-v6-staging-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'v6-bundle/**'
+      - 'v6/**'
+      - '.github/workflows/flower-v6-staging-ci.yml'
   workflow_dispatch:
 
 permissions:
@@ -53,16 +59,17 @@ jobs:
         run: python -m compileall -q v6
       - name: Run all route, domain, and database tests with no skips
         run: |
+          cd v6
           python - <<'PY'
           import unittest,sys
-          suite=unittest.defaultTestLoader.discover('v6/tests',top_level_dir='v6')
+          suite=unittest.defaultTestLoader.discover('tests')
           result=unittest.TextTestRunner(verbosity=2).run(suite)
           print(f'RESULT tests={result.testsRun} errors={len(result.errors)} failures={len(result.failures)} skipped={len(result.skipped)}')
           if not result.wasSuccessful() or result.skipped or result.testsRun != 40:
               sys.exit(1)
           PY
       - name: Commit verified source files only to development branch
-        if: success()
+        if: success() && github.event_name == 'push'
         run: |
           git config user.name "flower-v6-ci"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
