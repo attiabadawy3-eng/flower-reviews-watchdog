@@ -42,6 +42,15 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(InvalidNotification):
             parse_pubsub({'message': {'data': '%%'}})
 
+    def test_rejects_non_object_pubsub_envelope(self):
+        with self.assertRaises(InvalidNotification):
+            parse_pubsub([{'message': {'data': 'test'}}])
+
+    def test_rejects_base64_decoded_non_utf8(self):
+        encoded = base64.b64encode(b'\xff').decode()
+        with self.assertRaises(InvalidNotification):
+            parse_pubsub({'message': {'data': encoded}})
+
     def test_rating_conversion(self):
         self.assertEqual(as_star_count('FIVE'), 5)
         self.assertEqual(as_star_count('THREE'), 3)
