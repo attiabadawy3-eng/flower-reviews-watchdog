@@ -1,0 +1,72 @@
+name: FLOWER Reviews V6 Isolated CI
+
+on:
+  push:
+    branches: [feature/flower-reviews-v6-safety-20261107]
+    paths:
+      - 'v6-bundle/**'
+      - 'v6/**'
+      - '.github/workflows/flower-v6-staging-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flower-v6-staging-ci
+  cancel-in-progress: false
+
+jobs:
+  verify-and-materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct integrity-checked RC2 source
+        run: |
+          python -m pip install --disable-pip-version-check brotli
+          python - <<'PY'
+          import base64,hashlib,io,tarfile,pathlib,brotli
+          chunks=sorted(pathlib.Path('v6-bundle').glob('part-*.b64'))
+          assert [p.name for p in chunks]==[f'part-{i:03d}.b64' for i in range(7)], 'archive part missing'
+          encoded=''.join(p.read_text().strip() for p in chunks)
+          archive=base64.b64decode(encoded,validate=True)
+          sha=hashlib.sha256(archive).hexdigest()
+          assert sha=='0352d2cc7b8e0072baf3b314d2eed3bdba52410b66b6b25d06056b798f2e1eb5', f'archive changed: {sha}'
+          source=brotli.decompress(archive)
+          with tarfile.open(fileobj=io.BytesIO(source),mode='r:') as tar:
+              for member in tar.getmembers():
+                  p=pathlib.PurePosixPath(member.name)
+                  assert p.parts[0]=='v6' and '..' not in p.parts and not p.is_absolute(), member.name
+                  assert member.isfile() or member.isdir(), member.name
+              tar.extractall(path='.',filter='data')
+          print('Verified SHA-256, extracted V6 RC2 source')
+          PY
+      - name: Install app dependencies
+        run: python -m pip install --disable-pip-version-check -r v6/requirements.txt
+      - name: Compile syntax
+        run: python -m compileall -q v6
+      - name: Run all route, domain, and database tests with no skips
+        run: |
+          python - <<'PY'
+          import unittest,sys
+          suite=unittest.defaultTestLoader.discover('v6/tests',top_level_dir='v6')
+          result=unittest.TextTestRunner(verbosity=2).run(suite)
+          print(f'RESULT tests={result.testsRun} errors={len(result.errors)} failures={len(result.failures)} skipped={len(result.skipped)}')
+          if not result.wasSuccessful() or result.skipped or result.testsRun != 40:
+              sys.exit(1)
+          PY
+      - name: Commit verified source files only to development branch
+        if: success()
+        run: |
+          git config user.name "flower-v6-ci"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add v6/
+          if git diff --cached --quiet; then echo 'Source already in branch'; exit 0; fi
+          git commit -m "test(v6): materialize RC2 after full passing CI"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
