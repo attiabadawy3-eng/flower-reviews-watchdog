@@ -28,12 +28,14 @@ def parse_pubsub(envelope: dict[str, Any], location_aliases: dict[str, str] | No
     No reviewer identity, rating or comment is inferred from the notification.
     Those must be fetched from the official Reviews API.
     """
+    if not isinstance(envelope, dict):
+        raise InvalidNotification('invalid Pub/Sub envelope')
     message = envelope.get('message')
     if not isinstance(message, dict) or not isinstance(message.get('data'), str):
         raise InvalidNotification('missing Pub/Sub message.data')
     try:
         data = json.loads(base64.b64decode(message['data'], validate=True))
-    except (ValueError, TypeError) as exc:
+    except (ValueError, TypeError, UnicodeError) as exc:
         raise InvalidNotification('invalid notification encoding') from exc
     if not isinstance(data, dict):
         raise InvalidNotification('invalid notification JSON')
