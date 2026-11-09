@@ -8,6 +8,27 @@ from google_client import GoogleAPIError
 log = logging.getLogger('flower-v6.processor')
 
 
+_GOOGLE_TRANSLATION_MARKER = '\n\n(Translated by Google)'
+
+
+def reply_matches_approved(observed, expected):
+    """Match original reply exactly, allowing only a separate Google translation.
+
+    A mere prefix match is unsafe: a reply edited by staff must never be
+    classified as this exact approved text. Do not strip any other suffix.
+    """
+    current = str(observed or '').strip()
+    approved = str(expected or '').strip()
+    if not current or not approved:
+        return False
+    if current == approved:
+        return True
+    suffix = current[len(approved):] if current.startswith(approved) else ''
+    return suffix.startswith(_GOOGLE_TRANSLATION_MARKER) and bool(
+        suffix[len(_GOOGLE_TRANSLATION_MARKER):].strip()
+    )
+
+
 def process_claimed_job(*, job, store, google_client, ai_generator, branch_names,
                         auto_enabled=False, owner_consent=False, minimum_stars=4):
     review_name = job['review_name']
@@ -19,7 +40,7 @@ def process_claimed_job(*, job, store, google_client, ai_generator, branch_names
             review = google_client.get_review(review_name)
             current = ((review.get('reviewReply') or {}).get('comment') or '').strip()
             proposed = (job.get('reply_text') or '').strip()
-            if current and proposed and current == proposed:
+            if current and proposed and reply_matches_approved(current, proposed):
                 store.finish(review_name, 'posted', reply_text=proposed)
             elif current:
                 store.finish(review_name, 'existing', error='another owner reply was observed')
@@ -66,7 +87,7 @@ def process_claimed_job(*, job, store, google_client, ai_generator, branch_names
         armed = True
         google_client.reply(review_name, reply)
         verified = google_client.get_review(review_name)
-        if ((verified.get('reviewReply') or {}).get('comment') or '').strip() != reply:
+        if not reply_matches_approved((verified.get('reviewReply') or {}).get('comment'), reply):
             store.defer_verify(review_name, job['attempts'], 'reply not confirmed after PUT')
             return False
         store.finish(review_name, 'posted', reply_text=reply)
