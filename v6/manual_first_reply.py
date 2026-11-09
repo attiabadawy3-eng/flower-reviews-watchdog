@@ -12,7 +12,7 @@ from pathlib import Path
 from core import REVIEW_PATTERN, LOCATION_PATTERN, ReviewEvent, validate_reply
 from google_client import GoogleClient
 from storage import Store
-from processor import process_claimed_job
+from processor import process_claimed_job, reply_matches_approved
 
 
 class ApprovedTextGenerator:
@@ -71,7 +71,7 @@ def perform_pilot(review_name, reply_text, *, publish=False, google=None, store=
     confirmed = False
     try:
         latest = client.get_review(review_name)
-        confirmed = ((latest.get('reviewReply') or {}).get('comment') or '').strip() == text
+        confirmed = reply_matches_approved((latest.get('reviewReply') or {}).get('comment'), text)
     except Exception:
         pass
     return {'status': 'posted_readback_confirmed' if result and confirmed
