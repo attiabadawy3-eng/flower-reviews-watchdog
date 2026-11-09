@@ -99,6 +99,19 @@ def health():
         return jsonify({'status':'storage_unavailable','ready':False}),503
 
 
+@app.get('/health/storage')
+def health_storage():
+    """Storage-only readiness, separate from Google OAuth and publication readiness."""
+    try:
+        counts = get_store().counts()
+        return jsonify({'status': 'storage_ready', 'database': 'postgres',
+                        'auto_reply_enabled': os.getenv('AUTO_REPLY_ENABLED') == 'true',
+                        'jobs': counts}), 200
+    except Exception:
+        log.warning('storage readiness failed', exc_info=False)
+        return jsonify({'status': 'storage_unavailable'}), 503
+
+
 @app.post('/pubsub/reviews')
 def receive():
     if not authenticate_pubsub(request):
