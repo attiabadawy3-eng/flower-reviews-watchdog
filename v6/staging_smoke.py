@@ -27,8 +27,10 @@ def run_smoke_once(store_factory, generator_factory, logger, run_id):
         with store.connection() as db:
             db.execute("""CREATE TABLE IF NOT EXISTS v6_smoke_checks (
                 run_id TEXT PRIMARY KEY,
-                started_at DOUBLE PRECISION NOT NULL
+                started_at DOUBLE PRECISION NOT NULL,
+                preview_text TEXT
             )""")
+            db.execute("ALTER TABLE v6_smoke_checks ADD COLUMN IF NOT EXISTS preview_text TEXT")
             row = db.execute("""INSERT INTO v6_smoke_checks(run_id,started_at)
                 VALUES (%s,%s) ON CONFLICT(run_id) DO NOTHING RETURNING run_id""",
                 (run_id, time.time())).fetchone()
@@ -43,8 +45,12 @@ def run_smoke_once(store_factory, generator_factory, logger, run_id):
             branch="فلور 1 العنود", stars=5,
             comment="استقبال ممتاز، الشقة نظيفة والمكان هادي، شكراً لكم.",
             recent=[])
-        if not draft or len(draft) > 900:
+        if not draft or len(draft) > 350:
             raise ValueError("draft length out of bounds")
+        # Synthetic output only. Keep private in Neon for quality review; no client review is stored.
+        with store.connection() as db:
+            db.execute("UPDATE v6_smoke_checks SET preview_text=%s WHERE run_id=%s",
+                       (draft, run_id))
         logger.info("STAGING_AI_SMOKE_PASS run_id=%s text_chars=%d", run_id, len(draft))
         return "passed"
     except Exception as exc:
