@@ -81,6 +81,24 @@ class TestCore(unittest.TestCase):
             with self.subTest(reply=bad), self.assertRaises(ValueError):
                 validate_reply(bad)
 
+    def test_live_gemini_semantic_mistake_is_rejected(self):
+        with self.assertRaises(ValueError):
+            validate_reply('حياك الله، نتشرف فيك ويسعدنا إننا قدمنا تجربة تنال إعراضك وترقى لرضاك.')
+
+    def test_no_synthetic_sales_script(self):
+        for draft in (
+            'أهلًا وسهلًا، نتشرف بخدمتك ونسعى دايمًا لتقديم تجربة ترقى لرضاك.',
+            'حياك الله، شاكرين ثقتك ونشكر الله أننا قدمنا تجربة تنال إعجابك.',
+        ):
+            with self.subTest(draft=draft), self.assertRaises(ValueError):
+                validate_reply(draft)
+
+    def test_saudi_prompt_instructs_no_unnatural_phrases(self):
+        p = reply_prompt(branch='فلور 2 السلام', stars=5,
+                         review_text='المكان نظيف', previous_replies=[])
+        self.assertIn('تنال إعراضك', p)
+        self.assertIn('المصطنعة', p)
+
     def test_reply_validation(self):
         self.assertEqual(validate_reply('شكراً لك على تقييمك، ونسعد بخدمتك دائماً.'), 'شكراً لك على تقييمك، ونسعد بخدمتك دائماً.')
         with self.assertRaises(ValueError):
