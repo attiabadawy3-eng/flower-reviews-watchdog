@@ -84,15 +84,24 @@ def health():
         mapped = len(aliases) == 4 and all(isinstance(v,str) and v.strip() for v in aliases.values())
     except (ValueError,TypeError):
         mapped = False
-    ready = bool(mapped and os.getenv('DATABASE_URL') and os.getenv('PUBSUB_AUDIENCE') and
-                 os.getenv('PUBSUB_SERVICE_ACCOUNT_EMAIL') and os.getenv('GBP_REFRESH_TOKEN') and
-                 os.getenv('GBP_CLIENT_ID') and os.getenv('GBP_CLIENT_SECRET') and os.getenv('GEMINI_API_KEY'))
+    # Presence-only diagnostics: disclose no tokens, connection strings or key values.
+    readiness = {
+        'branches': mapped,
+        'storage': bool(os.getenv('DATABASE_URL')),
+        'pubsub': bool(os.getenv('PUBSUB_AUDIENCE') and
+                       os.getenv('PUBSUB_SERVICE_ACCOUNT_EMAIL')),
+        'google_oauth': bool(os.getenv('GBP_REFRESH_TOKEN') and
+                             os.getenv('GBP_CLIENT_ID') and os.getenv('GBP_CLIENT_SECRET')),
+        'gemini': bool(os.getenv('GEMINI_API_KEY')),
+    }
+    ready = all(readiness.values())
     try:
         counts = get_store().counts()
         # Readiness here means configuration/storage only. It NEVER claims that
         # Google v4 Reviews is healthy; that needs a confirmed real API call.
         return jsonify({'status':'configured_api_unverified' if ready else 'configuration_incomplete',
                         'configured':ready,'google_reviews_api':'not_checked',
+                        'missing_components':[k for k, value in readiness.items() if not value],
                         'auto_reply_enabled':os.getenv('AUTO_REPLY_ENABLED')=='true',
                         'jobs':counts}),200 if ready else 503
     except Exception:
