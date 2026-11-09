@@ -127,6 +127,42 @@ def _internal_authorized(req):
     return bool(secret) and hmac.compare_digest(supplied, secret)
 
 
+@app.post('/internal/oauth-client-check')
+def oauth_client_check():
+    """Check an uploaded dedicated desktop OAuth client without exposing its secrets.
+
+    This verifies the file's shape only; it does not authorize Google access,
+    replace existing credentials, or send a Google API request.
+    """
+    if not _internal_authorized(request):
+        return jsonify({'error': 'unauthorized'}), 401
+    import json
+    path = '/etc/secrets/gbp_prod_client.json'
+    try:
+        with open(path, encoding='utf-8') as handle:
+            data = json.load(handle)
+    except FileNotFoundError:
+        return jsonify({'status': 'oauth_file_missing', 'google_writes': 0}), 503
+    except (OSError, UnicodeError, ValueError):
+        return jsonify({'status': 'oauth_file_unreadable', 'google_writes': 0}), 422
+
+    c = data.get('installed') if isinstance(data, dict) else None
+    if not isinstance(c, dict):
+        return jsonify({'status': 'oauth_not_desktop_client', 'google_writes': 0}), 422
+    cid, secret = c.get('client_id'), c.get('client_secret')
+    if (c.get('project_id') != 'nice-etching-508014-m5' or
+            not isinstance(cid, str) or
+            not cid.startswith('37036880095-') or
+            not cid.endswith('.apps.googleusercontent.com') or
+            not isinstance(secret, str) or not secret):
+        return jsonify({'status': 'oauth_project_or_fields_mismatch',
+                        'google_writes': 0}), 422
+    return jsonify({'status': 'production_desktop_client_file_verified',
+                    'authorization': 'pending_user_consent',
+                    'google_reads': 0, 'google_writes': 0,
+                    'auto_reply_enabled': False}), 200
+
+
 @app.post('/internal/google-probe')
 def google_probe():
     """Safely verify Google Reviews API reads on all four locations. Zero writes."""
