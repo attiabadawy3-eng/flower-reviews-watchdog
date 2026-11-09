@@ -93,6 +93,14 @@ class TestCore(unittest.TestCase):
             with self.subTest(draft=draft), self.assertRaises(ValueError):
                 validate_reply(draft)
 
+    def test_generated_reply_must_not_mention_branch_number(self):
+        for draft in (
+            'حياك الله في فلور 1، ونشكرك على زيارتك الكريمة.',
+            'نشكر لك تقييمك، ويسعدنا لقياك في فلور ٤ من جديد.',
+        ):
+            with self.subTest(draft=draft), self.assertRaises(ValueError):
+                validate_reply(draft)
+
     def test_saudi_prompt_instructs_no_unnatural_phrases(self):
         p = reply_prompt(branch='فلور 2 السلام', stars=5,
                          review_text='المكان نظيف', previous_replies=[])
