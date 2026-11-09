@@ -123,8 +123,8 @@ def validate_reply(text: str) -> str:
         raise ValueError('unintended negative sentiment or mistranslation')
     if re.search(r'ترق[ىيا] لرضاك|قد[ّ]?منا تجربة تنال', text):
         raise ValueError('unnatural hospitality sales script')
-    if re.search(r'(?:تسببت|تسبب|تسبّب)(?:\\s+فيه|\\s+لك|\\s+لكم)?\\s+(?:مشكلة|عطل|خلل)', text):
+    if re.search(r'(?:تسببت|تسبب|تسبّب)(?:\s+فيه|\s+لك|\s+لكم)?\s+(?:مشكلة|عطل|خلل)', text):
         raise ValueError('unverified causal admission in customer complaint')
-    if re.search(r'تأخرنا\\s+(?:في|عن)\\s+(?:الرد|الاستجابة|التجاوب)', text):
+    if re.search(r'تأخرنا\s+(?:في|عن)\s+(?:الرد|الاستجابة|التجاوب)', text):
         raise ValueError('unverified admission of staff delay')
     return text
