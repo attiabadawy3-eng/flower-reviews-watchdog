@@ -90,6 +90,9 @@ def reply_prompt(*, branch: str, stars: int, review_text: str, previous_replies:
         'لا تعد باسترجاع أموال أو خصومات أو إجراءات داخلية لم تُنفذ، ولا تكشف بيانات شخصية.',
         'لا تستخدم مبالغة دعائية أو رموزًا تعبيرية أو وسومًا أو توقيعًا ثابتًا.',
         'لا تستخدم اللهجة المصرية أو الفصحى المتكلّفة؛ الصياغة السعودية طبيعية ومحترمة.',
+        'اسم المنشأة في نص الرد هو فلور فقط؛ لا تذكر كلمة الخليجية ولا الاسم القانوني الطويل ولا رقم الفرع.',
+        'استخدم أسلوبًا سعوديًا طبيعيًا مثل حياك الله، شاكرين لك، نتشرف فيك عند ملاءمة السياق، وتجنب التكلّف والتكرار.',
+        'عدد النجوم موجود لفهم طبيعة التقييم فقط؛ لا تذكر النجوم أو عددها أو تصفها في الرد.',
         f'الفرع: {branch}',
         f'النجوم: {stars}',
         f'نص التقييم: {review_text.strip() if review_text.strip() else "تقييم بالنجوم فقط دون نص"}',
@@ -106,4 +109,8 @@ def validate_reply(text: str) -> str:
         raise ValueError('generated reply reveals model instructions')
     if re.search(r'(?<!\d)(?:05\d{8}|\+966\d{9})(?!\d)', text):
         raise ValueError('unapproved phone number in generated reply')
+    if re.search(r'الخليجي(?:ة|ه)?|الخليجية|al[-_ ]?khaleej|gulf serviced', text, re.IGNORECASE):
+        raise ValueError('non-approved property name in generated reply')
+    if re.search(r'نجوم|نجمة|نجمتين|نجمات|[★☆⭐🌟]', text):
+        raise ValueError('star rating reference in generated reply')
     return text
