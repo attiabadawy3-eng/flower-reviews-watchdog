@@ -1,5 +1,6 @@
 """Only official Google Business Profile APIs are used here."""
 import os
+import time
 import requests
 from core import REVIEW_PATTERN, LOCATION_PATTERN
 
@@ -16,14 +17,24 @@ class GoogleClient:
         self.client_secret = os.environ['GBP_CLIENT_SECRET']
         self.refresh_token = os.environ['GBP_REFRESH_TOKEN']
         self.session = requests.Session()
+        self._token = None
+        self._token_expires_at = 0.0
 
     def access_token(self):
+        if self._token and time.monotonic() < self._token_expires_at:
+            return self._token
         resp = self.session.post('https://oauth2.googleapis.com/token',
                                  data={'client_id':self.client_id, 'client_secret':self.client_secret,
                                        'refresh_token':self.refresh_token,'grant_type':'refresh_token'},timeout=18)
         if resp.status_code != 200:
             raise GoogleAPIError(resp.status_code, 'OAuth refresh unsuccessful; do not rotate credentials automatically')
-        return resp.json()['access_token']
+        data = resp.json()
+        token = data.get('access_token')
+        if not isinstance(token, str) or not token:
+            raise GoogleAPIError(502, 'OAuth token response missing access token')
+        self._token = token
+        self._token_expires_at = time.monotonic() + max(0, int(data.get('expires_in', 3600)) - 60)
+        return self._token
 
     def request(self, method: str, resource: str, body=None):
         if not REVIEW_PATTERN.fullmatch(resource):
