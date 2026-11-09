@@ -59,6 +59,27 @@ class StagingSmokeTests(unittest.TestCase):
         self.assertEqual(store.db.preview_by_id["smoke-test-12345678"],
                          gen.make_reply.return_value)
 
+    def test_complaint_uses_synthetic_branch_and_negative_review_without_google(self):
+        store = _FakeStore()
+        gen = Mock()
+        gen.make_reply.return_value = (
+            "حياك الله، نأسف إن تجربتك ما كانت بالمستوى اللي تطمح له. "
+            "نتمنى تتواصل مع الإدارة عبر القنوات الرسمية لمراجعة ملاحظتك."
+        )
+        with patch.dict(os.environ, {
+            "AUTO_REPLY_ENABLED": "false",
+            "AI_SMOKE_SCENARIO": "complaint",
+        }):
+            result = run_smoke_once(lambda: store, lambda: gen, self.log,
+                                    "smoke-test-complaint-01")
+        self.assertEqual(result, "passed")
+        kwargs = gen.make_reply.call_args.kwargs
+        self.assertEqual(kwargs["stars"], 2)
+        self.assertEqual(kwargs["branch"], "فلور 2 السلام")
+        self.assertIn("المكيف", kwargs["comment"])
+        self.assertEqual(store.db.preview_by_id["smoke-test-complaint-01"],
+                         gen.make_reply.return_value)
+
     def test_fails_closed_if_auto_reply_active(self):
         generator = Mock()
         with patch.dict(os.environ, {"AUTO_REPLY_ENABLED": "true"}):
