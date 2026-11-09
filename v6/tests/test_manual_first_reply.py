@@ -125,5 +125,25 @@ class ManualPilotTests(unittest.TestCase):
         self.assertEqual(len(g.writes), 1)
 
 
+
+    def test_single_pilot_readback_accepts_google_translation(self):
+        class TranslatedGoogle(FakeGoogle):
+            def get_review(self, name):
+                data = super().get_review(name)
+                if self.existing:
+                    data['reviewReply']['comment'] += (
+                        '\n\n(Translated by Google) Welcome, thank you for visiting.'
+                    )
+                return data
+        g = TranslatedGoogle()
+        s = FakeStore()
+        with mock.patch.dict(os.environ, approved_env()):
+            result = perform_pilot(REVIEW, TEXT, publish=True, google=g, store=s)
+            repeat = perform_pilot(REVIEW, TEXT, publish=True, google=g, store=s)
+        self.assertEqual(result['status'], 'posted_readback_confirmed')
+        self.assertEqual(repeat['status'], 'already_replied')
+        self.assertEqual(g.writes, [(REVIEW, TEXT)])
+        self.assertEqual(s.finished[0][0][1], 'posted')
+
 if __name__ == '__main__':
     unittest.main()
