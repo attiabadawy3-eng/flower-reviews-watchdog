@@ -9,18 +9,19 @@ import sqlite3
 import time
 from contextlib import contextmanager
 
+# PostgreSQL REAL is float4 (about 128s spacing near today's epoch); use float8 for deadlines.
 SCHEMA = '''CREATE TABLE IF NOT EXISTS review_jobs (
     review_name TEXT PRIMARY KEY,
     location_name TEXT NOT NULL,
     event_type TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'queued',
     attempts INTEGER NOT NULL DEFAULT 0,
-    next_try REAL NOT NULL DEFAULT 0,
-    lease_until REAL NOT NULL DEFAULT 0,
+    next_try DOUBLE PRECISION NOT NULL DEFAULT 0,
+    lease_until DOUBLE PRECISION NOT NULL DEFAULT 0,
     last_error TEXT,
     reply_text TEXT,
-    created_at REAL NOT NULL,
-    updated_at REAL NOT NULL
+    created_at DOUBLE PRECISION NOT NULL,
+    updated_at DOUBLE PRECISION NOT NULL
 );'''
 TOMBSTONE_SCHEMA = '''CREATE TABLE IF NOT EXISTS review_tombstones (
     review_hash TEXT PRIMARY KEY,
