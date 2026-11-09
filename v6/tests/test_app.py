@@ -143,6 +143,63 @@ class AppEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.get_json()['google_reviews_api'],'not_checked')
 
+    def test_health_identifies_missing_gemini_without_exposing_secrets(self):
+        from unittest.mock import MagicMock
+        fake = MagicMock()
+        fake.counts.return_value = {'posted': 1}
+        env = {
+            'BRANCH_NAMES_JSON': json.dumps({
+                'accounts/12/locations/1': 'فلور 1',
+                'accounts/12/locations/2': 'فلور 2',
+                'accounts/12/locations/3': 'فلور 3',
+                'accounts/12/locations/4': 'فلور 4',
+            }),
+            'DATABASE_URL': 'postgresql://secret:password@host.example/db',
+            'PUBSUB_AUDIENCE': 'https://example.com/pubsub',
+            'PUBSUB_SERVICE_ACCOUNT_EMAIL': 'pubsub@example.com',
+            'GBP_REFRESH_TOKEN': 'private-refresh-token',
+            'GBP_CLIENT_ID': 'private-client-id',
+            'GBP_CLIENT_SECRET': 'private-client-secret',
+            'GEMINI_API_KEY': '',
+            'AUTO_REPLY_ENABLED': 'false',
+        }
+        with patch.dict(os.environ, env), \
+             patch.object(self.app_module, 'get_store', return_value=fake):
+            result = self.client.get('/health')
+        self.assertEqual(result.status_code, 503)
+        self.assertEqual(result.get_json()['missing_components'], ['gemini'])
+        self.assertNotIn('private', result.get_data(as_text=True))
+        self.assertNotIn('password', result.get_data(as_text=True))
+
+    def test_health_all_config_groups_present_still_does_not_assert_google_readiness(self):
+        from unittest.mock import MagicMock
+        fake = MagicMock()
+        fake.counts.return_value = {'posted': 1}
+        env = {
+            'BRANCH_NAMES_JSON': json.dumps({
+                'accounts/12/locations/1': 'فلور 1',
+                'accounts/12/locations/2': 'فلور 2',
+                'accounts/12/locations/3': 'فلور 3',
+                'accounts/12/locations/4': 'فلور 4',
+            }),
+            'DATABASE_URL': 'postgresql://secret:password@host.example/db',
+            'PUBSUB_AUDIENCE': 'https://example.com/pubsub',
+            'PUBSUB_SERVICE_ACCOUNT_EMAIL': 'pubsub@example.com',
+            'GBP_REFRESH_TOKEN': 'private-refresh-token',
+            'GBP_CLIENT_ID': 'private-client-id',
+            'GBP_CLIENT_SECRET': 'private-client-secret',
+            'GEMINI_API_KEY': 'fake-test-api-key',
+            'AUTO_REPLY_ENABLED': 'false',
+        }
+        with patch.dict(os.environ, env), \
+             patch.object(self.app_module, 'get_store', return_value=fake):
+            result = self.client.get('/health')
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.get_json()['missing_components'], [])
+        self.assertEqual(result.get_json()['google_reviews_api'], 'not_checked')
+        self.assertFalse(result.get_json()['auto_reply_enabled'])
+        self.assertNotIn('fake-test-api-key', result.get_data(as_text=True))
+
     def test_storage_health_reports_ready_when_db_works(self):
         from unittest.mock import MagicMock
         store = MagicMock()
