@@ -62,6 +62,24 @@ class AppEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.get_json()['google_reviews_api'],'not_checked')
 
+    def test_storage_health_reports_ready_when_db_works(self):
+        from unittest.mock import MagicMock
+        store = MagicMock()
+        store.counts.return_value = {'posted': 1}
+        with patch.object(self.app_module, 'get_store', return_value=store), \
+             patch.dict(os.environ, {'AUTO_REPLY_ENABLED': 'false'}):
+            response = self.client.get('/health/storage')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['database'], 'postgres')
+        self.assertEqual(response.get_json()['jobs']['posted'], 1)
+        self.assertFalse(response.get_json()['auto_reply_enabled'])
+
+    def test_storage_health_fails_closed_on_db_error(self):
+        with patch.object(self.app_module, 'get_store', side_effect=RuntimeError('offline')):
+            response = self.client.get('/health/storage')
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.get_json()['status'], 'storage_unavailable')
+
     def test_health_does_not_claim_reviews_api_success(self):
         from unittest.mock import MagicMock
         store=MagicMock()
