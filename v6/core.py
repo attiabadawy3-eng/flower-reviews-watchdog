@@ -115,7 +115,7 @@ def validate_reply(text: str) -> str:
         raise ValueError('non-approved property name in generated reply')
     if re.search(r'نجوم|نجمة|نجمتين|نجمات|[★☆⭐🌟]', text):
         raise ValueError('star rating reference in generated reply')
-    if re.search(r'فلور\\s*[0-9٠-٩]', text):
+    if re.search(r'فلور\s*[0-9٠-٩]', text):
         raise ValueError('non-approved branch number in public reply')
     if re.search(r'[اإأ]عراض(?:ك|كم|هم|ه|ها)?', text):
         raise ValueError('unintended negative sentiment or mistranslation')
