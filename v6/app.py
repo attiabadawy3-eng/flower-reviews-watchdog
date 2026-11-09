@@ -274,5 +274,11 @@ def backfill():
         log.warning('Backfill API error: %s',type(exc).__name__)
         return jsonify({'error':'provider_unavailable'}),502
 
+# Optional isolated one-shot model probe; disabled unless staging-only run ID is set.
+if os.getenv('AI_SMOKE_TEST_ID'):
+    from staging_smoke import maybe_start_smoke
+    maybe_start_smoke(get_store, SaudiReplyGenerator, log)
+
+
 if __name__ == '__main__':
     app.run(port=8036)
