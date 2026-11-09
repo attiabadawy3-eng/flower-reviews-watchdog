@@ -112,6 +112,69 @@ def health_storage():
         return jsonify({'status': 'storage_unavailable'}), 503
 
 
+def _internal_authorized(req):
+    secret = os.getenv('CRON_SECRET', '')
+    supplied = req.headers.get('Authorization', '').removeprefix('Bearer ')
+    return bool(secret) and hmac.compare_digest(supplied, secret)
+
+
+@app.post('/internal/google-probe')
+def google_probe():
+    """Safely verify Google Reviews API reads on all four locations. Zero writes."""
+    if not _internal_authorized(request):
+        return jsonify({'error': 'unauthorized'}), 401
+    import json
+    from core import LOCATION_PATTERN
+    from google_client import GoogleAPIError
+    try:
+        aliases = json.loads(os.getenv('BRANCH_NAMES_JSON', '{}'))
+        if (not isinstance(aliases, dict) or len(aliases) != 4 or
+                not all(LOCATION_PATTERN.fullmatch(k) for k in aliases)):
+            return jsonify({'status': 'branch_mapping_invalid', 'google_writes': 0}), 503
+        client = GoogleClient()
+        verified = 0
+        for location in aliases:
+            result = client.list_reviews(location)
+            if not isinstance(result, dict) or not isinstance(result.get('reviews', []), list):
+                return jsonify({'status': 'invalid_google_response', 'google_writes': 0}), 502
+            verified += 1
+        return jsonify({'status': 'google_reads_verified', 'branches_checked': verified,
+                        'google_writes': 0, 'auto_reply_enabled':
+                        os.getenv('AUTO_REPLY_ENABLED') == 'true'}), 200
+    except GoogleAPIError as err:
+        return jsonify({'status': 'google_api_unavailable',
+                        'provider_http': err.status, 'google_writes': 0}), 502
+    except Exception:
+        log.warning('Google read-only probe failed', exc_info=False)
+        return jsonify({'status': 'readiness_unavailable', 'google_writes': 0}), 503
+
+
+@app.post('/internal/ai-preview')
+def ai_preview():
+    """Generate a synthetic/non-published reply draft for tone and model testing."""
+    if not _internal_authorized(request):
+        return jsonify({'error': 'unauthorized'}), 401
+    import json
+    try:
+        body = request.get_json(silent=True)
+        aliases = json.loads(os.getenv('BRANCH_NAMES_JSON', '{}'))
+        if not isinstance(body, dict) or not isinstance(aliases, dict) or len(aliases) != 4:
+            return jsonify({'error': 'invalid_request'}), 400
+        branch = body.get('branch')
+        stars = body.get('stars')
+        comment = body.get('comment', '')
+        if (branch not in aliases.values() or type(stars) is not int or
+                not 1 <= stars <= 5 or not isinstance(comment, str) or len(comment) > 1000):
+            return jsonify({'error': 'invalid_request'}), 400
+        draft = SaudiReplyGenerator().make_reply(branch=branch, stars=stars,
+                                                  comment=comment, recent=[])
+        return jsonify({'status': 'draft_only', 'reply': draft,
+                        'google_reads': 0, 'google_writes': 0}), 200
+    except Exception:
+        log.warning('AI preview unavailable', exc_info=False)
+        return jsonify({'status': 'ai_unavailable', 'google_writes': 0}), 503
+
+
 @app.post('/pubsub/reviews')
 def receive():
     if not authenticate_pubsub(request):
