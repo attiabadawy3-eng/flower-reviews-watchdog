@@ -17,6 +17,7 @@ class _FakeCursor:
 class _FakeDatabase:
     def __init__(self):
         self.rows = set()
+        self.preview_by_id = {}
         self.statements = []
     def execute(self, query, params=None):
         self.statements.append(query)
@@ -26,6 +27,8 @@ class _FakeDatabase:
                 return _FakeCursor(None)
             self.rows.add(rid)
             return _FakeCursor((rid,))
+        if query.startswith("UPDATE v6_smoke_checks SET preview_text"):
+            self.preview_by_id[params[1]] = params[0]
         return _FakeCursor(None)
 
 
@@ -53,6 +56,8 @@ class StagingSmokeTests(unittest.TestCase):
                                             "smoke-test-12345678"), "already_attempted")
         gen.make_reply.assert_called_once()
         self.assertEqual(len(store.db.rows), 1)
+        self.assertEqual(store.db.preview_by_id["smoke-test-12345678"],
+                         gen.make_reply.return_value)
 
     def test_fails_closed_if_auto_reply_active(self):
         generator = Mock()
