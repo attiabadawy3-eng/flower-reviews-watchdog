@@ -41,10 +41,18 @@ def run_smoke_once(store_factory, generator_factory, logger, run_id):
         logger.warning("STAGING_AI_SMOKE_STORAGE_ERROR type=%s", type(exc).__name__)
         return "storage_failed"
     try:
+        scenario = os.getenv("AI_SMOKE_SCENARIO", "positive")
+        scenarios = {
+            "positive": ("فلور 1 العنود", 5,
+                         "استقبال ممتاز، الشقة نظيفة والمكان هادي، شكراً لكم."),
+            "complaint": ("فلور 2 السلام", 2,
+                          "المكيف ما كان يبرد وتأخر تجاوب الاستقبال مع المشكلة."),
+        }
+        if scenario not in scenarios:
+            raise ValueError("invalid staging smoke scenario")
+        branch, stars, comment = scenarios[scenario]
         draft = generator_factory().make_reply(
-            branch="فلور 1 العنود", stars=5,
-            comment="استقبال ممتاز، الشقة نظيفة والمكان هادي، شكراً لكم.",
-            recent=[])
+            branch=branch, stars=stars, comment=comment, recent=[])
         if not draft or len(draft) > 350:
             raise ValueError("draft length out of bounds")
         # Synthetic output only. Keep private in Neon for quality review; no client review is stored.
