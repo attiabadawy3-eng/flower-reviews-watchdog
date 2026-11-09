@@ -10,11 +10,12 @@ import json
 import os
 import secrets
 import sys
+from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 
 import psycopg
 from psycopg import sql
-from psycopg.conninfo import conninfo_to_dict, make_conninfo
+from psycopg.conninfo import conninfo_to_dict
 
 from core import ReviewEvent
 from storage import Store
@@ -45,7 +46,7 @@ def run_postgres_acceptance(dsn):
         with psycopg.connect(dsn, connect_timeout=20) as admin:
             admin.execute(sql.SQL('CREATE SCHEMA {}').format(sql.Identifier(schema)))
         schema_created = True
-        isolated_dsn = make_conninfo(dsn, options='-csearch_path=' + schema)
+        isolated_dsn = dsn + ('&' if '?' in dsn else '?') + 'options=' + quote('-csearch_path=' + schema)
         store = Store(isolated_dsn)
         assert store.is_postgres, 'Postgres adapter was not selected'
         results.append('isolated_schema_initialized')
