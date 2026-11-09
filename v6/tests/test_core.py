@@ -67,6 +67,20 @@ class TestCore(unittest.TestCase):
         self.assertIn('لا تعد باسترجاع', x)
         self.assertIn('النظافة ممتازة', x)
 
+    def test_brand_and_rating_are_never_mentioned(self):
+        p = reply_prompt(branch='فلور 1 الدمام', stars=5,
+                         review_text='', previous_replies=[])
+        self.assertIn('فلور فقط', p)
+        self.assertIn('لا تذكر النجوم', p)
+        self.assertEqual(validate_reply('حياك الله، شاكرين لك ثقتك في فلور ونتشرف فيك دائمًا.'),
+                         'حياك الله، شاكرين لك ثقتك في فلور ونتشرف فيك دائمًا.')
+        for bad in ('نشكرك على تقييمك بخمس نجوم ونورت فلور.',
+                    'نشكرك على تقييمك 5 نجوم ونورت فلور.',
+                    'نتشرف بخدمتك في شقق فلور الخليجية دائمًا.',
+                    'نتشرف بخدمتك في فلور ⭐ وشاكرين لك.'):
+            with self.subTest(reply=bad), self.assertRaises(ValueError):
+                validate_reply(bad)
+
     def test_reply_validation(self):
         self.assertEqual(validate_reply('شكراً لك على تقييمك، ونسعد بخدمتك دائماً.'), 'شكراً لك على تقييمك، ونسعد بخدمتك دائماً.')
         with self.assertRaises(ValueError):
