@@ -65,7 +65,7 @@ class AppEndpointTests(unittest.TestCase):
                    for i in range(1, 5)}
         with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
                                        'BRANCH_NAMES_JSON': json.dumps(mapping),
-                                       'AUTO_REPLY_ENABLED': 'false'}), \\
+                                       'AUTO_REPLY_ENABLED': 'false'}), \
              patch.object(self.app_module, 'GoogleClient', return_value=g):
             response = self.client.post('/internal/google-probe',
                                         headers={'Authorization': 'Bearer test-secret'})
@@ -85,7 +85,7 @@ class AppEndpointTests(unittest.TestCase):
         mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
                    for i in range(1, 5)}
         with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
-                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \\
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \
              patch.object(self.app_module, 'GoogleClient', return_value=g):
             response = self.client.post('/internal/google-probe',
                                         headers={'Authorization': 'Bearer test-secret'})
@@ -107,8 +107,8 @@ class AppEndpointTests(unittest.TestCase):
         mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
                    for i in range(1, 5)}
         with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
-                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \\
-             patch.object(self.app_module, 'SaudiReplyGenerator', return_value=gen), \\
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \
+             patch.object(self.app_module, 'SaudiReplyGenerator', return_value=gen), \
              patch.object(self.app_module, 'GoogleClient') as g:
             response = self.client.post('/internal/ai-preview',
                 headers={'Authorization': 'Bearer test-secret'},
@@ -125,7 +125,7 @@ class AppEndpointTests(unittest.TestCase):
         mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
                    for i in range(1, 5)}
         with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
-                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \\
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \
              patch.object(self.app_module, 'SaudiReplyGenerator', return_value=gen):
             response = self.client.post('/internal/ai-preview',
                 headers={'Authorization': 'Bearer test-secret'},
