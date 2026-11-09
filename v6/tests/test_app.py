@@ -52,6 +52,58 @@ class AppEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(store.enqueue.call_count,1)
 
+    def test_oauth_client_check_requires_authentication(self):
+        with patch.dict(os.environ, {'CRON_SECRET': 'safe-test-secret'}), \
+             patch('builtins.open') as file_open:
+            r = self.client.post('/internal/oauth-client-check')
+        self.assertEqual(r.status_code, 401)
+        file_open.assert_not_called()
+
+    def test_oauth_client_check_valid_file_never_returns_credentials(self):
+        import io
+        payload = json.dumps({'installed': {
+            'project_id': 'nice-etching-508014-m5',
+            'client_id': '37036880095-example.apps.googleusercontent.com',
+            'client_secret': 'test-secret-string-not-to-echo',
+        }})
+        with patch.dict(os.environ, {'CRON_SECRET': 'safe-test-secret'}), \
+             patch('builtins.open', return_value=io.StringIO(payload)):
+            r = self.client.post('/internal/oauth-client-check',
+                headers={'Authorization': 'Bearer safe-test-secret'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_json()['status'],
+                         'production_desktop_client_file_verified')
+        self.assertEqual(r.get_json()['google_writes'], 0)
+        self.assertEqual(r.get_json()['authorization'], 'pending_user_consent')
+        self.assertNotIn('test-secret-string-not-to-echo',
+                         r.get_data(as_text=True))
+        self.assertNotIn('37036880095-example',
+                         r.get_data(as_text=True))
+
+    def test_oauth_client_check_rejects_wrong_project(self):
+        import io
+        payload = json.dumps({'installed': {
+            'project_id': 'unrelated-project',
+            'client_id': '37036880095-example.apps.googleusercontent.com',
+            'client_secret': 'fake-secret',
+        }})
+        with patch.dict(os.environ, {'CRON_SECRET': 'safe-test-secret'}), \
+             patch('builtins.open', return_value=io.StringIO(payload)):
+            r = self.client.post('/internal/oauth-client-check',
+                headers={'Authorization': 'Bearer safe-test-secret'})
+        self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.get_json()['status'],
+                         'oauth_project_or_fields_mismatch')
+
+    def test_oauth_client_check_rejects_invalid_json(self):
+        import io
+        with patch.dict(os.environ, {'CRON_SECRET': 'safe-test-secret'}), \
+             patch('builtins.open', return_value=io.StringIO('{broken')):
+            r = self.client.post('/internal/oauth-client-check',
+                headers={'Authorization': 'Bearer safe-test-secret'})
+        self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.get_json()['status'], 'oauth_file_unreadable')
+
     def test_google_probe_requires_internal_secret(self):
         with patch.dict(os.environ, {'CRON_SECRET': 'test-secret'}):
             response = self.client.post('/internal/google-probe')
