@@ -52,6 +52,87 @@ class AppEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(store.enqueue.call_count,1)
 
+    def test_google_probe_requires_internal_secret(self):
+        with patch.dict(os.environ, {'CRON_SECRET': 'test-secret'}):
+            response = self.client.post('/internal/google-probe')
+        self.assertEqual(response.status_code, 401)
+
+    def test_google_probe_reads_all_four_without_google_writes(self):
+        from unittest.mock import MagicMock
+        g = MagicMock()
+        g.list_reviews.return_value = {'reviews': []}
+        mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
+                   for i in range(1, 5)}
+        with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping),
+                                       'AUTO_REPLY_ENABLED': 'false'}), \\
+             patch.object(self.app_module, 'GoogleClient', return_value=g):
+            response = self.client.post('/internal/google-probe',
+                                        headers={'Authorization': 'Bearer test-secret'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['branches_checked'], 4)
+        self.assertEqual(response.get_json()['google_writes'], 0)
+        self.assertFalse(response.get_json()['auto_reply_enabled'])
+        self.assertEqual(g.list_reviews.call_count, 4)
+        g.reply.assert_not_called()
+        g.get_review.assert_not_called()
+
+    def test_google_probe_error_fails_closed(self):
+        from unittest.mock import MagicMock
+        from google_client import GoogleAPIError
+        g = MagicMock()
+        g.list_reviews.side_effect = GoogleAPIError(429, 'test quota')
+        mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
+                   for i in range(1, 5)}
+        with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \\
+             patch.object(self.app_module, 'GoogleClient', return_value=g):
+            response = self.client.post('/internal/google-probe',
+                                        headers={'Authorization': 'Bearer test-secret'})
+        self.assertEqual(response.status_code, 502)
+        self.assertEqual(response.get_json()['provider_http'], 429)
+        self.assertEqual(response.get_json()['google_writes'], 0)
+        g.reply.assert_not_called()
+
+    def test_ai_preview_requires_internal_secret(self):
+        with patch.dict(os.environ, {'CRON_SECRET': 'test-secret'}):
+            response = self.client.post('/internal/ai-preview',
+                                        json={'branch': 'فلور 1', 'stars': 5})
+        self.assertEqual(response.status_code, 401)
+
+    def test_ai_preview_generates_draft_without_google_write(self):
+        from unittest.mock import MagicMock
+        gen = MagicMock()
+        gen.make_reply.return_value = 'حياك الله، شاكرين لك ثقتك في فلور ونتشرف فيك دائمًا.'
+        mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
+                   for i in range(1, 5)}
+        with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \\
+             patch.object(self.app_module, 'SaudiReplyGenerator', return_value=gen), \\
+             patch.object(self.app_module, 'GoogleClient') as g:
+            response = self.client.post('/internal/ai-preview',
+                headers={'Authorization': 'Bearer test-secret'},
+                json={'branch': 'فلور 1', 'stars': 5, 'comment': 'نظيف ومرتب'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['status'], 'draft_only')
+        self.assertEqual(response.get_json()['google_writes'], 0)
+        gen.make_reply.assert_called_once()
+        g.assert_not_called()
+
+    def test_ai_preview_wrong_branch_rejected_without_model_call(self):
+        from unittest.mock import MagicMock
+        gen = MagicMock()
+        mapping = {'accounts/12/locations/' + str(i): 'فلور ' + str(i)
+                   for i in range(1, 5)}
+        with patch.dict(os.environ, {'CRON_SECRET': 'test-secret',
+                                       'BRANCH_NAMES_JSON': json.dumps(mapping)}), \\
+             patch.object(self.app_module, 'SaudiReplyGenerator', return_value=gen):
+            response = self.client.post('/internal/ai-preview',
+                headers={'Authorization': 'Bearer test-secret'},
+                json={'branch': 'غير معروف', 'stars': 5, 'comment': 'نظيف'})
+        self.assertEqual(response.status_code, 400)
+        gen.make_reply.assert_not_called()
+
     def test_drain_requires_secret(self):
         with patch.dict(os.environ, {'CRON_SECRET':'test-secret'}):
             response = self.client.post('/internal/drain')
