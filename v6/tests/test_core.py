@@ -93,6 +93,18 @@ class TestCore(unittest.TestCase):
             with self.subTest(draft=draft), self.assertRaises(ValueError):
                 validate_reply(draft)
 
+    def test_unverified_complaint_facts_must_not_be_admitted(self):
+        samples = (
+            'نعتذر عن أي إزعاج تسببت فيه مشكلة التكييف وبطء الاستجابة.',
+            'نعتذر عن المشكلة وقد تأخرنا في الاستجابة، ونتمنى تتواصل معنا.',
+        )
+        for text in samples:
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                validate_reply(text)
+        safe = ('حياك الله، نأسف إن تجربتك ما كانت بالمستوى المطلوب، '
+                'ونتفهم ملاحظتك عن التكييف ونسعد بتواصلك مع الإدارة.')
+        self.assertEqual(validate_reply(safe), safe)
+
     def test_generated_reply_must_not_mention_branch_number(self):
         for draft in (
             'حياك الله في فلور 1، ونشكرك على زيارتك الكريمة.',
