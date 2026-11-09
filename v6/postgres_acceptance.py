@@ -37,6 +37,11 @@ def validate_direct_neon_url(dsn):
     return True
 
 
+def isolated_schema_url(dsn, schema):
+    """Append PostgreSQL startup search_path without converting a URI to libpq keyword form."""
+    return dsn + ('&' if '?' in dsn else '?') + 'options=' + quote('-csearch_path=' + schema)
+
+
 def run_postgres_acceptance(dsn):
     validate_direct_neon_url(dsn)
     schema = 'flower_reviews_v6_acceptance_' + secrets.token_hex(6)
@@ -46,7 +51,7 @@ def run_postgres_acceptance(dsn):
         with psycopg.connect(dsn, connect_timeout=20) as admin:
             admin.execute(sql.SQL('CREATE SCHEMA {}').format(sql.Identifier(schema)))
         schema_created = True
-        isolated_dsn = dsn + ('&' if '?' in dsn else '?') + 'options=' + quote('-csearch_path=' + schema)
+        isolated_dsn = isolated_schema_url(dsn, schema)
         store = Store(isolated_dsn)
         assert store.is_postgres, 'Postgres adapter was not selected'
         results.append('isolated_schema_initialized')
