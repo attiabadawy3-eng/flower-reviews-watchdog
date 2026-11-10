@@ -34,6 +34,30 @@ def evaluate_probe(http_status, body):
     detail = body.get('status') or body.get('error') or 'unknown'
     return 1, f'FAIL google_reviews_api: {detail} (HTTP {http_status})'
 
+def run_v6_probe():
+    """Read-only Google API probe. Liveness does not prove readiness."""
+    import requests
+    base = os.getenv('V6_BASE_URL', '').rstrip('/')
+    secret = os.getenv('V6_CRON_SECRET', '')
+    if not base or not secret:
+        return 2, 'FAIL monitor not configured: V6_BASE_URL and V6_CRON_SECRET are required'
+    try:
+        live = requests.get(base + '/live', timeout=60)
+        print(f'INFO service_liveness: HTTP {live.status_code} (not evidence of Google API access)')
+    except requests.RequestException as exc:
+        print(f'INFO service_liveness: unreachable ({type(exc).__name__})')
+    try:
+        resp = requests.post(base + '/internal/google-probe',
+                             headers={'Authorization': f'Bearer {secret}'}, timeout=120)
+        try:
+            body = resp.json()
+        except ValueError:
+            body = None
+        return evaluate_probe(resp.status_code, body)
+    except requests.RequestException as exc:
+        return 1, f'FAIL google_reviews_api: probe unreachable ({type(exc).__name__})'
+
+
 def main(argv):
     if len(argv) >= 2 and argv[1] == 'scan':
         try:
@@ -41,8 +65,10 @@ def main(argv):
         except ValueError:
             data = None
         code, msg = check_scan(data)
+    elif len(argv) >= 2 and argv[1] == 'v6-probe':
+        code, msg = run_v6_probe()
     else:
-        code, msg = 2, 'usage: watchdog_checks.py scan <json>'
+        code, msg = 2, 'usage: watchdog_checks.py scan <json> | v6-probe'
     print(('::error::' if code else '') + msg)
     return code
 
