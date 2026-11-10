@@ -73,7 +73,7 @@ def process_one(review_name=None, approved_text=None):
         branch_names=aliases,
         auto_enabled=os.getenv('AUTO_REPLY_ENABLED')=='true',
         owner_consent=os.getenv('OWNER_EXPRESS_CONSENT')=='true',
-        minimum_stars=os.getenv('AUTO_REPLY_MIN_STARS', '5'),
+        minimum_stars=os.getenv('AUTO_REPLY_MIN_STARS', '4'),
         **backfill_authorization(store, job),
     )
 

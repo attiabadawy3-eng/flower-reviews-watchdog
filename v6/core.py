@@ -71,8 +71,12 @@ def as_star_count(value: str | int | None) -> int:
     return mapping.get(str(value or '').upper(), 0)
 
 
-# Owner policy (2026-11-10): automatic publication is for five-star reviews only.
-# Any configured minimum below this is raised to it; it can never be lowered.
+# Owner policy (2026-11-10, updated): new reviews are auto-answered when they are
+# positive: 5 stars, or 4 stars, with no negative/complaint wording and no
+# high-risk terms. 1-3 stars always go to manual review. The configured minimum
+# can be raised (e.g. to 5) but never lowered below this floor.
+AUTO_REPLY_FLOOR_STARS = 4
+# The 2026 backfill campaign stays five-star only.
 AUTO_REPLY_REQUIRED_STARS = 5
 
 # Terminal marker for a job whose PUT may have reached Google; such a job must
@@ -86,12 +90,67 @@ BACKFILL_2026_END = dt.datetime(2027, 1, 1, tzinfo=RIYADH)
 
 
 def effective_minimum_stars(configured: int | str | None) -> int:
-    """Return the auto-post threshold; never below the five-star owner policy."""
+    """Return the auto-post threshold; never below the four-star positive floor."""
     try:
         value = int(configured)
     except (TypeError, ValueError):
-        value = AUTO_REPLY_REQUIRED_STARS
-    return max(AUTO_REPLY_REQUIRED_STARS, value)
+        value = AUTO_REPLY_FLOOR_STARS
+    return min(5, max(AUTO_REPLY_FLOOR_STARS, value))
+
+
+_AR_DIACRITICS = re.compile(r'[\u064B-\u0652\u0670\u0640]')
+
+
+def normalize_review_text(text) -> str:
+    """Lowercase and fold common Arabic spelling variants for keyword matching."""
+    t = _AR_DIACRITICS.sub('', str(text or '').lower())
+    t = re.sub('[أإآٱ]', 'ا', t).replace('ى', 'ي').replace('ة', 'ه').replace('ؤ', 'و').replace('ئ', 'ي')
+    return re.sub(r'\s+', ' ', t).strip()
+
+
+# Phrases that DENY a problem ("no problems") are removed before matching.
+_NEGATION_PHRASES = tuple(normalize_review_text(p) for p in (
+    'بدون مشاكل', 'بدون اي مشاكل', 'بدون اي مشكلة', 'ما فيه مشاكل', 'مافيه مشاكل', 'ما في مشاكل', 'مافي مشاكل',
+    'ما فيه اي مشكلة', 'مافيه اي مشكلة', 'ما في اي مشكلة', 'مافي اي مشكلة', 'ما فيه مشكلة', 'مافي مشكلة',
+    'لا توجد مشاكل', 'لا يوجد مشاكل', 'لا توجد اي مشكلة', 'لا يوجد اي مشكلة', 'ولا مشكلة', 'ولا اي مشكلة',
+    'no problems', 'no problem', 'no issues', 'not bad at all',
+))
+
+# Complaint / negative wording (Saudi colloquial + MSA + English). Any hit -> manual.
+NEGATIVE_SIGNALS = tuple(normalize_review_text(w) for w in (
+    'سيء', 'سيئ', 'سيئة', 'سيئه', 'اسوا', 'أسوأ', 'زفت', 'رديء', 'ردي', 'مقرف', 'مقرفة', 'خايس', 'تعبان',
+    'وسخ', 'وسخة', 'وساخة', 'وساخه', 'قذر', 'قذارة', 'متسخ', 'متسخة', 'غير نظيف', 'مو نظيف', 'مب نظيف',
+    'زبالة', 'زبالات', 'نفايات', 'صراصير', 'صرصور', 'حشرات', 'حشرة', 'بق', 'فئران', 'فار',
+    'ريحة كريهة', 'رائحة كريهة', 'ريحه كريهه', 'ريحة مو حلوة', 'ريحة وحشة', 'عفن', 'رطوبة',
+    'خربان', 'خربانة', 'خراب', 'معطل', 'معطلة', 'عطلان', 'تعطل', 'عطل', 'ما يشتغل', 'مايشتغل', 'ما اشتغل',
+    'ما تشتغل', 'ماتشتغل', 'لا يعمل', 'لا تعمل', 'مكسور', 'مكسورة',
+    'ازعاج', 'مزعج', 'مزعجة', 'ضوضاء', 'تأخر', 'تأخير', 'تاخير', 'انتظرنا كثير', 'ما ردوا', 'ماردوا',
+    'وقح', 'قليل ادب', 'قلة ادب', 'سوء تعامل', 'تعامل سيء', 'معاملة سيئة', 'ما يحترمون', 'مايحترمون',
+    'لا انصح', 'ما انصح', 'ماانصح', 'لا تنصح', 'ما انصح فيه', 'لا تروحون', 'لا تسكنون', 'ندمت', 'ندم',
+    'خيبة', 'مخيب', 'محبط', 'استغلال', 'غالي جدا', 'ما يستاهل', 'مايستاهل', 'لا يستحق', 'مبالغ',
+    'شكوى', 'اشتكيت', 'مشكلة', 'مشكله', 'مشاكل', 'للاسف', 'للأسف', 'مع الاسف', 'ما عجبني', 'ماعجبني',
+    'ما كان نظيف', 'غير مريح', 'مو مريح', 'ما هو مريح', 'كذب', 'كذابين', 'غش', 'نصابين',
+    'dirty', 'filthy', 'bad', 'worst', 'terrible', 'awful', 'horrible', 'broken', 'not working', 'smell',
+    'smelly', 'stink', 'cockroach', 'bugs', 'insects', 'rude', 'noisy', 'noise', 'disappoint', 'complain',
+    'problem', 'issue', 'not recommend', "don't recommend", 'never again', 'overpriced', 'waste',
+))
+
+
+def has_negative_signal(comment) -> bool:
+    text = normalize_review_text(comment)
+    if not text:
+        return False
+    for phrase in _NEGATION_PHRASES:
+        text = text.replace(phrase, ' ')
+    padded = f' {text} '
+    for word in NEGATIVE_SIGNALS:
+        # Whole-word match for short tokens to avoid hits inside unrelated words.
+        if len(word) <= 3:
+            if re.search(r'(?<![\w])' + re.escape(word) + r'(?![\w])', padded):
+                return True
+        elif word in text:
+            return True
+    return False
 
 
 def parse_google_time(value) -> dt.datetime | None:
@@ -143,7 +202,9 @@ def needs_owner_review(stars: int, comment: str, minimum_autopost_stars: int) ->
     # remain subject to extra review to avoid admitting unverified wrongdoing.
     high_risk = ('تحرش', 'اعتداء', 'سرقة', 'نصب', 'احتيال', 'تسمم', 'عنصرية', 'خصوصية',
                  'sexual assault', 'theft', 'fraud', 'discrimination', 'poisoning')
-    return stars < minimum_autopost_stars or any(word in (comment or '').lower() for word in high_risk)
+    return (stars < minimum_autopost_stars or
+            any(word in (comment or '').lower() for word in high_risk) or
+            has_negative_signal(comment))
 
 
 def reply_prompt(*, branch: str, stars: int, review_text: str, previous_replies: list[str]) -> str:

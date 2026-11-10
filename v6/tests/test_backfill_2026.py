@@ -89,10 +89,12 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(classify_backfill_2026(review(LOCS[0], 'n', created='2026-05-01T10:00:00.123456789Z'), NOW), 'candidate')
 
     def test_minimum_stars_never_below_five(self):
-        self.assertEqual(effective_minimum_stars('4'), 5)
-        self.assertEqual(effective_minimum_stars(1), 5)
-        self.assertEqual(effective_minimum_stars(None), 5)
-        self.assertEqual(effective_minimum_stars('bad'), 5)
+        self.assertEqual(effective_minimum_stars('4'), 4)
+        self.assertEqual(effective_minimum_stars('5'), 5)
+        self.assertEqual(effective_minimum_stars(1), 4)
+        self.assertEqual(effective_minimum_stars(None), 4)
+        self.assertEqual(effective_minimum_stars('bad'), 4)
+        self.assertEqual(effective_minimum_stars(9), 5)
 
 
 class ScanTests(unittest.TestCase):
@@ -540,12 +542,43 @@ class ProcessorPolicyTests(unittest.TestCase):
                             backfill_bulk_authorized=backfill)
         return s, g
 
-    def test_four_star_new_review_never_autoposted_even_with_min_4(self):
+    def new(self, stars, comment, minimum=4):
         fresh = dt.datetime.now(dt.timezone.utc).isoformat()
-        s, g = self.run_job({'starRating': 'FOUR', 'createTime': fresh, 'comment': 'جيد'},
-                            event_type='NEW_REVIEW')
+        return self.run_job({'starRating': stars, 'createTime': fresh, 'comment': comment},
+                            event_type='NEW_REVIEW', minimum=minimum)
+
+    def test_positive_four_star_new_review_autoposted(self):
+        s, g = self.new('FOUR', 'المكان نظيف والاستقبال محترم')
+        self.assertEqual(len(g.puts), 1)
+        self.assertEqual(s.finished[0][0][1], 'posted')
+
+    def test_four_star_without_text_autoposted(self):
+        s, g = self.new('FOUR', '')
+        self.assertEqual(len(g.puts), 1)
+
+    def test_negative_wording_goes_manual_even_with_five_stars(self):
+        for stars, text in (('FOUR', 'حلو بس المكيف خربان'), ('FIVE', 'ممتاز لكن الحمام وسخ'),
+                            ('FIVE', 'للأسف تأخروا في التسليم'), ('FOUR', 'dirty bathroom')):
+            s, g = self.new(stars, text)
+            self.assertEqual(g.puts, [], text)
+            self.assertEqual(s.finished[0][0][1], 'approval_required', text)
+
+    def test_denied_problem_is_still_positive(self):
+        s, g = self.new('FIVE', 'تجربة جميلة بدون أي مشاكل')
+        self.assertEqual(len(g.puts), 1)
+
+    def test_three_stars_or_less_always_manual(self):
+        for stars in ('THREE', 'TWO', 'ONE'):
+            s, g = self.new(stars, 'ممتاز ونظيف')
+            self.assertEqual(g.puts, [], stars)
+
+    def test_owner_can_raise_threshold_to_five(self):
+        s, g = self.new('FOUR', 'نظيف ومرتب', minimum=5)
         self.assertEqual(g.puts, [])
-        self.assertEqual(s.finished[0][0][1], 'approval_required')
+
+    def test_configured_one_star_cannot_lower_floor(self):
+        s, g = self.new('THREE', 'ممتاز', minimum=1)
+        self.assertEqual(g.puts, [])
 
     def test_five_star_new_review_still_autoposted(self):
         fresh = dt.datetime.now(dt.timezone.utc).isoformat()
