@@ -130,7 +130,9 @@ def _admit(store, location, name, state, source):
     if state == 'new':
         return store.enqueue(ReviewEvent(name, location, EVENT_TYPE, source))
     if state == 'tombstone_expired':
-        return store.enqueue(ReviewEvent(name, location, EVENT_TYPE, source))
+        # Original job expired unresolved. Its external PUT history is unknown:
+        # automatic re-admission could send a duplicate reply. Human audit only.
+        return False
     if state == 'requalifiable':
         return store.requalify_for_backfill_2026(name)
     return False

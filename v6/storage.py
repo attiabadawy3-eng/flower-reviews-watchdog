@@ -87,7 +87,7 @@ class Store:
                 # expired unresolved review. Completed reviews stay immutable.
                 prior = db.execute(self._sql('SELECT prior_status FROM review_tombstones WHERE review_hash=%s'),
                                    (_digest(event.review_name),)).fetchone()
-                if event.event_type not in ('BACKFILL', 'BACKFILL_2026') or prior[0] != 'expired':
+                if event.event_type != 'BACKFILL' or prior[0] != 'expired':
                     return False
                 db.execute(self._sql('DELETE FROM review_tombstones WHERE review_hash=%s'),
                            (_digest(event.review_name),))
