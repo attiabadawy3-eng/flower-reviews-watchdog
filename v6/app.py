@@ -46,17 +46,23 @@ def authenticate_pubsub(req):
         return False
 
 
-def process_one(review_name=None):
+def process_one(review_name=None, approved_text=None):
     store = get_store()
     job = store.claim(review_name)
     if not job:
         return False
     import json
     from processor import process_claimed_job
+    from backfill_2026 import generator_plan, ApprovedTextGenerator
     aliases = json.loads(os.getenv('BRANCH_NAMES_JSON','{}'))
+    plan, value = generator_plan(job, os.environ, approved_text)
+    if plan == 'defer':
+        # The canary review is never published with model text; leave it queued.
+        store.retry(job['review_name'], job['attempts'], value)
+        return False
     try:
         google_client = GoogleClient()
-        ai_generator = SaudiReplyGenerator()
+        ai_generator = ApprovedTextGenerator(value) if plan == 'approved' else SaudiReplyGenerator()
     except (KeyError, ValueError) as exc:
         store.retry(job['review_name'],job['attempts'], 'missing or invalid connector configuration')
         return False
@@ -327,11 +333,15 @@ def backfill_2026_route():
     from google_client import GoogleAPIError
     body = request.get_json(silent=True) or {}
     mode = body.get('mode', 'dry_run') if isinstance(body, dict) else None
-    if mode not in ('dry_run', 'canary', 'publish'):
+    if mode not in backfill_2026.MODES:
         return jsonify({'error': 'invalid_mode'}), 400
-    canary_review = body.get('review_name') if mode == 'canary' else None
-    if mode == 'canary' and not (isinstance(canary_review, str) and REVIEW_NAME_RE.fullmatch(canary_review)):
+    is_canary = mode in ('canary', 'canary_preview')
+    canary_review = body.get('review_name') if is_canary else None
+    reply_text = body.get('reply_text') if is_canary else None
+    if is_canary and not (isinstance(canary_review, str) and REVIEW_NAME_RE.fullmatch(canary_review)):
         return jsonify({'error': 'canary_requires_review_name'}), 400
+    if is_canary and not isinstance(reply_text, str):
+        return jsonify({'error': 'canary_requires_reply_text'}), 400
     try:
         branches = backfill_2026.validate_branches(json.loads(os.getenv('BRANCH_NAMES_JSON', '{}')))
         client = GoogleClient()
@@ -344,7 +354,7 @@ def backfill_2026_route():
             store = get_store()
         result = backfill_2026.run(
             mode, client=client, store=store, branches=branches,
-            process_one=process_one, env=os.environ, canary_review=canary_review,
+            process_one=process_one, env=os.environ, canary_review=canary_review, reply_text=reply_text,
             batch=min(10, max(1, int(os.getenv('MAX_DRAIN_BATCH', '5')))))
         if mode == 'dry_run' and store is None:
             result['ledger_by_branch'] = 'storage_unavailable'

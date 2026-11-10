@@ -14,6 +14,7 @@ from storage import Store
 NOW = dt.datetime(2026, 11, 10, 12, 0, tzinfo=dt.timezone.utc)
 LOCS = [f'accounts/9/locations/{i}' for i in range(1, 5)]
 BRANCHES = {loc: f'فرع {i}' for i, loc in enumerate(LOCS, 1)}
+APPROVED = 'حياك الله، يسعدنا إن إقامتك كانت مريحة ونتشرف بزيارتك مرة ثانية'
 FLAGS_ON = {'AUTO_REPLY_ENABLED': 'true', 'OWNER_EXPRESS_CONSENT': 'true',
             'BACKFILL_PUBLISH_ENABLED': 'true'}
 
@@ -172,28 +173,34 @@ class RunTests(unittest.TestCase):
         })
         self.canary = f'{LOCS[1]}/reviews/b1'
         self.flags = {'OWNER_EXPRESS_CONSENT': 'true', 'AUTO_REPLY_ENABLED': 'false',
-                      'BACKFILL_CANARY_REVIEW': self.canary, 'BACKFILL_PUBLISH_ENABLED': 'false'}
+                      'BACKFILL_CANARY_REVIEW': self.canary, 'BACKFILL_PUBLISH_ENABLED': 'false',
+                      'BACKFILL_CANARY_REPLY_SHA256': backfill_2026.text_sha256(APPROVED)}
 
     def tearDown(self):
         self.env.stop()
         self.tmp.cleanup()
 
-    def process_one(self, name=None):
+    def process_one(self, name=None, approved_text=None):
         """Mirror of app.process_one: general switch from env, 2026 auth per job."""
         job = self.store.claim(name)
         if not job:
             return False
+        plan, value = backfill_2026.generator_plan(job, self.flags, approved_text)
+        if plan == 'defer':
+            self.store.retry(job['review_name'], job['attempts'], value)
+            return False
+        gen = backfill_2026.ApprovedTextGenerator(value) if plan == 'approved' else FakeAI()
         return process_claimed_job(job=job, store=self.store, google_client=self.google,
-                                   ai_generator=FakeAI(), branch_names=BRANCHES,
+                                   ai_generator=gen, branch_names=BRANCHES,
                                    auto_enabled=self.flags.get('AUTO_REPLY_ENABLED') == 'true',
                                    owner_consent=self.flags.get('OWNER_EXPRESS_CONSENT') == 'true',
                                    minimum_stars=4,
                                    **backfill_2026.job_authorization(self.store, job, self.flags))
 
-    def go(self, mode, canary_review=None):
+    def go(self, mode, canary_review=None, reply_text=APPROVED):
         return backfill_2026.run(mode, client=self.google, store=self.store, branches=BRANCHES,
                                  process_one=self.process_one, env=self.flags, now=NOW, batch=10,
-                                 canary_review=canary_review)
+                                 canary_review=canary_review, reply_text=reply_text)
 
     def add_new_review_event(self, rid='n1'):
         """A fresh NEW_REVIEW (5 stars, now) arriving via Pub/Sub during the canary."""
@@ -338,6 +345,79 @@ class RunTests(unittest.TestCase):
         self.assertEqual(self.store.verified_post_count('BACKFILL_2026'), 1)
 
 
+    def test_canary_publishes_approved_text_verbatim(self):
+        result = self.go('canary', self.canary)
+        self.assertEqual(result['canary_status'], 'posted')
+        self.assertTrue(result['google_readback_matches'])
+        self.assertEqual(self.google.reviews[self.canary]['reviewReply']['comment'], APPROVED)
+        self.assertEqual(self.google.puts, [self.canary])
+
+    def test_canary_rejects_text_not_matching_hash(self):
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary, reply_text=APPROVED + ' ')
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary, reply_text='حياك الله، نص مختلف لم يعتمده المالك أبدًا هنا')
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary, reply_text=None)
+        self.assertEqual(self.google.puts, [])
+        self.assertIsNone(self.store.job_info(self.canary)[0])  # nothing admitted
+
+    def test_canary_rejects_text_failing_content_rules(self):
+        bad = 'شكرًا على الخمس نجوم يا غالي، نتشرف بزيارتك مرة ثانية'
+        self.flags['BACKFILL_CANARY_REPLY_SHA256'] = backfill_2026.text_sha256(bad)
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary, reply_text=bad)
+        self.assertEqual(self.google.puts, [])
+
+    def test_canary_refused_if_bulk_flag_on(self):
+        self.flags['BACKFILL_PUBLISH_ENABLED'] = 'true'
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary)
+        self.assertEqual(self.google.puts, [])
+
+    def test_preview_has_no_writes_and_shows_exact_text(self):
+        result = self.go('canary_preview', self.canary)
+        self.assertEqual(result['reply_text'], APPROVED)
+        self.assertEqual(result['reply_sha256'], backfill_2026.text_sha256(APPROVED))
+        self.assertEqual(result['canary_review']['review_name'], self.canary)
+        self.assertEqual((result['google_writes'], result['database_writes']), (0, 0))
+        self.assertEqual(self.google.puts, [])
+        self.assertIsNone(self.store.job_info(self.canary)[0])
+
+    def test_drain_never_publishes_canary_with_model_text(self):
+        """Transient failure before PUT, then cron drain: must not post AI text."""
+        original = self.google.get_review
+        calls = {'n': 0}
+
+        def flaky(name):
+            calls['n'] += 1
+            if calls['n'] == 1:
+                raise GoogleAPIError(503, 'transient')
+            return original(name)
+        self.google.get_review = flaky
+        first = self.go('canary', self.canary)
+        self.assertEqual(first['canary_status'], 'retry')
+        with self.store.connection() as db:
+            db.execute("UPDATE review_jobs SET next_try=0 WHERE review_name=?", (self.canary,))
+        while self.process_one():       # cron drain without approved text
+            pass
+        self.assertEqual(self.google.puts, [])
+        self.assertEqual(self.store.job_info(self.canary)[0], 'retry')
+        # Owner re-runs the canary with the approved text: resumes and posts once.
+        with self.store.connection() as db:
+            db.execute("UPDATE review_jobs SET next_try=0 WHERE review_name=?", (self.canary,))
+        again = self.go('canary', self.canary)
+        self.assertEqual(again['canary_status'], 'posted')
+        self.assertEqual(self.google.puts, [self.canary])
+        self.assertEqual(self.google.reviews[self.canary]['reviewReply']['comment'], APPROVED)
+
+    def test_second_canary_after_success_is_refused(self):
+        self.go('canary', self.canary)
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary)
+        self.assertEqual(self.google.puts, [self.canary])
+
+
 class PreexistingLedgerTests(unittest.TestCase):
     """Candidates already in review_jobs before this change (P1)."""
 
@@ -360,25 +440,31 @@ class PreexistingLedgerTests(unittest.TestCase):
             db.execute("UPDATE review_jobs SET status='verify_pending',reply_text='نص سابق',next_try=9e12 WHERE review_name=?",
                        (self.names['inflight'],))
         self.flags = {'OWNER_EXPRESS_CONSENT': 'true', 'AUTO_REPLY_ENABLED': 'false',
-                      'BACKFILL_CANARY_REVIEW': self.names['canary'], 'BACKFILL_PUBLISH_ENABLED': 'true'}
+                      'BACKFILL_CANARY_REVIEW': self.names['canary'], 'BACKFILL_PUBLISH_ENABLED': 'false',
+                      'BACKFILL_CANARY_REPLY_SHA256': backfill_2026.text_sha256(APPROVED)}
 
     def tearDown(self):
         self.env.stop()
         self.tmp.cleanup()
 
-    def process_one(self, name=None):
+    def process_one(self, name=None, approved_text=None):
         job = self.store.claim(name)
         if not job:
             return False
+        plan, value = backfill_2026.generator_plan(job, self.flags, approved_text)
+        if plan == 'defer':
+            self.store.retry(job['review_name'], job['attempts'], value)
+            return False
+        gen = backfill_2026.ApprovedTextGenerator(value) if plan == 'approved' else FakeAI()
         return process_claimed_job(job=job, store=self.store, google_client=self.google,
-                                   ai_generator=FakeAI(), branch_names=BRANCHES,
+                                   ai_generator=gen, branch_names=BRANCHES,
                                    auto_enabled=False, owner_consent=True, minimum_stars=5,
                                    **backfill_2026.job_authorization(self.store, job, self.flags))
 
-    def go(self, mode, canary_review=None):
+    def go(self, mode, canary_review=None, reply_text=APPROVED):
         return backfill_2026.run(mode, client=self.google, store=self.store, branches=BRANCHES,
                                  process_one=self.process_one, env=self.flags, now=NOW, batch=10,
-                                 canary_review=canary_review)
+                                 canary_review=canary_review, reply_text=reply_text)
 
     def test_dry_run_classifies_ledger_states(self):
         row = self.go('dry_run')['ledger_by_branch'][LOCS[0]]
@@ -387,6 +473,7 @@ class PreexistingLedgerTests(unittest.TestCase):
 
     def test_publish_requalifies_safe_rows_only(self):
         self.go('canary', self.names['canary'])
+        self.flags['BACKFILL_PUBLISH_ENABLED'] = 'true'
         result = self.go('publish')
         posted = set(self.google.puts)
         self.assertIn(self.names['held'], posted)          # never written before: requalified

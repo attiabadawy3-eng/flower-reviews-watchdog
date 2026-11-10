@@ -136,16 +136,53 @@ class Backfill2026RouteTests(unittest.TestCase):
         g.list_reviews.return_value = {'reviews': []}
         name = 'accounts/12/locations/1/reviews/r1'
         # Owner consent missing by default -> blocked.
+        text = 'حياك الله، يسعدنا إن إقامتك كانت مريحة ونتشرف بزيارتك'
         response, _ = self.post({'mode': 'canary', 'review_name': name},
+                                env={'BACKFILL_CANARY_REVIEW': name}, google=g)
+        self.assertEqual(response.status_code, 400)  # reply_text is mandatory
+        self.assertEqual(response.get_json()['error'], 'canary_requires_reply_text')
+        response, _ = self.post({'mode': 'canary', 'review_name': name, 'reply_text': text},
                                 env={'BACKFILL_CANARY_REVIEW': name}, google=g)
         self.assertEqual(response.status_code, 409)
         # General switch on -> canary refused even with consent.
-        response, _ = self.post({'mode': 'canary', 'review_name': name},
+        response, _ = self.post({'mode': 'canary', 'review_name': name, 'reply_text': text},
                                 env={'BACKFILL_CANARY_REVIEW': name, 'OWNER_EXPRESS_CONSENT': 'true',
                                      'AUTO_REPLY_ENABLED': 'true'}, google=g)
         self.assertEqual(response.status_code, 409)
         self.assertIn('AUTO_REPLY_ENABLED', response.get_json()['reason'])
         g.reply.assert_not_called()
+
+    def test_canary_preview_route_is_read_only(self):
+        import backfill_2026
+        name = 'accounts/12/locations/1/reviews/r1'
+        text = 'حياك الله، يسعدنا إن إقامتك كانت مريحة ونتشرف بزيارتك'
+        g = MagicMock()
+        g.list_reviews.side_effect = lambda location, page_token=None: {'reviews': [
+            {'name': location + '/reviews/r1', 'starRating': 'FIVE', 'createTime': '2026-04-01T10:00:00Z'}]}
+        env = {'BACKFILL_CANARY_REVIEW': name, 'OWNER_EXPRESS_CONSENT': 'true',
+               'BACKFILL_CANARY_REPLY_SHA256': backfill_2026.text_sha256(text)}
+        response, store = self.post({'mode': 'canary_preview', 'review_name': name, 'reply_text': text},
+                                    env=env, google=g)
+        self.assertEqual(response.status_code, 200, response.get_json())
+        body = response.get_json()
+        self.assertEqual(body['reply_text'], text)
+        self.assertEqual((body['google_writes'], body['database_writes']), (0, 0))
+        ledger = store.return_value
+        ledger.enqueue.assert_not_called()
+        ledger.requalify_for_backfill_2026.assert_not_called()
+        g.reply.assert_not_called()
+
+    def test_process_one_defers_canary_without_approved_text(self):
+        store = MagicMock()
+        store.claim.return_value = {'review_name': 'accounts/1/locations/1/reviews/x', 'location_name':
+                                    'accounts/1/locations/1', 'attempts': 1, 'verify_only': False,
+                                    'reply_text': None, 'event_type': 'BACKFILL_2026'}
+        with patch.dict(os.environ, {'BACKFILL_CANARY_REVIEW': 'accounts/1/locations/1/reviews/x'}), \
+             patch.object(self.app_module, 'get_store', return_value=store), \
+             patch.object(self.app_module, 'GoogleClient') as gc:
+            self.assertFalse(self.app_module.process_one())
+        store.retry.assert_called_once()
+        gc.assert_not_called()
 
     def test_process_one_passes_backfill_auth_not_general_switch(self):
         """App wiring: a NEW_REVIEW job never receives canary/bulk authorization."""

@@ -16,7 +16,10 @@ Three modes, all behind the internal CRON secret:
 The processor re-reads each review from Google before writing, persists write
 intent before PUT, and only verifies (never re-PUTs) after an uncertain write.
 """
-from core import REVIEW_PATTERN, LOCATION_PATTERN, ReviewEvent, classify_backfill_2026, UNCERTAIN_WRITE_ERROR
+import hashlib
+
+from core import (REVIEW_PATTERN, LOCATION_PATTERN, ReviewEvent, classify_backfill_2026,
+                  UNCERTAIN_WRITE_ERROR, validate_reply)
 
 EVENT_TYPE = 'BACKFILL_2026'
 REPORT_KEYS = ('scanned', 'candidates', 'already_replied', 'below_five', 'outside_2026', 'invalid', 'pages')
@@ -146,6 +149,60 @@ def _admit(store, location, name, state, source):
     return False
 
 
+def text_sha256(text) -> str:
+    return hashlib.sha256(str(text).encode('utf-8')).hexdigest()
+
+
+class ApprovedTextGenerator:
+    """Returns the owner-approved reply verbatim; never calls a model."""
+
+    def __init__(self, text):
+        self.text = text
+
+    def make_reply(self, **kwargs):
+        return self.text
+
+
+def check_approved_text(text, env):
+    """Validate owner-approved canary text exactly as it will be published.
+
+    Returns the text unchanged. Raises BackfillBlocked when the text would be
+    altered by validation, fails a content rule, or its SHA-256 differs from
+    BACKFILL_CANARY_REPLY_SHA256 on the server.
+    """
+    if not isinstance(text, str) or not text:
+        raise BackfillBlocked('reply_text is required for the canary')
+    try:
+        cleaned = validate_reply(text)
+    except ValueError as exc:
+        raise BackfillBlocked(f'reply_text rejected by content rules: {exc}') from exc
+    if cleaned != text:
+        raise BackfillBlocked('reply_text must already be in final form (no extra spaces or quotes)')
+    expected = (env.get('BACKFILL_CANARY_REPLY_SHA256') or '').strip().lower()
+    if not expected or text_sha256(text) != expected:
+        raise BackfillBlocked('reply_text SHA-256 does not match BACKFILL_CANARY_REPLY_SHA256')
+    return text
+
+
+def generator_plan(job, env, approved_text=None):
+    """Decide how a claimed job gets its reply text.
+
+    ('approved', text) -> publish this exact owner-approved text
+    ('defer', reason)  -> the canary review must not be processed without it
+    ('ai', None)       -> normal model-generated path (or verify-only, which never writes text)
+    """
+    canary = env.get('BACKFILL_CANARY_REVIEW') or None
+    if (job.get('event_type') == EVENT_TYPE and canary and job.get('review_name') == canary
+            and not job.get('verify_only')):
+        if approved_text is None:
+            return 'defer', 'canary review awaits the owner-approved reply text'
+        try:
+            return 'approved', check_approved_text(approved_text, env)
+        except BackfillBlocked as exc:
+            return 'defer', str(exc)
+    return 'ai', None
+
+
 def job_authorization(store, job, env) -> dict:
     """Per-job 2026 backfill authorization for the processor.
 
@@ -161,11 +218,38 @@ def job_authorization(store, job, env) -> dict:
     return {'backfill_canary_review': canary, 'backfill_bulk_authorized': bulk}
 
 
-def run(mode, *, client, store, branches, process_one, env, now=None, batch=5, canary_review=None):
-    """Execute one backfill request. process_one(review_name) processes a queued job."""
-    if mode not in ('dry_run', 'canary', 'publish'):
-        raise ValueError('mode must be dry_run, canary or publish')
-    details = {} if mode == 'dry_run' else None
+MODES = ('dry_run', 'canary_preview', 'canary', 'publish')
+
+
+def _canary_target(candidates, store, canary_review, env):
+    if env.get('AUTO_REPLY_ENABLED') == 'true':
+        raise BackfillBlocked('AUTO_REPLY_ENABLED must remain false during the canary')
+    if env.get('BACKFILL_PUBLISH_ENABLED') == 'true':
+        raise BackfillBlocked('BACKFILL_PUBLISH_ENABLED must remain false during the canary')
+    approved = env.get('BACKFILL_CANARY_REVIEW') or ''
+    if not canary_review or canary_review != approved:
+        raise BackfillBlocked('canary review must equal the owner-approved BACKFILL_CANARY_REVIEW')
+    match = [(loc, name) for loc, name in candidates if name == canary_review]
+    if not match:
+        raise BackfillBlocked('approved canary review is not an unanswered 2026 five-star candidate')
+    location, name = match[0]
+    state = ledger_state(store, name)
+    status, event_type, _ = store.job_info(name)
+    resumable = event_type == EVENT_TYPE and status in ('queued', 'retry')
+    if state not in ('new', 'requalifiable') and not resumable:
+        raise BackfillBlocked(f'canary review cannot be admitted from ledger state {state}')
+    return location, name, state, resumable
+
+
+def run(mode, *, client, store, branches, process_one, env, now=None, batch=5, canary_review=None,
+        reply_text=None):
+    """Execute one backfill request.
+
+    process_one(review_name, approved_text=None) processes one queued job.
+    """
+    if mode not in MODES:
+        raise ValueError('mode must be one of ' + ', '.join(MODES))
+    details = {} if mode in ('dry_run', 'canary_preview') else None
     report, candidates = scan(client, branches, now=now, details=details)
     result = {'mode': mode, 'branches': report, 'totals': totals(report)}
     if mode == 'dry_run':
@@ -181,21 +265,33 @@ def run(mode, *, client, store, branches, process_one, env, now=None, batch=5, c
     if env.get('OWNER_EXPRESS_CONSENT') != 'true':
         raise BackfillBlocked('OWNER_EXPRESS_CONSENT is not true')
 
+    if mode == 'canary_preview':
+        location, name, state, _ = _canary_target(candidates, store, canary_review, env)
+        text = check_approved_text(reply_text, env)
+        result.update({'canary_review': dict(details[name], ledger_state=state),
+                       'reply_text': text, 'reply_sha256': text_sha256(text), 'reply_length': len(text),
+                       'gates': {'owner_express_consent': True, 'auto_reply_enabled': False,
+                                 'backfill_publish_enabled': False, 'review_matches_approval': True,
+                                 'text_matches_sha256': True, 'content_rules': 'passed'},
+                       'google_writes': 0, 'database_writes': 0})
+        return result
+
     if mode == 'canary':
-        if env.get('AUTO_REPLY_ENABLED') == 'true':
-            raise BackfillBlocked('AUTO_REPLY_ENABLED must remain false during the canary')
-        approved = env.get('BACKFILL_CANARY_REVIEW') or ''
-        if not canary_review or canary_review != approved:
-            raise BackfillBlocked('canary review must equal the owner-approved BACKFILL_CANARY_REVIEW')
-        match = [(loc, name) for loc, name in candidates if name == canary_review]
-        if not match:
-            raise BackfillBlocked('approved canary review is not an unanswered 2026 five-star candidate')
-        location, name = match[0]
-        state = ledger_state(store, name)
-        if not _admit(store, location, name, state, 'backfill-2026-canary'):
+        location, name, state, resumable = _canary_target(candidates, store, canary_review, env)
+        text = check_approved_text(reply_text, env)
+        if not resumable and not _admit(store, location, name, state, 'backfill-2026-canary'):
             raise BackfillBlocked(f'canary review cannot be admitted from ledger state {state}')
-        process_one(name)
-        result.update({'canary_review': name, 'canary_status': store.job_info(name)[0],
+        process_one(name, approved_text=text)
+        status = store.job_info(name)[0]
+        # Independent readback, separate from the processor's own verification.
+        from processor import reply_matches_approved
+        try:
+            live = client.get_review(name)
+            readback = reply_matches_approved((live.get('reviewReply') or {}).get('comment'), text)
+        except Exception:
+            readback = None
+        result.update({'canary_review': name, 'canary_status': status,
+                       'google_readback_matches': readback,
                        'confirmed_backfill_replies': store.verified_post_count(EVENT_TYPE)})
         return result
 
