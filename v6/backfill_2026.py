@@ -49,7 +49,7 @@ def validate_branches(branches) -> dict:
     return branches
 
 
-def scan(client, branches, *, now=None, max_pages_per_branch=200):
+def scan(client, branches, *, now=None, max_pages_per_branch=200, details=None):
     """Read ALL pages for every branch. Returns (report, candidates).
 
     candidates: ordered list of (location, review_name), oldest review first.
@@ -78,6 +78,14 @@ def scan(client, branches, *, now=None, max_pages_per_branch=200):
                 if kind == 'candidate':
                     row['candidates'] += 1
                     found.append((review.get('createTime') or '', location, name))
+                    if details is not None:
+                        # Enough for the owner to recognise and approve one exact review.
+                        details[name] = {
+                            'review_name': name, 'branch': branch_name,
+                            'create_time': review.get('createTime'),
+                            'reviewer': str(((review.get('reviewer') or {}).get('displayName')) or '')[:60],
+                            'comment_preview': ' '.join(str(review.get('comment') or '').split())[:160],
+                        }
                 else:
                     row[kind] += 1
             page = response.get('nextPageToken')
@@ -157,11 +165,16 @@ def run(mode, *, client, store, branches, process_one, env, now=None, batch=5, c
     """Execute one backfill request. process_one(review_name) processes a queued job."""
     if mode not in ('dry_run', 'canary', 'publish'):
         raise ValueError('mode must be dry_run, canary or publish')
-    report, candidates = scan(client, branches, now=now)
+    details = {} if mode == 'dry_run' else None
+    report, candidates = scan(client, branches, now=now, details=details)
     result = {'mode': mode, 'branches': report, 'totals': totals(report)}
     if mode == 'dry_run':
+        states = {}
         if store is not None:
-            result['ledger_by_branch'], _ = ledger_report(store, candidates)
+            result['ledger_by_branch'], states = ledger_report(store, candidates)
+        # Oldest first; capped so a large backlog cannot produce a huge response.
+        result['candidate_list'] = [dict(details[name], ledger_state=states.get(name, 'unknown'))
+                                    for _, name in candidates[:50]]
         result.update({'google_writes': 0, 'database_writes': 0})
         return result
 
