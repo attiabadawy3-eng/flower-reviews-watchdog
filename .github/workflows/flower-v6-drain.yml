@@ -1,0 +1,83 @@
+name: FLOWER Reviews V6 Drain
+
+# Scheduled recovery for V6 queued, retry and verify_pending jobs.
+# WARNING: This is not read-only. With auto-reply authorized, a queued
+# eligible NEW_REVIEW may perform its FIRST Google PUT. Existing uncertain
+# writes are handled using the persisted write_intent / verify_only path.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flower-v6-drain
+  cancel-in-progress: false
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Process due V6 work with durable dedupe
+        env:
+          V6_BASE_URL: https://flower-reviews-v6-staging.onrender.com
+          V6_CRON_SECRET: ${{ secrets.V6_CRON_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${V6_CRON_SECRET:-}" ]; then
+            echo "::error::V6_CRON_SECRET is missing"
+            exit 1
+          fi
+
+          # Wake free Render instance. Liveness does not prove Google API health.
+          curl --silent --show-error --fail --max-time 90 \
+            "${V6_BASE_URL}/live" >/dev/null || true
+
+          # Exactly ONE HTTP POST per run. Never automatically retry a POST:
+          # if a request times out after doing work, the NEXT scheduled
+          # execution can safely resume from durable job state.
+          status=$(curl --silent --show-error --max-time 180 \
+            --output /tmp/flower-v6-drain.json --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer ${V6_CRON_SECRET}" \
+            "${V6_BASE_URL}/internal/drain")
+
+          python3 - "$status" <<'PY'
+          import json
+          import sys
+
+          status_code = sys.argv[1]
+          try:
+              with open('/tmp/flower-v6-drain.json', encoding='utf-8') as handle:
+                  payload = json.load(handle)
+          except (OSError, ValueError):
+              payload = None
+
+          if status_code != '200' or not isinstance(payload, dict):
+              print('::error::V6 drain returned invalid response / HTTP ' + status_code)
+              sys.exit(1)
+
+          count = payload.get('processed')
+          jobs = payload.get('jobs')
+          if type(count) is not int or count < 0 or not isinstance(jobs, dict):
+              print('::error::V6 drain returned invalid job statistics')
+              sys.exit(1)
+
+          # Avoid logging review names, personal data, tokens or reply text.
+          safe_jobs = {k: v for k, v in jobs.items()
+                       if k in ('posted', 'approval_required', 'verify_pending',
+                                'queued', 'retry', 'processing', 'write_intent',
+                                'expired_unresolved_total') and type(v) is int}
+          print('V6_DRAIN processed=%d jobs=%s' %
+                (count, json.dumps(safe_jobs, sort_keys=True)), flush=True)
+          if safe_jobs.get('verify_pending'):
+              print('::notice::%d write(s) require GET-only verification' %
+                    safe_jobs['verify_pending'])
+          if safe_jobs.get('approval_required'):
+              print('::notice::%d review(s) require human review' %
+                    safe_jobs['approval_required'])
+          PY
