@@ -74,6 +74,7 @@ def process_one(review_name=None, approved_text=None):
         auto_enabled=os.getenv('AUTO_REPLY_ENABLED')=='true',
         owner_consent=os.getenv('OWNER_EXPRESS_CONSENT')=='true',
         minimum_stars=os.getenv('AUTO_REPLY_MIN_STARS', '4'),
+        scope=os.getenv('AUTO_REPLY_SCOPE', 'positive'),
         **backfill_authorization(store, job),
     )
 
@@ -270,12 +271,19 @@ def drain():
     if not secret or not hmac.compare_digest(supplied,secret):
         return jsonify({'error':'unauthorized'}),401
     n=0
-    get_store().prune_old()
-    for _ in range(min(10,int(os.getenv('MAX_DRAIN_BATCH','5')))):
+    store = get_store()
+    store.prune_old()
+    batch = min(10, int(os.getenv('MAX_DRAIN_BATCH','5')))
+    released = []
+    from core import auto_reply_scope
+    if (auto_reply_scope(os.getenv('AUTO_REPLY_SCOPE')) == 'all' and
+            os.getenv('AUTO_REPLY_ENABLED') == 'true' and os.getenv('OWNER_EXPRESS_CONSENT') == 'true'):
+        released = store.release_held_reviews(limit=batch)
+    for _ in range(batch):
         if not process_one():
             break
         n+=1
-    return jsonify({'processed':n,'jobs':get_store().counts()})
+    return jsonify({'processed':n,'released':len(released),'jobs':store.counts()})
 
 
 @app.post('/internal/backfill')

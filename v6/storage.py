@@ -198,6 +198,33 @@ class Store:
                 (now, 'requalified for 2026 five-star backfill', now, review_name, UNCERTAIN_WRITE_ERROR))
             return result.rowcount == 1
 
+    def release_held_reviews(self, limit=5):
+        """Move held reviews back to the queue ONCE under the 'all' scope.
+
+        Only approval_required rows from NEW_REVIEW/BACKFILL that never armed a
+        write are eligible; uncertain writes, the 2026 canary path and rows
+        already released are never touched. Returns the released review names.
+        """
+        now = time.time()
+        released = []
+        with self.connection() as db:
+            if not self.is_postgres:
+                db.execute('BEGIN IMMEDIATE')
+            rows = db.execute(self._sql(
+                "SELECT review_name FROM review_jobs WHERE status='approval_required' "
+                "AND event_type IN ('NEW_REVIEW','BACKFILL') AND COALESCE(last_error,'')<>%s "
+                "ORDER BY created_at LIMIT %s"), (UNCERTAIN_WRITE_ERROR, int(limit))).fetchall()
+            for (name,) in rows:
+                result = db.execute(self._sql(
+                    "UPDATE review_jobs SET event_type='RELEASED',status='queued',attempts=0,next_try=%s,"
+                    "lease_until=0,reply_text=NULL,last_error=%s,updated_at=%s WHERE review_name=%s "
+                    "AND status='approval_required' AND event_type IN ('NEW_REVIEW','BACKFILL') "
+                    "AND COALESCE(last_error,'')<>%s"),
+                    (now, 'released under owner scope all', now, name, UNCERTAIN_WRITE_ERROR))
+                if result.rowcount == 1:
+                    released.append(name)
+        return released
+
     def verified_post_count(self, event_type):
         """Replies confirmed by Google readback (status 'posted' is set only after readback)."""
         with self.connection() as db:

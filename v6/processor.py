@@ -4,7 +4,8 @@ import datetime as dt
 import os
 from core import (as_star_count, needs_owner_review, effective_minimum_stars,
                   parse_google_time, in_backfill_2026_window, AUTO_REPLY_REQUIRED_STARS,
-                  UNCERTAIN_WRITE_ERROR)
+                  UNCERTAIN_WRITE_ERROR, auto_reply_scope, needs_owner_review_for_scope,
+                  has_high_risk_terms)
 from google_client import GoogleAPIError
 
 log = logging.getLogger('flower-v6.processor')
@@ -33,7 +34,8 @@ def reply_matches_approved(observed, expected):
 
 def process_claimed_job(*, job, store, google_client, ai_generator, branch_names,
                         auto_enabled=False, owner_consent=False, minimum_stars=5,
-                        backfill_canary_review=None, backfill_bulk_authorized=False):
+                        backfill_canary_review=None, backfill_bulk_authorized=False,
+                        scope='positive'):
     """auto_enabled governs NEW_REVIEW only. BACKFILL_2026 is authorized separately:
     either this exact review is the owner-approved canary, or bulk backfill is
     authorized (flag on AND a canary reply already confirmed by readback)."""
@@ -89,10 +91,17 @@ def process_claimed_job(*, job, store, google_client, ai_generator, branch_names
                         stars == AUTO_REPLY_REQUIRED_STARS and
                         not needs_owner_review(stars, comment, threshold) and
                         owner_consent and authorized)
+        elif event_type == 'RELEASED':
+            # A previously held review released once under scope 'all'. No age
+            # limit (owner wants every pending review answered); high-risk text
+            # still stays manual and the job is never released a second time.
+            eligible = (auto_reply_scope(scope) == 'all' and stars >= 1 and
+                        not has_high_risk_terms(comment) and auto_enabled and owner_consent)
         else:
+            all_scope = auto_reply_scope(scope) == 'all'
             eligible = (fresh and event_type == 'NEW_REVIEW' and
-                        stars >= threshold and
-                        not needs_owner_review(stars, comment, threshold) and
+                        (stars >= 1 if all_scope else stars >= threshold) and
+                        not needs_owner_review_for_scope(stars, comment, threshold, scope) and
                         auto_enabled and owner_consent)
         reply = ai_generator.make_reply(branch=branch, stars=stars, comment=comment,
                                         recent=store.recent_replies())

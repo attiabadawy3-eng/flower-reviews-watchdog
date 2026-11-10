@@ -197,6 +197,28 @@ def classify_backfill_2026(review: dict, now: dt.datetime | None = None) -> str:
     return 'candidate'
 
 
+HIGH_RISK_TERMS = ('تحرش', 'اعتداء', 'سرقة', 'نصب', 'احتيال', 'تسمم', 'عنصرية', 'خصوصية',
+                   'sexual assault', 'theft', 'fraud', 'discrimination', 'poisoning')
+
+
+def auto_reply_scope(value) -> str:
+    """'all' = every rating (owner decision 2026-11-10); anything else = 'positive'."""
+    return 'all' if str(value or '').strip().lower() == 'all' else 'positive'
+
+
+def has_high_risk_terms(comment) -> bool:
+    text = (comment or '').lower()
+    return any(word in text for word in HIGH_RISK_TERMS)
+
+
+def needs_owner_review_for_scope(stars: int, comment: str, minimum_autopost_stars: int, scope: str) -> bool:
+    """Scope 'all': only high-risk terms (fraud, theft, harassment...) stay manual.
+    Scope 'positive': below threshold, negative wording or high-risk terms stay manual."""
+    if auto_reply_scope(scope) == 'all':
+        return stars < 1 or has_high_risk_terms(comment)
+    return needs_owner_review(stars, comment, minimum_autopost_stars)
+
+
 def needs_owner_review(stars: int, comment: str, minimum_autopost_stars: int) -> bool:
     # Owner may allow replies at all star levels, but higher-risk complaints
     # remain subject to extra review to avoid admitting unverified wrongdoing.
