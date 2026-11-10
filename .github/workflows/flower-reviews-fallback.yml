@@ -131,8 +131,8 @@ jobs:
               print("publish=0 metrics unchanged and verified within 24h")
           PY
           then
-            echo "::warning::Review metrics validation failed; keeping the last published metrics."
-            exit 0
+            echo "::error::Review metrics validation failed; last published metrics kept."
+            exit 1
           fi
 
           if git diff --quiet -- public/reviews-summary.json; then
