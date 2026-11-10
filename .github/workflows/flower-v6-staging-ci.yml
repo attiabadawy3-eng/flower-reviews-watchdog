@@ -1,0 +1,44 @@
+name: FLOWER Reviews V6 Safety CI
+
+on:
+  push:
+    branches: [feature/flower-reviews-v6-safety-20261107]
+    paths:
+      - 'v6/**'
+      - '.github/workflows/flower-v6-staging-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'v6/**'
+      - '.github/workflows/flower-v6-staging-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safety-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: v6/requirements.txt
+      - name: Install dependencies
+        run: python -m pip install -r v6/requirements.txt
+      - name: Compile syntax
+        run: python -m compileall -q v6
+      - name: Run every V6 unit and Flask route test; fail on skips
+        run: |
+          cd v6
+          python - <<'PY'
+          import sys, unittest
+          suite=unittest.defaultTestLoader.discover('tests')
+          result=unittest.TextTestRunner(verbosity=2).run(suite)
+          print(f'RESULT tests={result.testsRun} errors={len(result.errors)} failures={len(result.failures)} skipped={len(result.skipped)}')
+          if not result.wasSuccessful() or result.skipped or result.testsRun < 40:
+              sys.exit(1)
+          PY
