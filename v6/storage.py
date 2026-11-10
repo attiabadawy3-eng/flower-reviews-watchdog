@@ -243,7 +243,7 @@ class Store:
 
     def recent_replies(self):
         with self.connection() as db:
-            rows = db.execute(self._sql("SELECT reply_text FROM review_jobs WHERE reply_text IS NOT NULL AND status='posted' AND updated_at > %s ORDER BY updated_at DESC LIMIT 8"),
+            rows = db.execute(self._sql("SELECT reply_text FROM review_jobs WHERE reply_text IS NOT NULL AND status IN ('posted','verify_pending','write_intent') AND updated_at > %s ORDER BY updated_at DESC LIMIT 15"),
                               (time.time()-29*86400,)).fetchall()
             return [row[0] for row in rows]
 

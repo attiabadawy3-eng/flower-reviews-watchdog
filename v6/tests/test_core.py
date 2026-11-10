@@ -128,3 +128,66 @@ class TestCore(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestRepetition(unittest.TestCase):
+    RECENT = ['حياك الله، وشاكرين لك تقييمك وثقتك في فلور. يسعدنا إن إقامتك كانت طيبة ومرضية، '
+              'ونتشرف بزيارتك القادمة لخدمتك بالشكل اللي يسعدك. أهلاً بك.']
+
+    def test_stock_signoff_and_same_opening_rejected(self):
+        from core import repetition_problem
+        self.assertEqual(repetition_problem('يا هلا، شاكرين لك ثقتك وسعدنا بإقامتك. أهلاً بك.', []), 'stock sign-off')
+        self.assertIsNotNone(repetition_problem('حياك الله، سعدنا بملاحظتك عن هدوء المكان.', self.RECENT))
+        self.assertIsNotNone(repetition_problem(
+            'حياك الله، وشاكرين لك تقييمك وثقتك في فلور. يسعدنا إن إقامتك كانت ممتازة ومريحة، ونتشرف بزيارتك القادمة.',
+            self.RECENT))
+
+    def test_varied_reply_accepted(self):
+        from core import repetition_problem
+        self.assertIsNone(repetition_problem('يا هلا، تسلم على كلامك الطيب عن نظافة الشقة، وهذا اللي نحرص عليه دايم.',
+                                             self.RECENT))
+
+    def test_prompt_lists_recent_replies_and_varies_openings(self):
+        p = reply_prompt(branch='فلور 4', stars=5, review_text='', previous_replies=self.RECENT)
+        self.assertIn(self.RECENT[0], p)
+        self.assertIn('نوّع البداية', p)
+        self.assertIn('أهلاً بك', p)          # named as a sign-off to avoid
+        self.assertIn('بدون تعليق', p)
+
+    def test_complaint_prompt_asks_for_empathy_without_admission(self):
+        p = reply_prompt(branch='فلور 2', stars=2, review_text='المكيف خربان', previous_replies=[])
+        self.assertIn('اعتذار مهذب', p)
+        self.assertIn('دون الاعتراف', p)
+
+
+class TestGeneratorRetries(unittest.TestCase):
+    def make(self, outputs):
+        import ai
+        gen = ai.SaudiReplyGenerator.__new__(ai.SaudiReplyGenerator)
+        seq = iter(outputs)
+        prompts = []
+
+        def fake(prompt):
+            prompts.append(prompt)
+            return next(seq)
+        gen._generate = fake
+        return gen, prompts
+
+    def test_repeated_draft_is_rewritten(self):
+        gen, prompts = self.make(['حياك الله، شاكرين لك ثقتك وسعدنا بإقامتك معنا. أهلاً بك.',
+                                  'يا هلا، تسلم على كلامك الطيب، ويسعدنا إن الإقامة كانت مريحة لك.'])
+        out = gen.make_reply(branch='فلور 1', stars=5, comment='', recent=[])
+        self.assertTrue(out.startswith('يا هلا'))
+        self.assertEqual(len(prompts), 2)
+        self.assertIn('رُفضت', prompts[1])
+
+    def test_fails_closed_after_three_repetitive_drafts(self):
+        bad = 'حياك الله، شاكرين لك ثقتك وسعدنا بإقامتك معنا. أهلاً بك.'
+        gen, _ = self.make([bad, bad, bad])
+        with self.assertRaises(RuntimeError):
+            gen.make_reply(branch='فلور 1', stars=5, comment='', recent=[])
+
+    def test_rule_violation_is_retried(self):
+        gen, _ = self.make(['شكرًا على الخمس نجوم يا غالي ونورتنا في فلور.',
+                            'الله يحييك، سعدنا بثقتك ونتمنى نشوفك قريب في زيارة جاية.'])
+        self.assertTrue(gen.make_reply(branch='فلور 3', stars=5, comment='', recent=[]).startswith('الله يحييك'))
