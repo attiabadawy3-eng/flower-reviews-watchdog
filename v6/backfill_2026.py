@@ -262,7 +262,9 @@ def run(mode, *, client, store, branches, process_one, env, now=None, batch=5, c
         result.update({'google_writes': 0, 'database_writes': 0})
         return result
 
-    if env.get('OWNER_EXPRESS_CONSENT') != 'true':
+    # Preview is READ-ONLY and must work before permission to publish is granted.
+    # The actual canary and bulk modes still require explicit owner consent.
+    if mode != 'canary_preview' and env.get('OWNER_EXPRESS_CONSENT') != 'true':
         raise BackfillBlocked('OWNER_EXPRESS_CONSENT is not true')
 
     if mode == 'canary_preview':
@@ -270,7 +272,8 @@ def run(mode, *, client, store, branches, process_one, env, now=None, batch=5, c
         text = check_approved_text(reply_text, env)
         result.update({'canary_review': dict(details[name], ledger_state=state),
                        'reply_text': text, 'reply_sha256': text_sha256(text), 'reply_length': len(text),
-                       'gates': {'owner_express_consent': True, 'auto_reply_enabled': False,
+                       'gates': {'owner_express_consent': env.get('OWNER_EXPRESS_CONSENT') == 'true',
+                                 'auto_reply_enabled': False,
                                  'backfill_publish_enabled': False, 'review_matches_approval': True,
                                  'text_matches_sha256': True, 'content_rules': 'passed'},
                        'google_writes': 0, 'database_writes': 0})
