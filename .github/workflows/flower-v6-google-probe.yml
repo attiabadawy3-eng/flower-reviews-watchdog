@@ -1,0 +1,31 @@
+name: FLOWER Reviews V6 Google API Probe
+
+# Read-only. Red whenever Google Reviews reads are not proven on all four
+# branches. No replies are enabled or posted by this workflow.
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flower-v6-google-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install requests
+      - name: Verify Google Reviews reads on all four branches (zero writes)
+        env:
+          V6_BASE_URL: https://flower-reviews-v6-staging.onrender.com
+          V6_CRON_SECRET: ${{ secrets.V6_CRON_SECRET }}
+        run: python .github/scripts/watchdog_checks.py v6-probe
