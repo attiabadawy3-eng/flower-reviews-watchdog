@@ -9,6 +9,8 @@ import sqlite3
 import time
 from contextlib import contextmanager
 
+from core import UNCERTAIN_WRITE_ERROR
+
 # PostgreSQL REAL is float4 (about 128s spacing near today's epoch); use float8 for deadlines.
 SCHEMA = '''CREATE TABLE IF NOT EXISTS review_jobs (
     review_name TEXT PRIMARY KEY,
@@ -85,7 +87,7 @@ class Store:
                 # expired unresolved review. Completed reviews stay immutable.
                 prior = db.execute(self._sql('SELECT prior_status FROM review_tombstones WHERE review_hash=%s'),
                                    (_digest(event.review_name),)).fetchone()
-                if event.event_type != 'BACKFILL' or prior[0] != 'expired':
+                if event.event_type not in ('BACKFILL', 'BACKFILL_2026') or prior[0] != 'expired':
                     return False
                 db.execute(self._sql('DELETE FROM review_tombstones WHERE review_hash=%s'),
                            (_digest(event.review_name),))
@@ -155,6 +157,62 @@ class Store:
         with self.connection() as db:
             db.execute(self._sql("UPDATE review_jobs SET status='verify_pending',next_try=%s,last_error=%s,lease_until=0,updated_at=%s WHERE review_name=%s AND status IN ('write_intent','verify_pending')"),
                        (now+wait, str(reason)[:1000], now, review_name))
+
+    def job_status(self, review_name):
+        with self.connection() as db:
+            row = db.execute(self._sql('SELECT status FROM review_jobs WHERE review_name=%s'),
+                             (review_name,)).fetchone()
+            if row:
+                return row[0]
+            tomb = db.execute(self._sql('SELECT prior_status FROM review_tombstones WHERE review_hash=%s'),
+                              (_digest(review_name),)).fetchone()
+            return ('tombstone_' + tomb[0]) if tomb else None
+
+    def job_info(self, review_name):
+        """(status, event_type, last_error) for a tracked job; tombstones as status only."""
+        with self.connection() as db:
+            row = db.execute(self._sql('SELECT status,event_type,last_error FROM review_jobs WHERE review_name=%s'),
+                             (review_name,)).fetchone()
+            if row:
+                return row[0], row[1], row[2] or ''
+            tomb = db.execute(self._sql('SELECT prior_status FROM review_tombstones WHERE review_hash=%s'),
+                              (_digest(review_name),)).fetchone()
+            return (('tombstone_' + tomb[0]), None, '') if tomb else (None, None, '')
+
+    def requalify_for_backfill_2026(self, review_name):
+        """Atomically move an approval_required job with NO possible PUT into the 2026 path.
+
+        Only rows that never armed a write qualify: the uncertain-write terminal state
+        is excluded, and any write_intent/verify_pending/processing row is untouched.
+        Returns True only when exactly one row moved.
+        """
+        now = time.time()
+        with self.connection() as db:
+            if not self.is_postgres:
+                db.execute('BEGIN IMMEDIATE')
+            result = db.execute(self._sql(
+                "UPDATE review_jobs SET event_type='BACKFILL_2026',status='queued',attempts=0,"
+                "next_try=%s,lease_until=0,reply_text=NULL,last_error=%s,updated_at=%s "
+                "WHERE review_name=%s AND status='approval_required' "
+                "AND event_type<>'BACKFILL_2026' AND COALESCE(last_error,'')<>%s"),
+                (now, 'requalified for 2026 five-star backfill', now, review_name, UNCERTAIN_WRITE_ERROR))
+            return result.rowcount == 1
+
+    def verified_post_count(self, event_type):
+        """Replies confirmed by Google readback (status 'posted' is set only after readback)."""
+        with self.connection() as db:
+            row = db.execute(self._sql("SELECT COUNT(*) FROM review_jobs WHERE status='posted' AND event_type=%s"),
+                             (event_type,)).fetchone()
+            return int(row[0] if row else 0)
+
+    def report_by_location(self, event_type):
+        with self.connection() as db:
+            rows = db.execute(self._sql('SELECT location_name,status,COUNT(*) FROM review_jobs WHERE event_type=%s GROUP BY location_name,status'),
+                              (event_type,)).fetchall()
+        report = {}
+        for location, status, amount in rows:
+            report.setdefault(location, {})[status] = int(amount)
+        return report
 
     def recent_replies(self):
         with self.connection() as db:

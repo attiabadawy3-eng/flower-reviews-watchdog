@@ -13,6 +13,7 @@ from core import parse_pubsub, InvalidNotification
 from storage import Store
 from google_client import GoogleClient
 from ai import SaudiReplyGenerator
+from core import REVIEW_PATTERN as REVIEW_NAME_RE
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 65536  # authenticated Pub/Sub envelopes only
@@ -66,8 +67,14 @@ def process_one(review_name=None):
         branch_names=aliases,
         auto_enabled=os.getenv('AUTO_REPLY_ENABLED')=='true',
         owner_consent=os.getenv('OWNER_EXPRESS_CONSENT')=='true',
-        minimum_stars=int(os.getenv('AUTO_REPLY_MIN_STARS','4')),
+        minimum_stars=os.getenv('AUTO_REPLY_MIN_STARS', '5'),
+        **backfill_authorization(store, job),
     )
+
+
+def backfill_authorization(store, job):
+    from backfill_2026 import job_authorization
+    return job_authorization(store, job, os.environ)
 
 
 @app.get('/live')
@@ -309,6 +316,65 @@ def backfill():
     except Exception as exc:
         log.warning('Backfill API error: %s',type(exc).__name__)
         return jsonify({'error':'provider_unavailable'}),502
+
+@app.post('/internal/backfill-2026')
+def backfill_2026_route():
+    """Unanswered 2026 five-star reviews. Body: {"mode": "dry_run"|"canary"|"publish"}."""
+    if not _internal_authorized(request):
+        return jsonify({'error': 'unauthorized'}), 401
+    import json
+    import backfill_2026
+    from google_client import GoogleAPIError
+    body = request.get_json(silent=True) or {}
+    mode = body.get('mode', 'dry_run') if isinstance(body, dict) else None
+    if mode not in ('dry_run', 'canary', 'publish'):
+        return jsonify({'error': 'invalid_mode'}), 400
+    canary_review = body.get('review_name') if mode == 'canary' else None
+    if mode == 'canary' and not (isinstance(canary_review, str) and REVIEW_NAME_RE.fullmatch(canary_review)):
+        return jsonify({'error': 'canary_requires_review_name'}), 400
+    try:
+        branches = backfill_2026.validate_branches(json.loads(os.getenv('BRANCH_NAMES_JSON', '{}')))
+        client = GoogleClient()
+        if mode == 'dry_run':
+            try:
+                store = get_store()  # read-only ledger lookup
+            except Exception:
+                store = None
+        else:
+            store = get_store()
+        result = backfill_2026.run(
+            mode, client=client, store=store, branches=branches,
+            process_one=process_one, env=os.environ, canary_review=canary_review,
+            batch=min(10, max(1, int(os.getenv('MAX_DRAIN_BATCH', '5')))))
+        if mode == 'dry_run' and store is None:
+            result['ledger_by_branch'] = 'storage_unavailable'
+        return jsonify(result), 200
+    except backfill_2026.BackfillBlocked as exc:
+        return jsonify({'error': 'publication_blocked', 'reason': str(exc), 'google_writes': 0}), 409
+    except backfill_2026.BackfillIncomplete:
+        return jsonify({'error': 'scan_incomplete', 'google_writes': 0}), 502
+    except GoogleAPIError as err:
+        return jsonify({'error': 'google_api_unavailable', 'provider_http': err.status,
+                        'google_writes': 0}), 502
+    except (KeyError, ValueError, TypeError, RuntimeError) as exc:
+        log.warning('2026 backfill blocked: %s', type(exc).__name__)
+        return jsonify({'error': 'configuration_or_storage_error', 'google_writes': 0}), 503
+
+
+@app.post('/internal/backfill-2026/report')
+def backfill_2026_report():
+    """Per-branch status counts of 2026 backfill jobs; 'posted' means confirmed by readback."""
+    if not _internal_authorized(request):
+        return jsonify({'error': 'unauthorized'}), 401
+    import backfill_2026
+    try:
+        store = get_store()
+        return jsonify({'by_branch': store.report_by_location(backfill_2026.EVENT_TYPE),
+                        'confirmed_replies': store.verified_post_count(backfill_2026.EVENT_TYPE),
+                        'google_reads': 0, 'google_writes': 0}), 200
+    except Exception:
+        return jsonify({'error': 'storage_unavailable'}), 503
+
 
 # Optional isolated one-shot model probe; disabled unless staging-only run ID is set.
 if os.getenv('AI_SMOKE_TEST_ID'):

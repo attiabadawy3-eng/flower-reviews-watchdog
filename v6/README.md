@@ -33,3 +33,12 @@ GitHub Actions initial full CI run `42416836718`, job `128536660223`: `RESULT te
 Available endpoints: `GET /live` (liveness only), `GET /health` (readiness), `POST /pubsub/reviews` (authenticated push), `POST /internal/drain` (private cron token), `POST /internal/backfill` (explicit manual recovery, not auto-post).
 
 **Do not merge PR #3 into `main` or connect the old production subscription until the gates are proven.**
+## 2026-11-10 changes (patch on this branch; revised after review CHANGES_REQUESTED)
+- **Five stars only:** automatic publication of `NEW_REVIEW` requires 5 stars. `AUTO_REPLY_MIN_STARS` below 5 is raised to 5 in code (`core.effective_minimum_stars`); 1–4 star reviews always go to human review.
+- **2026 backfill:** `POST /internal/backfill-2026` (CRON secret), body `{"mode": ...}`:
+  - `dry_run`: reads every page of all four branches; per-branch counts of unanswered 2026 (Asia/Riyadh) five-star candidates and how each relates to the existing ledger (`new`, `requalifiable`, `held_uncertain_write`, `in_flight`, `posted_by_v6`, `external_reply_recorded`, ...). Zero Google writes and zero database writes.
+  - `canary` + `"review_name"`: exactly one owner-approved review. Requires `BACKFILL_CANARY_REVIEW` equal to that review and `OWNER_EXPRESS_CONSENT=true`, and is **refused while `AUTO_REPLY_ENABLED=true`**. The canary authorizes that one review only; it does not enable `NEW_REVIEW` publication or any other backfill job.
+  - `publish`: refused (409) unless `BACKFILL_PUBLISH_ENABLED=true`, `OWNER_EXPRESS_CONSENT=true` and one canary reply is already confirmed by Google readback. Does not require or enable `AUTO_REPLY_ENABLED`.
+  - Existing ledger rows: `approval_required` rows that never armed a write are atomically requalified; rows whose PUT may have happened (`write delivery uncertain`), `write_intent`, `verify_pending` and `processing` are never re-sent. Each review is re-read before writing; write intent and verify-only recovery are unchanged.
+  - `POST /internal/backfill-2026/report`: per-branch status counts (`posted` = confirmed by readback).
+- **Monitoring:** `v6/monitor_probe.py` requires `status=google_reads_verified`, integer `branches_checked==4` and an integer `google_writes==0` that is present. The scheduled probe and the legacy watchdog fix live in a **separate read-only patch for `main`** (scheduled workflows only run from the default branch); this branch contains no workflow changes.

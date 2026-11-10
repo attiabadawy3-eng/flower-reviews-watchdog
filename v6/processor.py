@@ -2,7 +2,9 @@
 import logging
 import datetime as dt
 import os
-from core import as_star_count, needs_owner_review
+from core import (as_star_count, needs_owner_review, effective_minimum_stars,
+                  parse_google_time, in_backfill_2026_window, AUTO_REPLY_REQUIRED_STARS,
+                  UNCERTAIN_WRITE_ERROR)
 from google_client import GoogleAPIError
 
 log = logging.getLogger('flower-v6.processor')
@@ -30,7 +32,11 @@ def reply_matches_approved(observed, expected):
 
 
 def process_claimed_job(*, job, store, google_client, ai_generator, branch_names,
-                        auto_enabled=False, owner_consent=False, minimum_stars=4):
+                        auto_enabled=False, owner_consent=False, minimum_stars=5,
+                        backfill_canary_review=None, backfill_bulk_authorized=False):
+    """auto_enabled governs NEW_REVIEW only. BACKFILL_2026 is authorized separately:
+    either this exact review is the owner-approved canary, or bulk backfill is
+    authorized (flag on AND a canary reply already confirmed by readback)."""
     review_name = job['review_name']
     pending_write = bool(job.get('verify_only'))
     armed = False
@@ -45,7 +51,7 @@ def process_claimed_job(*, job, store, google_client, ai_generator, branch_names
             elif current:
                 store.finish(review_name, 'existing', error='another owner reply was observed')
             elif job['attempts'] >= 3:
-                store.finish(review_name, 'approval_required', error='write delivery uncertain; manual verification required')
+                store.finish(review_name, 'approval_required', error=UNCERTAIN_WRITE_ERROR)
             else:
                 store.defer_verify(review_name, job['attempts'], 'reply not yet visible; verification only')
             return True
@@ -70,9 +76,24 @@ def process_claimed_job(*, job, store, google_client, ai_generator, branch_names
                      dt.timedelta(hours=allowed_age_h))
         except (KeyError, ValueError, TypeError, AttributeError):
             fresh = False
-        eligible = (fresh and job.get('event_type', 'NEW_REVIEW') == 'NEW_REVIEW' and
-                    not needs_owner_review(stars, comment, minimum_stars) and
-                    auto_enabled and owner_consent)
+        threshold = effective_minimum_stars(minimum_stars)
+        event_type = job.get('event_type', 'NEW_REVIEW')
+        if event_type == 'BACKFILL_2026':
+            # Separate, explicitly gated recovery path for unanswered 2026 reviews.
+            # Re-validated from the fresh GET, never from the earlier listing.
+            created_at = parse_google_time(review.get('createTime'))
+            authorized = ((backfill_canary_review is not None and
+                           review_name == backfill_canary_review) or
+                          backfill_bulk_authorized is True)
+            eligible = (in_backfill_2026_window(created_at) and
+                        stars == AUTO_REPLY_REQUIRED_STARS and
+                        not needs_owner_review(stars, comment, threshold) and
+                        owner_consent and authorized)
+        else:
+            eligible = (fresh and event_type == 'NEW_REVIEW' and
+                        stars >= threshold and
+                        not needs_owner_review(stars, comment, threshold) and
+                        auto_enabled and owner_consent)
         reply = ai_generator.make_reply(branch=branch, stars=stars, comment=comment,
                                         recent=store.recent_replies())
         if not eligible:

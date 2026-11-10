@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Any
 import base64
+import datetime as dt
 import json
 import re
 
@@ -68,6 +69,73 @@ def as_star_count(value: str | int | None) -> int:
     if isinstance(value, int):
         return value if 1 <= value <= 5 else 0
     return mapping.get(str(value or '').upper(), 0)
+
+
+# Owner policy (2026-11-10): automatic publication is for five-star reviews only.
+# Any configured minimum below this is raised to it; it can never be lowered.
+AUTO_REPLY_REQUIRED_STARS = 5
+
+# Terminal marker for a job whose PUT may have reached Google; such a job must
+# never be requalified for another write. Keep this exact text stable.
+UNCERTAIN_WRITE_ERROR = 'write delivery uncertain; manual verification required'
+
+RIYADH = dt.timezone(dt.timedelta(hours=3))
+# 2026 in Saudi local time: [2026-01-01 00:00 +03:00, 2027-01-01 00:00 +03:00)
+BACKFILL_2026_START = dt.datetime(2026, 1, 1, tzinfo=RIYADH)
+BACKFILL_2026_END = dt.datetime(2027, 1, 1, tzinfo=RIYADH)
+
+
+def effective_minimum_stars(configured: int | str | None) -> int:
+    """Return the auto-post threshold; never below the five-star owner policy."""
+    try:
+        value = int(configured)
+    except (TypeError, ValueError):
+        value = AUTO_REPLY_REQUIRED_STARS
+    return max(AUTO_REPLY_REQUIRED_STARS, value)
+
+
+def parse_google_time(value) -> dt.datetime | None:
+    """Parse a Google RFC3339 timestamp; None when missing, invalid or naive."""
+    if not isinstance(value, str) or not value:
+        return None
+    text = value.replace('Z', '+00:00')
+    # Google may send nanosecond precision; Python accepts at most microseconds.
+    text = re.sub(r'(\.\d{6})\d+', r'\1', text)
+    try:
+        parsed = dt.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
+
+
+def in_backfill_2026_window(created: dt.datetime | None, now: dt.datetime | None = None) -> bool:
+    if created is None:
+        return False
+    now = now or dt.datetime.now(dt.timezone.utc)
+    return BACKFILL_2026_START <= created < BACKFILL_2026_END and created <= now
+
+
+def classify_backfill_2026(review: dict, now: dt.datetime | None = None) -> str:
+    """Classify one listed review for the 2026 five-star backfill.
+
+    Returns 'candidate', 'already_replied', 'below_five', 'outside_2026' or 'invalid'.
+    The listing is only a pre-filter; the processor re-reads each review before writing.
+    """
+    if not isinstance(review, dict):
+        return 'invalid'
+    if (review.get('reviewReply') or {}).get('comment'):
+        return 'already_replied'
+    stars = as_star_count(review.get('starRating'))
+    if stars == 0:
+        return 'invalid'
+    created = parse_google_time(review.get('createTime'))
+    if created is None:
+        return 'invalid'
+    if not in_backfill_2026_window(created, now):
+        return 'outside_2026'
+    if stars < AUTO_REPLY_REQUIRED_STARS:
+        return 'below_five'
+    return 'candidate'
 
 
 def needs_owner_review(stars: int, comment: str, minimum_autopost_stars: int) -> bool:
