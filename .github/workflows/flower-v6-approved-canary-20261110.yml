@@ -1,0 +1,124 @@
+name: FLOWER V6 One-Shot Approved Canary 2026-11-10
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flower-v6-approved-canary-20261110
+  cancel-in-progress: false
+
+jobs:
+  one-approved-review:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate one review, PUT once, and independently verify Google readback
+        env:
+          V6_CRON_SECRET: ${{ secrets.V6_CRON_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          """One-time approved FLOWER 2 canary. DO NOT retry a potentially delivered PUT."""
+          import hashlib
+          import json
+          import os
+          import sys
+          import urllib.request
+          import urllib.error
+
+          BASE = 'https://flower-reviews-v6-staging.onrender.com'
+          LOCATION = 'accounts/118082925604360965903/locations/9619996328379786259'
+          REVIEW = LOCATION + '/reviews/AbFvOqnQBoGoBjX27Srkok8yLFLmQxNNIZcEoDA8evSCh6ly4YE8hDj-cqj_vGSERKVGia-vVql-6g'
+          REPLY = 'حياك الله، سعدنا بكلامك الطيب وإشادتك بتعامل فريق الاستقبال وجميع العاملين. يسعدنا إن تجربتك في فلور كانت مميزة، ونتشرف باستقبالك في زياراتك القادمة.'
+          APPROVED_HASH = 'a1080674549391482eecebcc9f7b49750bb429b53d5aa7a9f524de372a0492c8'
+          key = os.getenv('V6_CRON_SECRET', '')
+
+          def require(condition, description):
+              if not condition:
+                  raise RuntimeError(description)
+
+          require(bool(key), 'V6_CRON_SECRET is not configured in GitHub')
+          require(hashlib.sha256(REPLY.encode('utf-8')).hexdigest() == APPROVED_HASH,
+                  'approved reply SHA256 does not match; no PUT')
+          require(REVIEW.startswith(LOCATION + '/reviews/'), 'invalid branch; no PUT')
+
+          def post(endpoint, payload=None):
+              body = json.dumps(payload if payload is not None else {}, ensure_ascii=False).encode('utf-8')
+              request = urllib.request.Request(BASE + endpoint, data=body, method='POST',
+                  headers={'Authorization':'Bearer ' + key, 'Content-Type':'application/json; charset=utf-8'})
+              try:
+                  with urllib.request.urlopen(request, timeout=170) as response:
+                      require(response.status == 200, f'unexpected response from {endpoint}')
+                      return json.loads(response.read().decode('utf-8'))
+              except urllib.error.HTTPError as exc:
+                  try:
+                      result = json.loads(exc.read().decode('utf-8'))
+                      reason = result.get('reason') or result.get('error') or 'unknown'
+                  except Exception:
+                      reason = 'unknown'
+                  raise RuntimeError(f'{endpoint} HTTP {exc.code}: {reason}') from None
+
+          # Zero-write preflight, including live GBP access to all four branches.
+          probe = post('/internal/google-probe')
+          require(probe.get('status') == 'google_reads_verified'
+                  and type(probe.get('branches_checked')) is int and probe['branches_checked'] == 4
+                  and type(probe.get('google_writes')) is int and probe['google_writes'] == 0
+                  and probe.get('auto_reply_enabled') is False,
+                  'Google API probe or general auto-reply gate failed; no PUT')
+          print('PRECHECK: four Google branches verified, zero Google writes, general auto disabled', flush=True)
+
+          dry = post('/internal/backfill-2026', {'mode':'dry_run'})
+          require(dry.get('mode') == 'dry_run' and dry.get('google_writes') == 0
+                  and dry.get('database_writes') == 0, 'dry_run not read-only; no PUT')
+          matches = [x for x in dry.get('candidate_list', []) if x.get('review_name') == REVIEW]
+          require(len(matches) == 1
+                  and matches[0].get('ledger_state') == 'requalifiable'
+                  and matches[0].get('reviewer') == 'Abood_afndena Taiz',
+                  'approved FLOWER 2 review missing, changed or not safely requalifiable; no PUT')
+          print('PRECHECK: exact approved FLOWER 2 review is still safely eligible', flush=True)
+
+          payload = {'mode':'canary_preview', 'review_name':REVIEW, 'reply_text':REPLY}
+          preview = post('/internal/backfill-2026', payload)
+          gates = preview.get('gates') or {}
+          require(preview.get('reply_text') == REPLY
+                  and preview.get('reply_sha256') == APPROVED_HASH
+                  and preview.get('google_writes') == 0
+                  and preview.get('database_writes') == 0
+                  and gates.get('owner_express_consent') is True
+                  and gates.get('auto_reply_enabled') is False
+                  and gates.get('backfill_publish_enabled') is False
+                  and gates.get('review_matches_approval') is True
+                  and gates.get('text_matches_sha256') is True
+                  and gates.get('content_rules') == 'passed',
+                  'canary preview gates failed; no PUT')
+          print('PREVIEW: all gates passed; exact owner-approved 149-character reply verified', flush=True)
+
+          # EXACTLY ONE request. Never retry; a network exception after a remote PUT
+          # is ambiguous and must be resolved by read-only Google reconciliation.
+          print('CANARY: submitting exactly one approved review PUT, no automatic retries', flush=True)
+          sent = post('/internal/backfill-2026', {'mode':'canary',
+                                                   'review_name':REVIEW, 'reply_text':REPLY})
+          print('CANARY_RESULT: status=%s readback=%s confirmed_count=%s' % (
+              sent.get('canary_status'), sent.get('google_readback_matches'),
+              sent.get('confirmed_backfill_replies')), flush=True)
+
+          # Read-only independent Neon status report. Never trigger drain/publish.
+          report = post('/internal/backfill-2026/report')
+          branch = (report.get('by_branch') or {}).get(LOCATION, {})
+          print('NEON_REPORT: branch_statuses=%s; confirmed=%s; google_writes=%s' % (
+              json.dumps(branch, ensure_ascii=False, sort_keys=True),
+              report.get('confirmed_replies'), report.get('google_writes')), flush=True)
+
+          require(sent.get('canary_status') == 'posted'
+                  and sent.get('google_readback_matches') is True,
+                  'Google reply not confirmed. DO NOT RETRY PUT; investigate with GET only')
+          require(branch.get('posted', 0) == 1
+                  and report.get('google_writes') == 0,
+                  'Neon readback not confirmed. DO NOT RETRY PUT; inspect ledger')
+          print('SUCCESS: exactly one approved reply verified on Google and Neon; general auto and bulk remain OFF', flush=True)
+          PY
