@@ -371,6 +371,31 @@ def backfill_2026_route():
         return jsonify({'error': 'configuration_or_storage_error', 'google_writes': 0}), 503
 
 
+@app.post('/internal/canary-readback-only')
+def verify_canary_readback_only():
+    """ONE approved review: Google GET and conditional Neon reconciliation only.
+
+    Does not call reply/PUT, drain, enqueue, AI or any publish path.
+    Safe even with OWNER_EXPRESS_CONSENT=false after the single attempted PUT.
+    """
+    if not _internal_authorized(request):
+        return jsonify({'error': 'unauthorized'}), 401
+    body = request.get_json(silent=True)
+    name = body.get('review_name') if isinstance(body, dict) else None
+    allowed = os.getenv('BACKFILL_CANARY_REVIEW', '')
+    if not isinstance(name, str) or not REVIEW_NAME_RE.fullmatch(name):
+        return jsonify({'error': 'invalid_review_name', 'google_writes': 0}), 400
+    if not allowed or name != allowed:
+        return jsonify({'error': 'review_not_approved', 'google_writes': 0}), 403
+    try:
+        from reconcile_pending import reconcile_pending
+        result = reconcile_pending(name, store=get_store(), google=GoogleClient())
+        return jsonify({**result, 'review_name': name, 'google_writes': 0}), 200
+    except Exception as exc:
+        log.warning('Canary GET-only readback failed: %s', type(exc).__name__)
+        return jsonify({'error': 'canary_readback_unavailable', 'google_writes': 0}), 502
+
+
 @app.post('/internal/backfill-2026/report')
 def backfill_2026_report():
     """Per-branch status counts of 2026 backfill jobs; 'posted' means confirmed by readback."""
