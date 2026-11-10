@@ -7,6 +7,8 @@ import hmac
 import logging
 import os
 import re
+import threading
+import time
 
 from flask import Flask, request, jsonify
 from core import parse_pubsub, InvalidNotification
@@ -117,6 +119,11 @@ def health():
                         'configured':ready,'google_reviews_api':'not_checked',
                         'missing_components':[k for k, value in readiness.items() if not value],
                         'auto_reply_enabled':os.getenv('AUTO_REPLY_ENABLED')=='true',
+                        'background_drain':{'running':_worker_state['started'],
+                                            'interval_seconds':background_drain_interval(),
+                                            'passes':_worker_state['passes'],
+                                            'last_run':_worker_state['last_run'],
+                                            'last_error':_worker_state['last_error']},
                         'jobs':counts}),200 if ready else 503
     except Exception:
         return jsonify({'status':'storage_unavailable','ready':False}),503
@@ -264,12 +271,77 @@ def receive():
     return '',204
 
 
-@app.post('/internal/drain')
-def drain():
-    secret = os.getenv('CRON_SECRET','')
-    supplied = request.headers.get('Authorization','').removeprefix('Bearer ')
-    if not secret or not hmac.compare_digest(supplied,secret):
-        return jsonify({'error':'unauthorized'}),401
+# --- In-process drain -------------------------------------------------------
+# GitHub `schedule` is best-effort (observed gaps of 4-8 h for a */10 cron), so
+# the service drains itself while it is awake. A Pub/Sub push wakes the free
+# Render instance; it then stays up long enough for the GET-only verification
+# backoff (2/4/8 min) and transient retries. Safety is unchanged: every job is
+# claimed atomically with a lease, so this thread, the HTTP drain and inline
+# Pub/Sub processing can never write the same review twice.
+_drain_lock = threading.Lock()          # one drain pass at a time in this process
+_worker_state = {'started': False, 'last_run': None, 'last_error': None, 'passes': 0}
+_worker_guard = threading.Lock()
+
+
+def background_drain_interval():
+    try:
+        return max(30, int(os.getenv('BACKGROUND_DRAIN_SECONDS', '120')))
+    except ValueError:
+        return 120
+
+
+def background_drain_enabled():
+    # Off unless real storage is configured (keeps tests/local runs inert) and
+    # unless explicitly disabled.
+    return bool(os.getenv('DATABASE_URL')) and os.getenv('BACKGROUND_DRAIN_ENABLED', 'true') == 'true'
+
+
+def background_drain_pass():
+    result = run_drain()
+    _worker_state['passes'] += 1
+    _worker_state['last_run'] = int(time.time())
+    if result.get('processed') or result.get('released'):
+        log.info('background drain processed=%s released=%s', result.get('processed'), result.get('released'))
+    return result
+
+
+def _background_drain_loop(interval):
+    while True:
+        time.sleep(interval)
+        try:
+            background_drain_pass()
+            _worker_state['last_error'] = None
+        except Exception as exc:  # never kill the loop; the next pass retries
+            _worker_state['last_error'] = type(exc).__name__
+            log.warning('background drain pass failed: %s', type(exc).__name__)
+
+
+def ensure_background_drain():
+    """Start the drain thread once per process. Returns True only when it starts."""
+    if not background_drain_enabled():
+        return False
+    with _worker_guard:
+        if _worker_state['started']:
+            return False
+        threading.Thread(target=_background_drain_loop, args=(background_drain_interval(),),
+                         name='v6-background-drain', daemon=True).start()
+        _worker_state['started'] = True
+        log.info('background drain started (every %ss)', background_drain_interval())
+        return True
+
+
+@app.before_request
+def _start_background_drain():
+    ensure_background_drain()
+
+
+def run_drain():
+    """One drain pass: release held reviews (scope=all only), then process due jobs."""
+    with _drain_lock:
+        return _run_drain_unlocked()
+
+
+def _run_drain_unlocked():
     n=0
     store = get_store()
     store.prune_old()
@@ -283,7 +355,16 @@ def drain():
         if not process_one():
             break
         n+=1
-    return jsonify({'processed':n,'released':len(released),'jobs':store.counts()})
+    return {'processed':n,'released':len(released),'jobs':store.counts()}
+
+
+@app.post('/internal/drain')
+def drain():
+    secret = os.getenv('CRON_SECRET','')
+    supplied = request.headers.get('Authorization','').removeprefix('Bearer ')
+    if not secret or not hmac.compare_digest(supplied,secret):
+        return jsonify({'error':'unauthorized'}),401
+    return jsonify(run_drain())
 
 
 @app.post('/internal/backfill')
