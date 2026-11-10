@@ -204,6 +204,22 @@ class RunTests(unittest.TestCase):
         self.assertTrue(self.store.enqueue(ReviewEvent(name, loc, 'NEW_REVIEW', 'pubsub')))
         return name
 
+    def test_dry_run_lists_candidates_for_owner_approval(self):
+        self.google.reviews[self.canary]['reviewer'] = {'displayName': 'ضيف'}
+        result = self.go('dry_run')
+        listed = result['candidate_list']
+        self.assertEqual([c['review_name'] for c in listed][0], self.canary)  # oldest first
+        self.assertEqual(len(listed), 3)
+        first = listed[0]
+        self.assertEqual((first['branch'], first['reviewer'], first['ledger_state']), ('فرع 2', 'ضيف', 'new'))
+        self.assertTrue(first['comment_preview'])
+        # Non-candidates (4 stars, replied, 2025) never listed.
+        names = {c['review_name'] for c in listed}
+        self.assertNotIn(f'{LOCS[0]}/reviews/a3', names)
+        self.assertNotIn(f'{LOCS[0]}/reviews/a4', names)
+        self.assertNotIn(f'{LOCS[1]}/reviews/b2', names)
+        self.assertEqual(self.google.puts, [])
+
     def test_dry_run_reports_ledger_and_writes_nothing(self):
         result = self.go('dry_run')
         self.assertEqual(result['totals']['candidates'], 3)
