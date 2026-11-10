@@ -1,0 +1,29 @@
+name: FLOWER Watchdog Validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/**'
+      - '.github/workflows/flower-reviews-fallback.yml'
+      - '.github/workflows/flower-watchdog-checks-ci.yml'
+  pull_request:
+    paths:
+      - '.github/scripts/**'
+      - '.github/workflows/flower-reviews-fallback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and execute monitoring regression tests
+        run: |
+          python -m compileall -q .github/scripts
+          cd .github/scripts
+          python -m unittest -v test_watchdog_checks

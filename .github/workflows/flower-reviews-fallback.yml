@@ -47,7 +47,7 @@ jobs:
             -X POST \
             -H "Authorization: Bearer $OIDC_TOKEN" \
             "https://flower-google-reviews-auto-reply.onrender.com/fallback/reviews/oidc")"
-          python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert d.get("ok") is True; print("reviews: seen=",d.get("seen",0),"candidates=",d.get("candidates",0),"posted=",d.get("posted",0),"held=",d.get("held",0),"errors=",d.get("errors",0))' "$response"
+          python3 .github/scripts/watchdog_checks.py scan "$response"
 
 
       - name: Publish website review metrics cache
@@ -58,8 +58,8 @@ jobs:
           url="https://flower-google-reviews-auto-reply.onrender.com/public/review-analytics/9f4d8b2a71c64347b88a5dc96a3d21ef"
           tmp="$(mktemp)"
           if ! curl --retry 3 --retry-delay 6 --retry-all-errors --fail --silent --show-error --max-time 150 "$url" -o "$tmp"; then
-            echo "::warning::Review analytics cache fetch failed; keeping the last published metrics."
-            exit 0
+            echo "::error::Review analytics fetch failed; last published metrics kept."
+            exit 1
           fi
           if ! python3 - "$tmp" <<'PY'
           import datetime as dt
