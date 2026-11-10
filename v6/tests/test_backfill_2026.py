@@ -375,6 +375,20 @@ class RunTests(unittest.TestCase):
             self.go('canary', self.canary)
         self.assertEqual(self.google.puts, [])
 
+    def test_preview_does_not_require_publication_consent(self):
+        self.flags['OWNER_EXPRESS_CONSENT'] = 'false'
+        report = self.go('canary_preview', self.canary)
+        self.assertFalse(report['gates']['owner_express_consent'])
+        self.assertEqual(report['reply_text'], APPROVED)
+        self.assertEqual(report['google_writes'], 0)
+        self.assertEqual(report['database_writes'], 0)
+        self.assertFalse(self.google.puts)
+        self.assertIsNone(self.store.job_info(self.canary)[0])
+        # Consent is mandatory for an actual Google PUT.
+        with self.assertRaises(backfill_2026.BackfillBlocked):
+            self.go('canary', self.canary)
+        self.assertFalse(self.google.puts)
+
     def test_preview_has_no_writes_and_shows_exact_text(self):
         result = self.go('canary_preview', self.canary)
         self.assertEqual(result['reply_text'], APPROVED)
