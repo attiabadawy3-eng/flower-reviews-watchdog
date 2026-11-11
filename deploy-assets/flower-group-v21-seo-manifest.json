@@ -1,0 +1,57 @@
+{
+  "release": "FLOWER V21 search visibility",
+  "builtFrom": "flower-group-v20-1-almajmaah.zip",
+  "builtFromSha256": "890f8ce2a534b2fd074b982d3f02c6fe3d1ef19c5a85d1f73bce675706a83292",
+  "zip": "flower-group-v21-seo.zip",
+  "sha256": "06d9877f8a58bdfd14f23ae8494500d379212857c503b4392b81c500a770a546",
+  "fileCount": 122,
+  "changedFiles": [
+    "dammam-al-anoud/index.html",
+    "en/dammam-al-anoud/index.html",
+    "dammam-al-salam/index.html",
+    "en/dammam-al-salam/index.html",
+    "al-qaisumah/index.html",
+    "en/al-qaisumah/index.html",
+    "al-majmaah-harmah/index.html",
+    "en/al-majmaah-harmah/index.html",
+    "index.html",
+    "en/index.html",
+    "sitemap.xml",
+    "llms.txt"
+  ],
+  "pages": {
+    "dammam-al-anoud/index.html": {
+      "title": "فلور العنود الدمام | شقق مخدومة ومفروشة يومي وشهري",
+      "faqCount": 7
+    },
+    "en/dammam-al-anoud/index.html": {
+      "faqCount": 6
+    },
+    "dammam-al-salam/index.html": {
+      "title": "فندق فلور الدمام – حي السلام | شقق مخدومة ومفروشة يومي وشهري",
+      "faqCount": 7
+    },
+    "en/dammam-al-salam/index.html": {
+      "faqCount": 6
+    },
+    "al-qaisumah/index.html": {
+      "title": "فندق فلور القيصومة | شقق مخدومة ومفروشة يومي وشهري",
+      "faqCount": 7
+    },
+    "en/al-qaisumah/index.html": {
+      "faqCount": 6
+    },
+    "al-majmaah-harmah/index.html": {
+      "title": "فندق فلور المجمعة – حرمة | شقق مخدومة ومفروشة",
+      "faqCount": 7
+    },
+    "en/al-majmaah-harmah/index.html": {
+      "faqCount": 6
+    }
+  },
+  "checksPassed": true,
+  "canonicalURLsUnchanged": true,
+  "bookingAndWhatsAppUnchanged": true,
+  "photosAndScriptsUnchanged": true,
+  "rollbackZip": "flower-group-v20-1-almajmaah.zip"
+}
