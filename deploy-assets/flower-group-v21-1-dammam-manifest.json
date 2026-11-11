@@ -1,0 +1,32 @@
+{
+  "release": "FLOWER V21.1 Dammam hub",
+  "builtFrom": "flower-group-v21-seo.zip",
+  "builtFromSha256": "06d9877f8a58bdfd14f23ae8494500d379212857c503b4392b81c500a770a546",
+  "zip": "flower-group-v21-1-dammam.zip",
+  "sha256": "6fb149044713eaaafb22b52e097748fb335cd035447aa55f293310d7f374c310",
+  "fileCount": 124,
+  "changedFiles": [
+    "al-majmaah-harmah/index.html",
+    "al-qaisumah/index.html",
+    "dammam-al-anoud/index.html",
+    "dammam-al-salam/index.html",
+    "dammam/index.html",
+    "en/al-majmaah-harmah/index.html",
+    "en/al-qaisumah/index.html",
+    "en/dammam-al-anoud/index.html",
+    "en/dammam-al-salam/index.html",
+    "en/dammam/index.html",
+    "en/index.html",
+    "en/privacy/index.html",
+    "index.html",
+    "llms.txt",
+    "privacy/index.html",
+    "sitemap.xml"
+  ],
+  "newPages": [
+    "/dammam/",
+    "/en/dammam/"
+  ],
+  "rollbackZip": "flower-group-v21-seo.zip",
+  "checksPassed": true
+}
